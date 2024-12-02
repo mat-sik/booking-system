@@ -145,7 +145,7 @@ exist.
 
 ### Deleting an existing booking
 
-Deleting a booking is a simpler operation than inserting, because there is no need to check for conflicts.
+Deleting a booking is simpler than inserting one because there is no need to check for conflicts.
 
 The parameters for `date`, `serviceId` and _id of the booking are needed.
 
@@ -165,5 +165,5 @@ db.collection.updateOne(
 
 ### Updating an existing booking
 
-To fulfil this requirement, first the booking should be deleted and later a new booking should be created. There is no
-guarantee that the creation will succeed.
+To fulfill this requirement, the booking should first be deleted, and then a new booking should be created. However,
+there is no guarantee that the creation will succeed.
