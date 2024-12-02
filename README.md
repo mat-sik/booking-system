@@ -14,7 +14,7 @@ ensuring data consistency and preventing conflicts.
 ### Command Requests
 
 Command requests are used to modify the state of the MongoDB datastore. In other words, they are responsible for
-creating, updating or deleting bookings.
+creating and deleting bookings.
 
 ### Query Requests
 
@@ -27,7 +27,8 @@ view of available and booked time slots. This view might be stale the moment it 
 
 ## Command Service
 
-The **Command Service** consumes records from Kafka Topic Partitions, with each partition acting as a **Data Sourcing**
+The **Command Service** consumes records from **Kafka** Topic Partitions, with each partition acting as a **Data
+Sourcing**
 log, serving as the authoritative source of truth for the application. This log preserves the chronological order of
 booking commands, which is essential for ensuring fairness and consistency. By maintaining this order, it prevents race
 conditions and conflicts between concurrent booking requests.
@@ -54,3 +55,115 @@ The **Booking Service** interacts with **Query Service** to perform users query 
 ## Booking Service
 
 The **Booking Services** serves as an entry point for the application. It provides REST API to interact with the system.
+
+## MongoDB data model
+
+`Bookings Collection`
+
+```json
+{
+  "_id": "objectid",
+  "date": "string",
+  "serviceId": "objectid",
+  "bookings": [
+    {
+      "_id": "objectid",
+      "start": "date",
+      "end": "date"
+    }
+  ]
+}
+```
+
+The `date` field represents the date in the format: **dd/mm/yyyy** the same one as in the **Kafka** partition key.
+
+The field In combination with the`serviceId` field, uniquely identifies a list of bookings of a services for a
+single day.
+
+The `bookings` field contains a list with objects representing all present bookings.
+
+## Command Requests
+
+### Inserting new booking
+
+To fulfill the request of creating a new booking, the availability of the booking needs to be checked.
+
+Given input parameters `date`, `serviceId`, `start`, `end` and new ObjectId for the booking.
+
+For document matching `date` and `serviceId`
+
+For every `booking` : `bookings`
+
+Check `input.start < booking.end && input.end > booking.start`
+
+If none is found, push the input object into `bookings` array.
+
+**Implementation**:
+
+```
+const newBooking = {
+  _id: new ObjectId(),
+  start: ISODate("2024-12-03T10:00:00Z"),
+  end: ISODate("2024-12-03T11:00:00Z"),
+};
+
+db.collection.updateOne(
+  {
+    date: "03/12/2024",
+    serviceId: ObjectId("your-service-id"),
+    $expr: {
+      $not: {
+        $anyElementTrue: {
+          $map: {
+            input: "$bookings",
+            in: {
+              $and: [
+                { $lt: [newBooking.start, "$$this.end"] },
+                { $gt: [newBooking.end, "$$this.start"] },
+              ],
+            },
+          },
+        },
+      },
+    },
+  },
+  {
+    $push: { bookings: newBooking },
+  },
+  { upsert: true }
+);
+```
+
+For the best performance, `date` and `serviceId` fields should be used in a composite index, to allow fast fetching of
+the documents.
+
+The check for overlap of bookings will be performed in memory. There won't be that many bookings in a single day, so
+it is acceptable.
+
+The `upsert: true` option is used, to create the document if no document with a given `date` and `serviceId` fields
+exist.
+
+### Deleting an existing booking
+
+Deleting a booking is a simpler operation than inserting, because there is no need to check for conflicts.
+
+The parameters for `date`, `serviceId` and _id of the booking are needed.
+
+```
+const bookingIdToDelete = new ObjectId("booking-id-to-delete");
+
+db.collection.updateOne(
+  {
+    date: "03/12/2024",
+    serviceId: ObjectId("your-service-id"),
+  },
+  {
+    $pull: { bookings: { _id: bookingIdToDelete } }
+  }
+);
+```
+
+### Updating an existing booking
+
+To fulfil this requirement, first the booking should be deleted and later a new booking should be created. There is no
+guarantee that the creation will succeed.
