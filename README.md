@@ -68,6 +68,7 @@ The **Booking Services** serves as an entry point for the application. It provid
   "bookings": [
     {
       "_id": "objectid",
+      "userId": "objectid",
       "start": "date",
       "end": "date"
     }
@@ -88,7 +89,14 @@ The `bookings` field contains a list with objects representing all present booki
 
 To fulfill the request of creating a new booking, the availability of the booking needs to be checked.
 
-Given input parameters `date`, `serviceId`, `start`, `end` and new ObjectId for the booking.
+Given input parameters:
+
+- `date`- **dd/mm/yyyy**
+- `serviceId` - id of the servcie for the booking
+- `start`- start time of the booing
+- `end`  - end time of the booing
+- `userId` - id of the user issuing the booking
+- `_id` - new objectid of the booking.
 
 For document matching `date` and `serviceId`
 
@@ -103,6 +111,7 @@ If none is found, push the input object into `bookings` array.
 ```
 const newBooking = {
   _id: new ObjectId(),
+  userId: new ObjectId(),
   start: ISODate("2024-12-03T10:00:00Z"),
   end: ISODate("2024-12-03T11:00:00Z"),
 };
@@ -147,7 +156,7 @@ exist.
 
 Deleting a booking is simpler than inserting one because there is no need to check for conflicts.
 
-The parameters for `date`, `serviceId` and _id of the booking are needed.
+The parameters for `date`, `serviceId` and `_id` of the booking are needed.
 
 ```
 const bookingIdToDelete = new ObjectId("booking-id-to-delete");
