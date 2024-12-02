@@ -1,0 +1,56 @@
+# Booking Service
+
+This project implements a booking system that allows users to reserve services for specific dates and times. Users can
+choose a service, specify a desired date, and book a time slot for a specified duration (e.g., booking a service on
+10.10.2024 from 13:00 for 1 hour).
+
+This project is composed of multiple microservices that work together to implement a booking system. It
+follows the **CQRS** (Command Query Responsibility Segregation) and **Data Sourcing** patterns. The **Data Sourcing**
+pattern and its associated log are used to control concurrent bookings for the same date and time by multiple users,
+ensuring data consistency and preventing conflicts.
+
+## Request Types
+
+### Command Requests
+
+Command requests are used to modify the state of the MongoDB datastore. In other words, they are responsible for
+creating, updating or deleting bookings.
+
+### Query Requests
+
+Query requests are used to retrieve the current state of the MongoDB datastore. They provide users with a point in time
+view of available and booked time slots. This view might be stale the moment it is viewed by users.
+
+## Diagram
+
+![Application Architecture](./diagrams/bookings.drawio.png)
+
+## Command Service
+
+The **Command Service** consumes records from Kafka Topic Partitions, with each partition acting as a **Data Sourcing**
+log, serving as the authoritative source of truth for the application. This log preserves the chronological order of
+booking commands, which is essential for ensuring fairness and consistency. By maintaining this order, it prevents race
+conditions and conflicts between concurrent booking requests.
+
+As the records are processed, the **Command Service** updates the state representation in **MongoDB**, creating
+queryable data view for interested parties.
+
+### Topic Partitioning
+
+The partition key is based on the **dd/mm/yyyy** format, ensuring that all bookings for a specific date are routed to
+the same partition. This approach preserves the chronological order of bookings for that date, enabling the system to
+accurately determine which user booked first.
+
+## Query Service
+
+The **Query Service** allows users to see their bookings. This serves as a way for checking whether a given booking
+request was successful.
+
+The service is also used for providing the users with information which bookings are currently not booked. This
+information might very quickly become stale, but this is acceptable.
+
+The **Booking Service** interacts with **Query Service** to perform users query requests.
+
+## Booking Service
+
+The **Booking Services** serves as an entry point for the application. It provides REST API to interact with the system.
