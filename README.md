@@ -87,6 +87,9 @@ The `start` and `end` fields have type int32, representing the number of minutes
 
 ## Command Requests
 
+All requests are designed with independence in mind, ensuring consistency by leveraging the at-least-once delivery
+guarantee.
+
 ### Inserting new booking
 
 To fulfill the request of creating a new booking, the availability of the booking needs to be checked.
