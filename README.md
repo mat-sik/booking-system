@@ -58,7 +58,7 @@ The **Booking Services** serves as an entry point for the application. It provid
 
 ## MongoDB data model
 
-`Bookings Collection`
+`service_bookings Collection`
 
 ```json
 {
@@ -69,8 +69,8 @@ The **Booking Services** serves as an entry point for the application. It provid
     {
       "_id": "objectid",
       "userId": "objectid",
-      "start": "date",
-      "end": "date"
+      "start": "int32",
+      "end": "int32"
     }
   ]
 }
@@ -83,6 +83,8 @@ single day.
 
 The `bookings` field contains a list with objects representing all present bookings.
 
+The `start` and `end` fields have type int32, representing the number of minutes from the 00:00.
+
 ## Command Requests
 
 ### Inserting new booking
@@ -93,8 +95,8 @@ Given input parameters:
 
 - `date`- **dd/mm/yyyy**
 - `serviceId` - id of the servcie for the booking
-- `start`- start time of the booing
-- `end`  - end time of the booing
+- `start`- start time of the booking
+- `end`  - end time of the booking
 - `userId` - id of the user issuing the booking
 - `_id` - new objectid of the booking.
 
@@ -112,8 +114,8 @@ If none is found, push the input object into `bookings` array.
 const newBooking = {
   _id: new ObjectId(),
   userId: new ObjectId(),
-  start: ISODate("2024-12-03T10:00:00Z"),
-  end: ISODate("2024-12-03T11:00:00Z"),
+  start: 600,
+  end: 660,
 };
 
 db.collection.updateOne(
