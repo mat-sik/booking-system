@@ -9,14 +9,14 @@ import java.time.format.DateTimeFormatter;
 
 @Getter
 @Accessors(fluent = true)
-public class CreateServiceBooking {
+public class ServiceBookingIdentifier {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final String date;
     private final ObjectId serviceId;
 
-    public CreateServiceBooking(LocalDate date, ObjectId serviceId) {
+    public ServiceBookingIdentifier(LocalDate date, ObjectId serviceId) {
         this.date = date.format(FORMATTER);
         this.serviceId = serviceId;
     }

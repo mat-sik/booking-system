@@ -1,7 +1,8 @@
 package com.github.matsik.command.booking.repository;
 
 import com.github.matsik.command.booking.command.CreateBooking;
-import com.github.matsik.command.booking.command.CreateServiceBooking;
+import com.github.matsik.command.booking.command.DeleteBooking;
+import com.github.matsik.command.booking.command.ServiceBookingIdentifier;
 import com.github.matsik.command.booking.model.Booking;
 import com.github.matsik.command.booking.model.ServiceBooking;
 import com.mongodb.client.result.UpdateResult;
@@ -23,12 +24,22 @@ public class BookingRepository {
 
     private final MongoTemplate template;
 
+    public UpdateResult deleteBooking(DeleteBooking request) {
+        Criteria matchCriteria = getMatchCriteria(request.serviceBookingIdentifier());
+
+        Query query = Query.query(matchCriteria);
+
+        Update update = new Update().pull("bookings",
+                new Document("_id", request.bookingId())
+        );
+
+        return template.updateFirst(query, update, ServiceBooking.class);
+    }
+
     public UpdateResult createBooking(CreateBooking request) {
-        CreateServiceBooking createServiceBooking = request.createServiceBooking();
+        ensureServiceBookingExists(request.serviceBookingIdentifier());
 
-        ensureServiceBookingExists(createServiceBooking);
-
-        Criteria matchCriteria = getMatchCriteria(createServiceBooking.date(), createServiceBooking.serviceId());
+        Criteria matchCriteria = getMatchCriteria(request.serviceBookingIdentifier());
         Criteria overlapCriteria = getOverlapCriteria(request.start(), request.end());
 
         Query query = new Query(matchCriteria)
@@ -41,22 +52,22 @@ public class BookingRepository {
         return template.updateFirst(query, update, ServiceBooking.class);
     }
 
-    private UpdateResult ensureServiceBookingExists(CreateServiceBooking request) {
-        Criteria matchCriteria = getMatchCriteria(request.date(), request.serviceId());
+    private UpdateResult ensureServiceBookingExists(ServiceBookingIdentifier identifier) {
+        Criteria matchCriteria = getMatchCriteria(identifier);
 
         Query query = new Query(matchCriteria);
 
         Update update = new Update()
-                .setOnInsert("date", request.date())
-                .setOnInsert("serviceId", request.serviceId())
+                .setOnInsert("date", identifier.date())
+                .setOnInsert("serviceId", identifier.serviceId())
                 .setOnInsert("bookings", List.of());
 
         return template.upsert(query, update, ServiceBooking.class);
     }
 
-    private static Criteria getMatchCriteria(String date, ObjectId serviceId) {
-        return Criteria.where("date").is(date)
-                .and("serviceId").is(serviceId);
+    private static Criteria getMatchCriteria(ServiceBookingIdentifier identifier) {
+        return Criteria.where("date").is(identifier.date())
+                .and("serviceId").is(identifier.serviceId());
     }
 
     private static Criteria getOverlapCriteria(int start, int end) {
