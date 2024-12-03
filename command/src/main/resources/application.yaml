@@ -9,3 +9,9 @@ mongo:
   password: pass
   authDatabase: admin
   database: booking-service-db
+
+logging:
+  level:
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+    com.mongodb: DEBUG
+    org.mongodb.driver: DEBUG

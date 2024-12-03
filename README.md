@@ -100,11 +100,20 @@ Given input parameters:
 - `userId` - id of the user issuing the booking
 - `_id` - new objectid of the booking.
 
+First check if a document for a given `date` and `serviceId` already exists, if it does, do nothing, else create new
+document with empty `bookings` list.
+
 For document matching `date` and `serviceId`
 
 For every `booking` : `bookings`
 
 Check `input.start < booking.end && input.end > booking.start`
+
+This condition allows for overlapping time ranges, but ranges with the same start and end time (e.g.,
+`start: 660, end: 660`) should be ignored. While we could use the condition
+`input.start <= booking.end && input.end >= booking.start`, it would require using ranges like `600-660`, `661-761`,
+etc., which would introduce unnecessary gaps between adjacent ranges. The current condition allows for adjacent time
+slots such as `540-600`, `600-660`, `660-720` without the need for these gaps.
 
 If none is found, push the input object into `bookings` array.
 
@@ -117,6 +126,21 @@ const newBooking = {
   start: 600,
   end: 660,
 };
+
+db.collection.updateOne(
+  { 
+    "date": "03/12/2024", 
+    "serviceId": ObjectId("your-service-id") 
+  }, 
+  { 
+    "$setOnInsert": { 
+      "date": "03/12/2024", 
+      "serviceId": ObjectId("your-service-id"), 
+      "bookings": [] 
+    } 
+  }, 
+  { upsert: true }
+)
 
 db.collection.updateOne(
   {
@@ -140,8 +164,7 @@ db.collection.updateOne(
   },
   {
     $push: { bookings: newBooking },
-  },
-  { upsert: true }
+  }
 );
 ```
 
@@ -151,8 +174,15 @@ the documents.
 The check for overlap of bookings will be performed in memory. There won't be that many bookings in a single day, so
 it is acceptable.
 
-The `upsert: true` option is used, to create the document if no document with a given `date` and `serviceId` fields
-exist.
+Unfortunately, two queries are required because the `upsert` operation does not work with `$expr` within the same query.
+This results in a performance hit compared to using a single query. Additionally, this approach could introduce
+concurrency issues if we didn't ensure that all records for a given day are stored on the same log.
+
+For example, consider user A, whose first query creates a new document. If user A loses their time slice in the
+meantime, user B could run both queries successfully, effectively booking the service before user A. Although user A was
+technically first, he would not successfully book the service.
+
+In practice, this scenario is invisible to the users, so it is not a significant concern.
 
 ### Deleting an existing booking
 
