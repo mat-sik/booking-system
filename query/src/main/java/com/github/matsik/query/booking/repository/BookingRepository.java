@@ -1,8 +1,10 @@
 package com.github.matsik.query.booking.repository;
 
+import com.github.matsik.query.booking.model.BookingTimeRange;
 import com.github.matsik.query.booking.model.ServiceBooking;
 import com.github.matsik.query.booking.model.UserBooking;
 import com.github.matsik.query.booking.query.GetBooking;
+import com.github.matsik.query.booking.query.GetBookingTimeRanges;
 import com.github.matsik.query.booking.query.GetBookings;
 import com.github.matsik.query.booking.query.ServiceBookingIdentifier;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,7 @@ public class BookingRepository {
     private final MongoTemplate template;
 
     public Optional<UserBooking> getUserBooking(GetBooking request) {
-        AggregationOperation matchDateServiceId = getMatchOperation(request.serviceBookingIdentifier());
+        AggregationOperation matchByDateAndServiceId = getMatchOperation(request.serviceBookingIdentifier());
 
         AggregationOperation unwindBookings = Aggregation.unwind("bookings");
 
@@ -41,7 +43,7 @@ public class BookingRepository {
                 .andExclude("_id");
 
         Aggregation aggregation = Aggregation.newAggregation(
-                matchDateServiceId,
+                matchByDateAndServiceId,
                 unwindBookings,
                 projectBookingFields,
                 matchBookingId,
@@ -51,6 +53,25 @@ public class BookingRepository {
         List<UserBooking> result = template.aggregate(aggregation, "service_bookings", UserBooking.class)
                 .getMappedResults();
         return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
+    }
+
+
+    public List<BookingTimeRange> getBookingTimeRanges(GetBookingTimeRanges request) {
+        AggregationOperation matchDateServiceId = getMatchOperation(request.serviceBookingIdentifier());
+
+        AggregationOperation unwindBookings = Aggregation.unwind("$bookings");
+
+        AggregationOperation projectTimeRange = Aggregation.project("$bookings.start")
+                .andInclude("$bookings.end");
+
+        Aggregation aggregation = Aggregation.newAggregation(
+                matchDateServiceId,
+                unwindBookings,
+                projectTimeRange
+        );
+
+        return template.aggregate(aggregation, "service_bookings", BookingTimeRange.class)
+                .getMappedResults();
     }
 
     private static AggregationOperation getMatchOperation(ServiceBookingIdentifier identifier) {

@@ -1,6 +1,7 @@
 package com.github.matsik.query.booking.repository;
 
 import com.github.matsik.query.booking.query.GetBooking;
+import com.github.matsik.query.booking.query.GetBookingTimeRanges;
 import com.github.matsik.query.booking.query.GetBookings;
 import com.github.matsik.query.booking.query.ServiceBookingIdentifier;
 import net.bytebuddy.asm.Advice;
@@ -51,4 +52,13 @@ class BookingRepositoryTest {
         System.out.println(out);
     }
 
+    @Test
+    void getBookingTimeRanges() {
+        LocalDate localDate = LocalDate.of(2024, 12, 3);
+        ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
+        ServiceBookingIdentifier identifier = new ServiceBookingIdentifier(localDate, serviceId);
+        GetBookingTimeRanges request = new GetBookingTimeRanges(identifier);
+        var out = bookingRepository.getBookingTimeRanges(request);
+        System.out.println(out);
+    }
 }
