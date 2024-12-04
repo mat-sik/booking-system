@@ -7,6 +7,7 @@ import com.github.matsik.query.booking.query.GetBookings;
 import com.github.matsik.query.booking.query.ServiceBookingIdentifier;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
@@ -61,17 +62,47 @@ public class BookingRepository {
      * Spring Boot data mongodb doesn't support projections that are more advanced than the most basic of use cases.
      */
     public List<ServiceBooking> getBookings(GetBookings request) {
-        Document queryFilter = new Document("date", new Document("$in", request.dates()))
-                .append("serviceId", new Document("$in", request.serviceIds()));
+        Document matchByDatesAndServices = matchByDatesAndServices(request.dates(), request.serviceIds());
 
-        Document projection = new Document("date", 1).append("serviceId", 1).append("bookings",
-                new Document("$filter",
-                        new Document("input", "$bookings").append("cond",
-                                new Document("$in", List.of("$$this.userId", request.userIds())))));
+        Document projection = filterByUsers(request.userIds());
 
-        BasicQuery query = new BasicQuery(queryFilter, projection);
+        BasicQuery query = new BasicQuery(matchByDatesAndServices, projection);
 
-        return template.find(query, ServiceBooking.class, "service_bookings");
+        return template.find(query, ServiceBooking.class);
+    }
+
+    private static Document matchByDatesAndServices(List<String> dates, List<ObjectId> serviceIds) {
+        Document matchDoc = new Document();
+
+        if (!dates.isEmpty()) {
+            matchDoc.append("date", new Document("$in", dates));
+        }
+
+        if (!serviceIds.isEmpty()) {
+            matchDoc.append("serviceId", new Document("$in", serviceIds));
+        }
+
+        return matchDoc;
+    }
+
+    private static Document filterByUsers(List<ObjectId> userIds) {
+        Document filterDoc = new Document()
+                .append("date", 1)
+                .append("serviceId", 1);
+
+        if (!userIds.isEmpty()) {
+            filterDoc.append("bookings", getFilterDoc(userIds));
+        } else {
+            filterDoc.append("bookings", 1);
+        }
+        return filterDoc;
+    }
+
+    private static Document getFilterDoc(List<ObjectId> userIds) {
+        return new Document("$filter", new Document()
+                .append("input", "$bookings")
+                .append("cond", new Document("$in", List.of("$$this.userId", userIds)))
+        );
     }
 
 }
