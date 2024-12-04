@@ -130,7 +130,7 @@ const newBooking = {
   end: 660,
 };
 
-db.collection.updateOne(
+db.service_bookings.updateOne(
   { 
     "date": "03/12/2024", 
     "serviceId": ObjectId("your-service-id") 
@@ -145,7 +145,7 @@ db.collection.updateOne(
   { upsert: true }
 )
 
-db.collection.updateOne(
+db.service_bookings.updateOne(
   {
     date: "03/12/2024",
     serviceId: ObjectId("your-service-id"),
@@ -196,13 +196,13 @@ The parameters for `date`, `serviceId` and `_id` of the booking are needed.
 ```
 const bookingIdToDelete = new ObjectId("booking-id-to-delete");
 
-db.collection.updateOne(
+db.service_bookings.updateOne(
   {
     date: "03/12/2024",
     serviceId: ObjectId("your-service-id"),
   },
   {
-    $pull: { bookings: { _id: bookingIdToDelete } }
+    $pull: { bookings: { _id: ObjectId("your-booking-id") } }
   }
 );
 ```
@@ -211,3 +211,161 @@ db.collection.updateOne(
 
 To fulfill this requirement, the booking should first be deleted, and then a new booking should be created. However,
 there is no guarantee that the creation will succeed.
+
+## Query Requests
+
+### Get information about a single booking
+
+Query:
+
+```
+db.service_bookings.aggregate([
+{
+    $match: {
+        date: "03/12/2024",
+        serviceId: ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa")
+    }
+},
+{
+    $unwind: "$bookings"
+},
+{
+    $project: {
+        _id: "$bookings._id",
+        userId: "$bookings.userId",
+        start: "$bookings.start",
+        end: "$bookings.end"
+   }
+},
+{
+    $match: {
+        "_id": ObjectId("67500fcd910fab08c24c4ac1")
+    }
+},
+{
+    $project: {
+        _id: 0 
+   }
+}
+]);
+```
+
+Output:
+
+```
+[
+  {
+    userId: ObjectId('bbbbbbbbbbbbbbbbbbbbbbbb'),
+    start: 540,
+    end: 600
+  }
+]
+```
+
+### Get all bookings of a list of users for a list of dates and a list of services
+
+This query usually is used with multiple dates, single serviceId and single userId.
+
+But additional functionality might prove useful when extending the application.
+
+Query:
+
+```
+db.service_bookings.find(
+{
+    date: {
+        $in: ["03/12/2024", "04/12/2024"] 
+    },
+    serviceId: {
+        $in: [ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa")]
+    }
+},
+{
+   date: 1,
+   serviceId: 1,
+   bookings: {
+       $filter: {
+           input: "$bookings",
+           cond: {
+                $in: ["$$this.userId", [ObjectId("bbbbbbbbbbbbbbbbbbbbbbbb")]]
+           }    
+       }  
+   } 
+}
+);
+```
+
+Output:
+
+```
+[
+  {
+    _id: ObjectId('67500fbf03727dde1663113a'),
+    date: '03/12/2024',
+    serviceId: ObjectId('aaaaaaaaaaaaaaaaaaaaaaaa'),
+    bookings: [
+      {
+        _id: ObjectId('67500fcd910fab08c24c4ac1'),
+        userId: ObjectId('bbbbbbbbbbbbbbbbbbbbbbbb'),
+        start: 540,
+        end: 600
+      },
+      {
+        _id: ObjectId('67501009d8dd2b769e43560c'),
+        userId: ObjectId('bbbbbbbbbbbbbbbbbbbbbbbb'),
+        start: 600,
+        end: 660
+      },
+      {
+        _id: ObjectId('6750101e3f68f50a6bcd7b58'),
+        userId: ObjectId('bbbbbbbbbbbbbbbbbbbbbbbb'),
+        start: 660,
+        end: 720
+      }
+    ]
+  },
+  {
+    _id: ObjectId('6750348003727dde1663113b'),
+    serviceId: ObjectId('aaaaaaaaaaaaaaaaaaaaaaaa'),
+    date: '04/12/2024',
+    bookings: []
+  }
+]
+```
+
+### Get all available time ranges with a specified length and skip for a given day and a service
+
+To fulfill this request, the query should retrieve all booking time ranges for a specified date and service.
+
+Query:
+
+```
+db.service_bookings.aggregate([
+{
+    $match: {
+        date: "03/12/2024",
+        serviceId: ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa")
+    }
+},
+{
+    $unwind: "$bookings"
+},
+{
+    $project: {
+        start: "$bookings.start",
+        end: "$bookings.end"
+   }
+}
+]);
+```
+
+Output:
+
+```
+[
+  { _id: ObjectId('67500fbf03727dde1663113a'), start: 540, end: 600 },
+  { _id: ObjectId('67500fbf03727dde1663113a'), start: 600, end: 660 },
+  { _id: ObjectId('67500fbf03727dde1663113a'), start: 660, end: 720 },
+  { _id: ObjectId('67500fbf03727dde1663113a'), start: 720, end: 780 }
+]
+```

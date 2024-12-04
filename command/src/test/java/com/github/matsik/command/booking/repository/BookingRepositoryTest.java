@@ -23,13 +23,13 @@ class BookingRepositoryTest {
 
     @Test
     void createBooking_manual_test() {
-        LocalDate date = LocalDate.of(2024, 12, 3);
+        LocalDate date = LocalDate.of(2024, 12, 4);
 
-        ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
-        ObjectId userId = new ObjectId("bbbbbbbbbbbbbbbbbbbbbbbb");
+        ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaab");
+        ObjectId userId = new ObjectId("bbbbbbbbbbbbbbbbbbbbbbba");
 
         ServiceBookingIdentifier serviceBookingIdentifier = new ServiceBookingIdentifier(date, serviceId);
-        CreateBooking createBooking = new CreateBooking(serviceBookingIdentifier, userId, 600, 600);
+        CreateBooking createBooking = new CreateBooking(serviceBookingIdentifier, userId, 720, 780);
         UpdateResult out = bookingRepository.createBooking(createBooking);
 
         System.out.println(out);
@@ -40,7 +40,7 @@ class BookingRepositoryTest {
         LocalDate date = LocalDate.of(2024, 12, 3);
 
         ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
-        ObjectId bookingId = new ObjectId("674eff19d5c4604d2e4aa672");
+        ObjectId bookingId = new ObjectId("67500fbf4752c73da3a096e5");
 
         ServiceBookingIdentifier serviceBookingIdentifier = new ServiceBookingIdentifier(date, serviceId);
         DeleteBooking deleteBooking = new DeleteBooking(serviceBookingIdentifier, bookingId);
