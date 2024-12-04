@@ -57,15 +57,16 @@ public class BookingRepository {
 
 
     public List<BookingTimeRange> getBookingTimeRanges(GetBookingTimeRanges request) {
-        AggregationOperation matchDateServiceId = getMatchOperation(request.serviceBookingIdentifier());
+        AggregationOperation matchByDateServiceId = getMatchOperation(request.serviceBookingIdentifier());
 
         AggregationOperation unwindBookings = Aggregation.unwind("$bookings");
 
-        AggregationOperation projectTimeRange = Aggregation.project("$bookings.start")
-                .andInclude("$bookings.end");
+        AggregationOperation projectTimeRange = Aggregation.project()
+                .and("$bookings.start").as("start")
+                .and("$bookings.end").as("end");
 
         Aggregation aggregation = Aggregation.newAggregation(
-                matchDateServiceId,
+                matchByDateServiceId,
                 unwindBookings,
                 projectTimeRange
         );
@@ -83,11 +84,11 @@ public class BookingRepository {
      * Spring Boot data mongodb doesn't support projections that are more advanced than the most basic of use cases.
      */
     public List<ServiceBooking> getBookings(GetBookings request) {
-        Document matchByDatesAndServices = matchByDatesAndServices(request.dates(), request.serviceIds());
+        Document matchByDatesAndServiceIds = matchByDatesAndServices(request.dates(), request.serviceIds());
 
-        Document projection = filterByUsers(request.userIds());
+        Document filterByUserIds = filterByUsers(request.userIds());
 
-        BasicQuery query = new BasicQuery(matchByDatesAndServices, projection);
+        BasicQuery query = new BasicQuery(matchByDatesAndServiceIds, filterByUserIds);
 
         return template.find(query, ServiceBooking.class);
     }
