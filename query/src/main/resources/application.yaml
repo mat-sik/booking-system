@@ -1,3 +1,17 @@
 spring:
   application:
     name: query
+
+mongo:
+  host: localhost
+  port: 27017
+  login: admin
+  password: pass
+  authDatabase: admin
+  database: booking-service-db
+
+logging:
+  level:
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+    com.mongodb: DEBUG
+    org.mongodb.driver: DEBUG
