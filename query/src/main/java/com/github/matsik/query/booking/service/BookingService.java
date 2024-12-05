@@ -5,10 +5,10 @@ import com.github.matsik.mongo.model.UserBooking;
 import com.github.matsik.query.booking.model.ServiceBooking;
 import com.github.matsik.query.booking.repository.BookingRepository;
 import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
-import com.github.matsik.request.GetAvailableTimeRanges;
+import com.github.matsik.request.query.GetAvailableTimeRangesQuery;
 import com.github.matsik.request.query.GetBookingQuery;
 import com.github.matsik.request.query.GetBookingsQuery;
-import com.github.matsik.response.TimeRange;
+import com.github.matsik.response.query.TimeRange;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +30,7 @@ public class BookingService {
 
     private final BookingRepository repository;
 
-    public List<TimeRange> getAvailableTimeRanges(GetAvailableTimeRanges request) {
+    public List<TimeRange> getAvailableTimeRanges(GetAvailableTimeRangesQuery request) {
         List<BookingTimeRange> unavailableTimeRanges = repository.getBookingTimeRanges(request.getBookingTimeRangesQuery());
 
         int serviceDuration = getSystemServiceDuration(request.serviceDuration());
