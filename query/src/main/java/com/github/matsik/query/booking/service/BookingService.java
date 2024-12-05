@@ -1,7 +1,12 @@
 package com.github.matsik.query.booking.service;
 
 import com.github.matsik.query.booking.model.BookingTimeRange;
+import com.github.matsik.query.booking.model.ServiceBooking;
+import com.github.matsik.query.booking.model.UserBooking;
+import com.github.matsik.query.booking.query.GetBookingQuery;
+import com.github.matsik.query.booking.query.GetBookingsQuery;
 import com.github.matsik.query.booking.repository.BookingRepository;
+import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -61,6 +66,14 @@ public class BookingService {
 
     private static boolean isOverlap(BookingTimeRange bookingTimeRange, int start, int end) {
         return start < bookingTimeRange.end() && end > bookingTimeRange.start();
+    }
+
+    public UserBooking getUserBooking(GetBookingQuery request) {
+        return repository.getUserBooking(request).orElseThrow(() -> new UserBookingNotFoundException(request));
+    }
+
+    public List<ServiceBooking> getBookings(GetBookingsQuery request) {
+        return repository.getBookings(request);
     }
 
 }
