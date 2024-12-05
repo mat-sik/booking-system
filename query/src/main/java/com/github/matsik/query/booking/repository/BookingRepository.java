@@ -1,12 +1,12 @@
 package com.github.matsik.query.booking.repository;
 
-import com.github.matsik.query.booking.model.BookingTimeRange;
+import com.github.matsik.mongo.model.BookingTimeRange;
+import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.mongo.model.UserBooking;
 import com.github.matsik.query.booking.model.ServiceBooking;
-import com.github.matsik.query.booking.model.UserBooking;
-import com.github.matsik.query.booking.query.GetBookingQuery;
-import com.github.matsik.query.booking.query.GetBookingTimeRangesQuery;
-import com.github.matsik.query.booking.query.GetBookingsQuery;
-import com.github.matsik.query.booking.query.ServiceBookingIdentifier;
+import com.github.matsik.request.query.GetBookingQuery;
+import com.github.matsik.request.query.GetBookingTimeRangesQuery;
+import com.github.matsik.request.query.GetBookingsQuery;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
 import org.bson.types.ObjectId;

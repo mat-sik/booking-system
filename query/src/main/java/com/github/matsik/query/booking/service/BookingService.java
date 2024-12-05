@@ -1,12 +1,14 @@
 package com.github.matsik.query.booking.service;
 
-import com.github.matsik.query.booking.model.BookingTimeRange;
+import com.github.matsik.mongo.model.BookingTimeRange;
+import com.github.matsik.mongo.model.UserBooking;
 import com.github.matsik.query.booking.model.ServiceBooking;
-import com.github.matsik.query.booking.model.UserBooking;
-import com.github.matsik.query.booking.query.GetBookingQuery;
-import com.github.matsik.query.booking.query.GetBookingsQuery;
 import com.github.matsik.query.booking.repository.BookingRepository;
 import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
+import com.github.matsik.request.GetAvailableTimeRanges;
+import com.github.matsik.request.query.GetBookingQuery;
+import com.github.matsik.request.query.GetBookingsQuery;
+import com.github.matsik.response.TimeRange;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

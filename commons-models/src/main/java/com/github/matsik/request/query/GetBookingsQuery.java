@@ -1,5 +1,6 @@
-package com.github.matsik.query.booking.query;
+package com.github.matsik.request.query;
 
+import com.github.matsik.mongo.model.ServiceBookingIdentifier;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.bson.types.ObjectId;

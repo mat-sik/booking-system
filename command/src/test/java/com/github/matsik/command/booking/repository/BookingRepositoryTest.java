@@ -1,8 +1,8 @@
 package com.github.matsik.command.booking.repository;
 
-import com.github.matsik.command.booking.command.CreateBookingCommand;
-import com.github.matsik.command.booking.command.DeleteBookingCommand;
-import com.github.matsik.command.booking.command.ServiceBookingIdentifier;
+import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.request.command.CreateBookingCommand;
+import com.github.matsik.request.command.DeleteBookingCommand;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;

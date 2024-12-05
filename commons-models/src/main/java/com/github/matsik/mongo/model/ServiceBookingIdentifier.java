@@ -1,4 +1,4 @@
-package com.github.matsik.query.booking.query;
+package com.github.matsik.mongo.model;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;

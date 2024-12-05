@@ -1,7 +1,6 @@
-package com.github.matsik.query.booking.model;
+package com.github.matsik.mongo.model;
 
 import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
 
 public record Booking(
         ObjectId id,
