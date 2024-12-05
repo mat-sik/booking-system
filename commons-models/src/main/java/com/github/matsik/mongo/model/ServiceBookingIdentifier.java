@@ -22,11 +22,11 @@ public class ServiceBookingIdentifier {
     }
 
     public static class Factory {
-       public static ServiceBookingIdentifier create(String date, String serviceId) {
+        public static ServiceBookingIdentifier create(String date, String serviceId) {
             LocalDate localDate = LocalDate.parse(date, FORMATTER);
             ObjectId serviceIdMapped = new ObjectId(serviceId);
             return new ServiceBookingIdentifier(localDate, serviceIdMapped);
-       }
+        }
 
         public static ServiceBookingIdentifier create(LocalDate date, ObjectId serviceId) {
             return new ServiceBookingIdentifier(date, serviceId);
