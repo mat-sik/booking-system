@@ -24,28 +24,28 @@ public class BookingRepository {
 
     private final MongoTemplate template;
 
-    public UpdateResult deleteBooking(DeleteBookingCommand request) {
-        Criteria matchCriteria = getMatchCriteria(request.serviceBookingIdentifier());
+    public UpdateResult deleteBooking(DeleteBookingCommand command) {
+        Criteria matchCriteria = getMatchCriteria(command.serviceBookingIdentifier());
 
         Query query = Query.query(matchCriteria);
 
         Update update = new Update().pull("bookings",
-                new Document("_id", request.bookingId())
+                new Document("_id", command.bookingId())
         );
 
         return template.updateFirst(query, update, ServiceBooking.class);
     }
 
-    public UpdateResult createBooking(CreateBookingCommand request) {
-        ensureServiceBookingExists(request.serviceBookingIdentifier());
+    public UpdateResult createBooking(CreateBookingCommand command) {
+        ensureServiceBookingExists(command.serviceBookingIdentifier());
 
-        Criteria matchCriteria = getMatchCriteria(request.serviceBookingIdentifier());
-        Criteria overlapCriteria = getOverlapCriteria(request.start(), request.end());
+        Criteria matchCriteria = getMatchCriteria(command.serviceBookingIdentifier());
+        Criteria overlapCriteria = getOverlapCriteria(command.start(), command.end());
 
         Query query = new Query(matchCriteria)
                 .addCriteria(overlapCriteria);
 
-        Booking booking = new Booking(new ObjectId(), request.userId(), request.start(), request.end());
+        Booking booking = new Booking(new ObjectId(), command.userId(), command.start(), command.end());
         Update update = new Update()
                 .push("bookings", booking);
 

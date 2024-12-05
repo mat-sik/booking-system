@@ -26,8 +26,8 @@ public class BookingRepository {
 
     private final MongoTemplate template;
 
-    public Optional<UserBooking> getUserBooking(GetBookingQuery request) {
-        AggregationOperation matchByDateAndServiceId = getMatchOperation(request.serviceBookingIdentifier());
+    public Optional<UserBooking> getUserBooking(GetBookingQuery query) {
+        AggregationOperation matchByDateAndServiceId = getMatchOperation(query.serviceBookingIdentifier());
 
         AggregationOperation unwindBookings = Aggregation.unwind("bookings");
 
@@ -37,7 +37,7 @@ public class BookingRepository {
                 .and("bookings.start").as("start")
                 .and("bookings.end").as("end");
 
-        AggregationOperation matchBookingId = Aggregation.match(Criteria.where("_id").is(request.bookingId()));
+        AggregationOperation matchBookingId = Aggregation.match(Criteria.where("_id").is(query.bookingId()));
 
         AggregationOperation projectNoId = Aggregation.project()
                 .andExclude("_id");
@@ -56,8 +56,8 @@ public class BookingRepository {
     }
 
 
-    public List<BookingTimeRange> getBookingTimeRanges(GetBookingTimeRangesQuery request) {
-        AggregationOperation matchByDateServiceId = getMatchOperation(request.serviceBookingIdentifier());
+    public List<BookingTimeRange> getBookingTimeRanges(GetBookingTimeRangesQuery query) {
+        AggregationOperation matchByDateServiceId = getMatchOperation(query.serviceBookingIdentifier());
 
         AggregationOperation unwindBookings = Aggregation.unwind("$bookings");
 
@@ -83,14 +83,14 @@ public class BookingRepository {
     /*
      * Spring Boot data mongodb doesn't support projections that are more advanced than the most basic of use cases.
      */
-    public List<ServiceBooking> getBookings(GetBookingsQuery request) {
-        Document matchByDatesAndServiceIds = matchByDatesAndServices(request.dates(), request.serviceIds());
+    public List<ServiceBooking> getBookings(GetBookingsQuery query) {
+        Document matchByDatesAndServiceIds = matchByDatesAndServices(query.dates(), query.serviceIds());
 
-        Document filterByUserIds = filterByUsers(request.userIds());
+        Document filterByUserIds = filterByUsers(query.userIds());
 
-        BasicQuery query = new BasicQuery(matchByDatesAndServiceIds, filterByUserIds);
+        BasicQuery basicQuery = new BasicQuery(matchByDatesAndServiceIds, filterByUserIds);
 
-        return template.find(query, ServiceBooking.class);
+        return template.find(basicQuery, ServiceBooking.class);
     }
 
     private static Document matchByDatesAndServices(List<String> dates, List<ObjectId> serviceIds) {
