@@ -4,23 +4,22 @@ import com.github.matsik.query.booking.model.ServiceBooking;
 import com.github.matsik.query.booking.model.UserBooking;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetBookingQuery;
-import com.github.matsik.query.booking.query.GetBookingTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetBookingsQuery;
 import com.github.matsik.query.booking.service.BookingService;
 import com.github.matsik.query.booking.service.TimeRange;
-import com.github.matsik.query.request.GetAvailableTimeRangesRequest;
-import com.github.matsik.query.request.GetBookingRequest;
-import com.github.matsik.query.request.GetBookingsRequest;
 import com.github.matsik.query.response.ServiceBookingResponse;
 import com.github.matsik.query.response.TimeRangeResponse;
 import com.github.matsik.query.response.UserBookingResponse;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Controller
@@ -32,13 +31,11 @@ public class BookingController {
 
     @GetMapping("/available")
     public ResponseEntity<List<TimeRangeResponse>> getAvailableTimeRanges(
-            @RequestParam String date,
-            @RequestParam String serviceId,
-            @RequestParam int serviceDuration
+            @RequestParam LocalDate date,
+            @RequestParam ObjectId serviceId,
+            @RequestParam @Positive int serviceDuration
     ) {
-        GetAvailableTimeRangesRequest request = GetAvailableTimeRangesRequest.Factory.create(date, serviceId, serviceDuration);
-
-        GetAvailableTimeRangesQuery query = mapToQuery(request);
+        GetAvailableTimeRangesQuery query = GetAvailableTimeRangesQuery.Factory.create(date, serviceId, serviceDuration);
         List<TimeRange> availableTimeRanges = service.getAvailableTimeRanges(query);
 
         List<TimeRangeResponse> response = availableTimeRanges.stream()
@@ -46,13 +43,6 @@ public class BookingController {
                 .toList();
 
         return ResponseEntity.ok(response);
-    }
-
-    private static GetAvailableTimeRangesQuery mapToQuery(GetAvailableTimeRangesRequest request) {
-        return new GetAvailableTimeRangesQuery(
-                new GetBookingTimeRangesQuery(request.serviceBookingIdentifier()),
-                request.serviceDuration()
-        );
     }
 
     private static TimeRangeResponse mapToResponse(TimeRange model) {
@@ -64,22 +54,16 @@ public class BookingController {
 
     @GetMapping
     public ResponseEntity<UserBookingResponse> getUserBooking(
-            @RequestParam String date,
-            @RequestParam String serviceId,
-            @RequestParam String bookingId
+            @RequestParam LocalDate date,
+            @RequestParam ObjectId serviceId,
+            @RequestParam ObjectId bookingId
     ) {
-        GetBookingRequest request = GetBookingRequest.Factory.create(date, serviceId, bookingId);
-
-        GetBookingQuery query = mapToQuery(request);
+        GetBookingQuery query = GetBookingQuery.Factory.create(date, serviceId, bookingId);
         UserBooking userBooking = service.getUserBooking(query);
 
         UserBookingResponse response = mapToResponse(userBooking);
 
         return ResponseEntity.ok(response);
-    }
-
-    private static GetBookingQuery mapToQuery(GetBookingRequest request) {
-        return new GetBookingQuery(request.serviceBookingIdentifier(), request.bookingId());
     }
 
     private static UserBookingResponse mapToResponse(UserBooking model) {
@@ -92,13 +76,11 @@ public class BookingController {
 
     @GetMapping("/all")
     public ResponseEntity<List<ServiceBookingResponse>> getBookings(
-            @RequestParam List<String> dates,
-            @RequestParam List<String> serviceIds,
-            @RequestParam List<String> userIds
+            @RequestParam List<LocalDate> dates,
+            @RequestParam List<ObjectId> serviceIds,
+            @RequestParam List<ObjectId> userIds
     ) {
-        GetBookingsRequest request = GetBookingsRequest.Factory.create(dates, serviceIds, userIds);
-
-        GetBookingsQuery query = mapToQuery(request);
+        GetBookingsQuery query = new GetBookingsQuery(dates, serviceIds, userIds);
         List<ServiceBooking> serviceBookings = service.getBookings(query);
 
         List<ServiceBookingResponse> response = serviceBookings.stream()
@@ -106,14 +88,6 @@ public class BookingController {
                 .toList();
 
         return ResponseEntity.ok(response);
-    }
-
-    private static GetBookingsQuery mapToQuery(GetBookingsRequest request) {
-        return new GetBookingsQuery(
-                request.dates(),
-                request.serviceIds(),
-                request.userIds()
-        );
     }
 
     private ServiceBookingResponse mapToResponse(ServiceBooking model) {

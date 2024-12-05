@@ -25,7 +25,7 @@ class BookingServiceTest {
         // given
         LocalDate localDate = LocalDate.of(2024, 12, 3);
         ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
-        ServiceBookingIdentifier serviceBookingIdentifier = new ServiceBookingIdentifier(localDate, serviceId);
+        ServiceBookingIdentifier serviceBookingIdentifier = ServiceBookingIdentifier.Factory.create(localDate, serviceId);
         GetBookingTimeRangesQuery getBookingTimeRangesQuery = new GetBookingTimeRangesQuery(serviceBookingIdentifier);
         GetAvailableTimeRangesQuery getAvailableTimeRangesQuery = new GetAvailableTimeRangesQuery(getBookingTimeRangesQuery, 55);
 

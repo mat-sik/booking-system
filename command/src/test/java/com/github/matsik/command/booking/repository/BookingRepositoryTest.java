@@ -28,7 +28,7 @@ class BookingRepositoryTest {
         ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaab");
         ObjectId userId = new ObjectId("bbbbbbbbbbbbbbbbbbbbbbba");
 
-        ServiceBookingIdentifier serviceBookingIdentifier = new ServiceBookingIdentifier(date, serviceId);
+        ServiceBookingIdentifier serviceBookingIdentifier = ServiceBookingIdentifier.Factory.create(date, serviceId);
         CreateBookingCommand createBookingCommand = new CreateBookingCommand(serviceBookingIdentifier, userId, 720, 780);
         UpdateResult out = bookingRepository.createBooking(createBookingCommand);
 
@@ -42,7 +42,7 @@ class BookingRepositoryTest {
         ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
         ObjectId bookingId = new ObjectId("67500fbf4752c73da3a096e5");
 
-        ServiceBookingIdentifier serviceBookingIdentifier = new ServiceBookingIdentifier(date, serviceId);
+        ServiceBookingIdentifier serviceBookingIdentifier = ServiceBookingIdentifier.Factory.create(date, serviceId);
         DeleteBookingCommand deleteBooking = new DeleteBookingCommand(serviceBookingIdentifier, bookingId);
         UpdateResult out = bookingRepository.deleteBooking(deleteBooking);
 

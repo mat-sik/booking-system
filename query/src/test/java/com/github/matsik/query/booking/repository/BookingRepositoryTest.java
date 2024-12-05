@@ -27,7 +27,7 @@ class BookingRepositoryTest {
         LocalDate localDate = LocalDate.of(2024, 12, 3);
         ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
 
-        ServiceBookingIdentifier identifier = new ServiceBookingIdentifier(localDate, serviceId);
+        ServiceBookingIdentifier identifier = ServiceBookingIdentifier.Factory.create(localDate, serviceId);
 
         ObjectId bookingId = new ObjectId("67500fcd910fab08c24c4ac1");
         GetBookingQuery request = new GetBookingQuery(identifier, bookingId);
@@ -53,7 +53,7 @@ class BookingRepositoryTest {
     void getBookingTimeRanges() {
         LocalDate localDate = LocalDate.of(2024, 12, 3);
         ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
-        ServiceBookingIdentifier identifier = new ServiceBookingIdentifier(localDate, serviceId);
+        ServiceBookingIdentifier identifier = ServiceBookingIdentifier.Factory.create(localDate, serviceId);
         GetBookingTimeRangesQuery request = new GetBookingTimeRangesQuery(identifier);
         var out = bookingRepository.getBookingTimeRanges(request);
         System.out.println(out);
