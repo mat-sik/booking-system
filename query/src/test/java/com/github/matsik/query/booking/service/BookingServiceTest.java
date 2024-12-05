@@ -1,7 +1,7 @@
 package com.github.matsik.query.booking.service;
 
 import com.github.matsik.query.booking.model.BookingTimeRange;
-import com.github.matsik.query.booking.query.GetBookingTimeRanges;
+import com.github.matsik.query.booking.query.GetBookingTimeRangesQuery;
 import com.github.matsik.query.booking.query.ServiceBookingIdentifier;
 import com.github.matsik.query.booking.repository.BookingRepository;
 import org.bson.types.ObjectId;
@@ -25,8 +25,8 @@ class BookingServiceTest {
         LocalDate localDate = LocalDate.of(2024, 12, 3);
         ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
         ServiceBookingIdentifier serviceBookingIdentifier = new ServiceBookingIdentifier(localDate, serviceId);
-        GetBookingTimeRanges getBookingTimeRanges = new GetBookingTimeRanges(serviceBookingIdentifier);
-        GetAvailableTimeRanges getAvailableTimeRanges = new GetAvailableTimeRanges(getBookingTimeRanges, 55);
+        GetBookingTimeRangesQuery getBookingTimeRangesQuery = new GetBookingTimeRangesQuery(serviceBookingIdentifier);
+        GetAvailableTimeRanges getAvailableTimeRanges = new GetAvailableTimeRanges(getBookingTimeRangesQuery, 55);
 
         List<BookingTimeRange> unavailableTimeRanges = List.of(
                 new BookingTimeRange(new ObjectId(), 600, 660),
@@ -34,7 +34,7 @@ class BookingServiceTest {
                 new BookingTimeRange(new ObjectId(), 810, 850)
         );
 
-        given(repository.getBookingTimeRanges(getBookingTimeRanges)).willReturn(unavailableTimeRanges);
+        given(repository.getBookingTimeRanges(getBookingTimeRangesQuery)).willReturn(unavailableTimeRanges);
 
         var out = service.getAvailableTimeRanges(getAvailableTimeRanges);
         for (var i : out) {

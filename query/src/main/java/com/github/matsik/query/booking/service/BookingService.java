@@ -31,7 +31,7 @@ public class BookingService {
      * time complexity would be of O(min(n,m)*log(max(n,m))) plus time to build the tree, so basically O(nlogn).
      */
     public List<TimeRange> getAvailableTimeRanges(GetAvailableTimeRanges request) {
-        List<BookingTimeRange> unavailableTimeRanges = repository.getBookingTimeRanges(request.getBookingTimeRanges());
+        List<BookingTimeRange> unavailableTimeRanges = repository.getBookingTimeRanges(request.getBookingTimeRangesQuery());
 
         int serviceDuration = getSystemServiceDuration(request.serviceDuration());
 

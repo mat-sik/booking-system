@@ -1,7 +1,7 @@
 package com.github.matsik.command.booking.repository;
 
-import com.github.matsik.command.booking.command.CreateBooking;
-import com.github.matsik.command.booking.command.DeleteBooking;
+import com.github.matsik.command.booking.command.CreateBookingCommand;
+import com.github.matsik.command.booking.command.DeleteBookingCommand;
 import com.github.matsik.command.booking.command.ServiceBookingIdentifier;
 import com.github.matsik.command.booking.model.Booking;
 import com.github.matsik.command.booking.model.ServiceBooking;
@@ -24,7 +24,7 @@ public class BookingRepository {
 
     private final MongoTemplate template;
 
-    public UpdateResult deleteBooking(DeleteBooking request) {
+    public UpdateResult deleteBooking(DeleteBookingCommand request) {
         Criteria matchCriteria = getMatchCriteria(request.serviceBookingIdentifier());
 
         Query query = Query.query(matchCriteria);
@@ -36,7 +36,7 @@ public class BookingRepository {
         return template.updateFirst(query, update, ServiceBooking.class);
     }
 
-    public UpdateResult createBooking(CreateBooking request) {
+    public UpdateResult createBooking(CreateBookingCommand request) {
         ensureServiceBookingExists(request.serviceBookingIdentifier());
 
         Criteria matchCriteria = getMatchCriteria(request.serviceBookingIdentifier());

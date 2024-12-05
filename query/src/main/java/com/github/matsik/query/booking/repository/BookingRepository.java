@@ -3,9 +3,9 @@ package com.github.matsik.query.booking.repository;
 import com.github.matsik.query.booking.model.BookingTimeRange;
 import com.github.matsik.query.booking.model.ServiceBooking;
 import com.github.matsik.query.booking.model.UserBooking;
-import com.github.matsik.query.booking.query.GetBooking;
-import com.github.matsik.query.booking.query.GetBookingTimeRanges;
-import com.github.matsik.query.booking.query.GetBookings;
+import com.github.matsik.query.booking.query.GetBookingQuery;
+import com.github.matsik.query.booking.query.GetBookingTimeRangesQuery;
+import com.github.matsik.query.booking.query.GetBookingsQuery;
 import com.github.matsik.query.booking.query.ServiceBookingIdentifier;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
@@ -26,7 +26,7 @@ public class BookingRepository {
 
     private final MongoTemplate template;
 
-    public Optional<UserBooking> getUserBooking(GetBooking request) {
+    public Optional<UserBooking> getUserBooking(GetBookingQuery request) {
         AggregationOperation matchByDateAndServiceId = getMatchOperation(request.serviceBookingIdentifier());
 
         AggregationOperation unwindBookings = Aggregation.unwind("bookings");
@@ -56,7 +56,7 @@ public class BookingRepository {
     }
 
 
-    public List<BookingTimeRange> getBookingTimeRanges(GetBookingTimeRanges request) {
+    public List<BookingTimeRange> getBookingTimeRanges(GetBookingTimeRangesQuery request) {
         AggregationOperation matchByDateServiceId = getMatchOperation(request.serviceBookingIdentifier());
 
         AggregationOperation unwindBookings = Aggregation.unwind("$bookings");
@@ -83,7 +83,7 @@ public class BookingRepository {
     /*
      * Spring Boot data mongodb doesn't support projections that are more advanced than the most basic of use cases.
      */
-    public List<ServiceBooking> getBookings(GetBookings request) {
+    public List<ServiceBooking> getBookings(GetBookingsQuery request) {
         Document matchByDatesAndServiceIds = matchByDatesAndServices(request.dates(), request.serviceIds());
 
         Document filterByUserIds = filterByUsers(request.userIds());

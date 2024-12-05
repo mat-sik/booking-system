@@ -1,7 +1,7 @@
 package com.github.matsik.command.booking.repository;
 
-import com.github.matsik.command.booking.command.CreateBooking;
-import com.github.matsik.command.booking.command.DeleteBooking;
+import com.github.matsik.command.booking.command.CreateBookingCommand;
+import com.github.matsik.command.booking.command.DeleteBookingCommand;
 import com.github.matsik.command.booking.command.ServiceBookingIdentifier;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.types.ObjectId;
@@ -29,8 +29,8 @@ class BookingRepositoryTest {
         ObjectId userId = new ObjectId("bbbbbbbbbbbbbbbbbbbbbbba");
 
         ServiceBookingIdentifier serviceBookingIdentifier = new ServiceBookingIdentifier(date, serviceId);
-        CreateBooking createBooking = new CreateBooking(serviceBookingIdentifier, userId, 720, 780);
-        UpdateResult out = bookingRepository.createBooking(createBooking);
+        CreateBookingCommand createBookingCommand = new CreateBookingCommand(serviceBookingIdentifier, userId, 720, 780);
+        UpdateResult out = bookingRepository.createBooking(createBookingCommand);
 
         System.out.println(out);
     }
@@ -43,7 +43,7 @@ class BookingRepositoryTest {
         ObjectId bookingId = new ObjectId("67500fbf4752c73da3a096e5");
 
         ServiceBookingIdentifier serviceBookingIdentifier = new ServiceBookingIdentifier(date, serviceId);
-        DeleteBooking deleteBooking = new DeleteBooking(serviceBookingIdentifier, bookingId);
+        DeleteBookingCommand deleteBooking = new DeleteBookingCommand(serviceBookingIdentifier, bookingId);
         UpdateResult out = bookingRepository.deleteBooking(deleteBooking);
 
         System.out.println(out);
