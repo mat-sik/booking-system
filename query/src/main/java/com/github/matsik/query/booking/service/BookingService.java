@@ -29,10 +29,10 @@ public class BookingService {
 
     private final BookingRepository repository;
 
-    public List<TimeRange> getAvailableTimeRanges(GetAvailableTimeRangesQuery request) {
-        List<BookingTimeRange> unavailableTimeRanges = repository.getBookingTimeRanges(request.getBookingTimeRangesQuery());
+    public List<TimeRange> getAvailableTimeRanges(GetAvailableTimeRangesQuery query) {
+        List<BookingTimeRange> unavailableTimeRanges = repository.getBookingTimeRanges(query.getBookingTimeRangesQuery());
 
-        int serviceDuration = getSystemServiceDuration(request.serviceDuration());
+        int serviceDuration = getSystemServiceDuration(query.serviceDuration());
 
         return getAvailableTimeRanges(unavailableTimeRanges, serviceDuration);
     }
@@ -72,12 +72,12 @@ public class BookingService {
         return start < bookingTimeRange.end() && end > bookingTimeRange.start();
     }
 
-    public UserBooking getUserBooking(GetBookingQuery request) {
-        return repository.getUserBooking(request).orElseThrow(() -> new UserBookingNotFoundException(request));
+    public UserBooking getUserBooking(GetBookingQuery query) {
+        return repository.getUserBooking(query).orElseThrow(() -> new UserBookingNotFoundException(query));
     }
 
-    public List<ServiceBooking> getBookings(GetBookingsQuery request) {
-        return repository.getBookings(request);
+    public List<ServiceBooking> getBookings(GetBookingsQuery query) {
+        return repository.getBookings(query);
     }
 
 }
