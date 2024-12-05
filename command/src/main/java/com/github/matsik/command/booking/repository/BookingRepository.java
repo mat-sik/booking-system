@@ -1,10 +1,10 @@
 package com.github.matsik.command.booking.repository;
 
+import com.github.matsik.command.booking.command.CreateBookingCommand;
+import com.github.matsik.command.booking.command.DeleteBookingCommand;
 import com.github.matsik.command.booking.model.ServiceBooking;
 import com.github.matsik.mongo.model.Booking;
 import com.github.matsik.mongo.model.ServiceBookingIdentifier;
-import com.github.matsik.request.command.CreateBookingCommand;
-import com.github.matsik.request.command.DeleteBookingCommand;
 import com.mongodb.client.result.UpdateResult;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;

@@ -1,4 +1,4 @@
-package com.github.matsik.mongo.model;
+package com.github.matsik.query.booking.model;
 
 import org.bson.types.ObjectId;
 

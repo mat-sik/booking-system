@@ -1,4 +1,4 @@
-package com.github.matsik.request.query;
+package com.github.matsik.query.booking.query;
 
 import com.github.matsik.mongo.model.ServiceBookingIdentifier;
 import lombok.Getter;

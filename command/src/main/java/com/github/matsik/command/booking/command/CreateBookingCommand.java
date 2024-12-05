@@ -1,4 +1,4 @@
-package com.github.matsik.request.command;
+package com.github.matsik.command.booking.command;
 
 import com.github.matsik.mongo.model.ServiceBookingIdentifier;
 import org.bson.types.ObjectId;

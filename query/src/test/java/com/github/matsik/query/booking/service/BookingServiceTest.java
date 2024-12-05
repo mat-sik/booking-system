@@ -1,10 +1,10 @@
 package com.github.matsik.query.booking.service;
 
-import com.github.matsik.mongo.model.BookingTimeRange;
 import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.query.booking.model.BookingTimeRange;
+import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
+import com.github.matsik.query.booking.query.GetBookingTimeRangesQuery;
 import com.github.matsik.query.booking.repository.BookingRepository;
-import com.github.matsik.request.query.GetAvailableTimeRangesQuery;
-import com.github.matsik.request.query.GetBookingTimeRangesQuery;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

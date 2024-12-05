@@ -1,9 +1,9 @@
 package com.github.matsik.query.booking.repository;
 
 import com.github.matsik.mongo.model.ServiceBookingIdentifier;
-import com.github.matsik.request.query.GetBookingQuery;
-import com.github.matsik.request.query.GetBookingTimeRangesQuery;
-import com.github.matsik.request.query.GetBookingsQuery;
+import com.github.matsik.query.booking.query.GetBookingQuery;
+import com.github.matsik.query.booking.query.GetBookingTimeRangesQuery;
+import com.github.matsik.query.booking.query.GetBookingsQuery;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
