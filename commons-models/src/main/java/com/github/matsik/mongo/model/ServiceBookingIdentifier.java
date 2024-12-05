@@ -16,8 +16,20 @@ public class ServiceBookingIdentifier {
     private final String date;
     private final ObjectId serviceId;
 
-    public ServiceBookingIdentifier(LocalDate date, ObjectId serviceId) {
+    private ServiceBookingIdentifier(LocalDate date, ObjectId serviceId) {
         this.date = date.format(FORMATTER);
         this.serviceId = serviceId;
+    }
+
+    public static class Factory {
+       public static ServiceBookingIdentifier create(String date, String serviceId) {
+            LocalDate localDate = LocalDate.parse(date, FORMATTER);
+            ObjectId serviceIdMapped = new ObjectId(serviceId);
+            return new ServiceBookingIdentifier(localDate, serviceIdMapped);
+       }
+
+        public static ServiceBookingIdentifier create(LocalDate date, ObjectId serviceId) {
+            return new ServiceBookingIdentifier(date, serviceId);
+        }
     }
 }

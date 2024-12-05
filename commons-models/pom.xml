@@ -14,21 +14,27 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>23</java.version>
-        <org.projectlombok-version>1.18.36</org.projectlombok-version>
-        <org.mongodb.bson-version>5.2.1</org.mongodb.bson-version>
+        <org.projectlombok.version>1.18.36</org.projectlombok.version>
+        <org.mongodb.bson.version>5.2.1</org.mongodb.bson.version>
+        <jakarta.validation-api.version>3.1.0</jakarta.validation-api.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>bson</artifactId>
-            <version>${org.mongodb.bson-version}</version>
+            <version>${org.mongodb.bson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>${org.projectlombok-version}</version>
+            <version>${org.projectlombok.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>${jakarta.validation-api.version}</version>
         </dependency>
     </dependencies>
 
