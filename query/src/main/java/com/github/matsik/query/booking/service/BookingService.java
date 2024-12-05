@@ -28,6 +28,14 @@ public class BookingService {
 
     private final BookingRepository repository;
 
+    public List<TimeRange> getAvailableTimeRanges(GetAvailableTimeRanges request) {
+        List<BookingTimeRange> unavailableTimeRanges = repository.getBookingTimeRanges(request.getBookingTimeRangesQuery());
+
+        int serviceDuration = getSystemServiceDuration(request.serviceDuration());
+
+        return getAvailableTimeRanges(unavailableTimeRanges, serviceDuration);
+    }
+
     /*
      * The time complexity of this implementation is O(n*m), where n is the amount of all possible time ranges and m
      * is the amount of unavailable time ranges.
@@ -35,11 +43,7 @@ public class BookingService {
      * I believe that Interval Tree could be used to efficiently check for overlap. When using this data structure, the
      * time complexity would be of O(min(n,m)*log(max(n,m))) plus time to build the tree, so basically O(nlogn).
      */
-    public List<TimeRange> getAvailableTimeRanges(GetAvailableTimeRanges request) {
-        List<BookingTimeRange> unavailableTimeRanges = repository.getBookingTimeRanges(request.getBookingTimeRangesQuery());
-
-        int serviceDuration = getSystemServiceDuration(request.serviceDuration());
-
+    private static List<TimeRange> getAvailableTimeRanges(List<BookingTimeRange> unavailableTimeRanges, int serviceDuration) {
         List<TimeRange> availableTimeRanges = new ArrayList<>();
         for (int start = START; start <= END - SERVICE_TIME_SLICE; start += serviceDuration) {
             boolean isAvailable = true;
@@ -56,7 +60,6 @@ public class BookingService {
                 availableTimeRanges.add(new TimeRange(start, end));
             }
         }
-
         return availableTimeRanges;
     }
 
