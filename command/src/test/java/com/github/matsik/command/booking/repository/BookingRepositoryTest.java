@@ -14,15 +14,15 @@ import java.time.LocalDate;
 @SpringBootTest
 class BookingRepositoryTest {
 
-    private final BookingRepository bookingRepository;
+    private final BookingRepository repository;
 
     @Autowired
-    BookingRepositoryTest(BookingRepository bookingRepository) {
-        this.bookingRepository = bookingRepository;
+    BookingRepositoryTest(BookingRepository repository) {
+        this.repository = repository;
     }
 
     @Test
-    void createBooking_manual_test() {
+    void createBooking() {
         LocalDate date = LocalDate.of(2024, 12, 4);
 
         ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaab");
@@ -30,13 +30,13 @@ class BookingRepositoryTest {
 
         ServiceBookingIdentifier serviceBookingIdentifier = ServiceBookingIdentifier.Factory.create(date, serviceId);
         CreateBookingCommand createBookingCommand = new CreateBookingCommand(serviceBookingIdentifier, userId, 720, 780);
-        UpdateResult out = bookingRepository.createBooking(createBookingCommand);
+        UpdateResult out = repository.createBooking(createBookingCommand);
 
         System.out.println(out);
     }
 
     @Test
-    void deleteBooking_manual_test() {
+    void deleteBooking() {
         LocalDate date = LocalDate.of(2024, 12, 3);
 
         ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
@@ -44,7 +44,7 @@ class BookingRepositoryTest {
 
         ServiceBookingIdentifier serviceBookingIdentifier = ServiceBookingIdentifier.Factory.create(date, serviceId);
         DeleteBookingCommand deleteBooking = new DeleteBookingCommand(serviceBookingIdentifier, bookingId);
-        UpdateResult out = bookingRepository.deleteBooking(deleteBooking);
+        UpdateResult out = repository.deleteBooking(deleteBooking);
 
         System.out.println(out);
     }

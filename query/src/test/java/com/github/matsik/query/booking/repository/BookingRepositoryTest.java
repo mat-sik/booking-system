@@ -15,11 +15,11 @@ import java.util.List;
 @SpringBootTest
 class BookingRepositoryTest {
 
-    private final BookingRepository bookingRepository;
+    private final BookingRepository repository;
 
     @Autowired
-    BookingRepositoryTest(BookingRepository bookingRepository) {
-        this.bookingRepository = bookingRepository;
+    BookingRepositoryTest(BookingRepository repository) {
+        this.repository = repository;
     }
 
     @Test
@@ -32,7 +32,7 @@ class BookingRepositoryTest {
         ObjectId bookingId = new ObjectId("67500fcd910fab08c24c4ac1");
         GetBookingQuery request = new GetBookingQuery(identifier, bookingId);
 
-        var out = bookingRepository.getUserBooking(request);
+        var out = repository.getUserBooking(request);
         System.out.println(out);
     }
 
@@ -45,7 +45,7 @@ class BookingRepositoryTest {
         List<ObjectId> serviceIds = List.of(new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa"));
         List<ObjectId> userIds = List.of(new ObjectId("bbbbbbbbbbbbbbbbbbbbbbbb"));
         GetBookingsQuery request = new GetBookingsQuery(dates, serviceIds, userIds);
-        var out = bookingRepository.getBookings(request);
+        var out = repository.getBookings(request);
         System.out.println(out);
     }
 
@@ -55,7 +55,7 @@ class BookingRepositoryTest {
         ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
         ServiceBookingIdentifier identifier = ServiceBookingIdentifier.Factory.create(localDate, serviceId);
         GetBookingTimeRangesQuery request = new GetBookingTimeRangesQuery(identifier);
-        var out = bookingRepository.getBookingTimeRanges(request);
+        var out = repository.getBookingTimeRanges(request);
         System.out.println(out);
     }
 }
