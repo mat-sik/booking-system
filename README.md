@@ -38,7 +38,7 @@ queryable data view for interested parties.
 
 ### Topic Partitioning
 
-The partition key is based on the **dd/MM/yyyy** format, ensuring that all bookings for a specific date are routed to
+The partition key is based on the **ISO-8601** date format, ensuring that all bookings for a specific date are routed to
 the same partition. This approach preserves the chronological order of bookings for that date, enabling the system to
 accurately determine which user booked first.
 
@@ -76,7 +76,7 @@ The **Booking Services** serves as an entry point for the application. It provid
 }
 ```
 
-The `date` field represents the date in the format: **dd/MM/yyyy** the same one as in the **Kafka** partition key.
+The `date` field represents the date in the format: **ISO-8601** the same one as in the **Kafka** partition key.
 
 The field In combination with the`serviceId` field, uniquely identifies a list of bookings of a services for a
 single day.
@@ -96,7 +96,7 @@ To fulfill the request of creating a new booking, the availability of the bookin
 
 Given input parameters:
 
-- `date`- **dd/MM/yyyy**
+- `date`- **ISO-8601**
 - `serviceId` - id of the servcie for the booking
 - `start`- start time of the booking
 - `end`  - end time of the booking

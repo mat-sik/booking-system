@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 @Accessors(fluent = true)
 public class ServiceBookingIdentifier {
 
-    public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
     private final String date;
     private final ObjectId serviceId;
