@@ -1,6 +1,8 @@
 spring:
   application:
     name: command
+  profiles:
+    active: logging-profile
 
 mongo:
   host: localhost
