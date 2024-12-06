@@ -1,4 +1,27 @@
 services:
+  booking-service-kafka:
+    image: apache/kafka:3.8.0
+    container_name: booking-service-kafka
+    hostname: booking-service-kafka
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: BROKER://localhost:9092,CONTROLLER://localhost:9093
+      KAFKA_ADVERTISED_LISTENERS: BROKER://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,BROKER:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1         # These 1 values are required to override the defaults which are
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1 # for cluster(more than 1), if defaults are used, there is strange
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1            # behaviour.
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    volumes:
+      - booking-service-kafka-data:/var/lib/kafka/data
+      - booking-service-kafka-secrets:/etc/kafka/secrets
+      - booking-service-kafka-config:/mnt/shared/config
   booking-service-mongo:
     image: mongo:8.0.0
     container_name: booking-service-mongo
@@ -29,6 +52,9 @@ services:
       - ME_CONFIG_MONGODB_PORT=27017
 
 volumes:
+  booking-service-kafka-data:
+  booking-service-kafka-secrets:
+  booking-service-kafka-config:
   booking-service-mongo-db-data:
   booking-service-mongo-db-config:
 
