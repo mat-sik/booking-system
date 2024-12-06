@@ -1,4 +1,4 @@
-package com.github.matsik.query.jackson;
+package com.github.matsik.command.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.matsik.jackson.ObjectMapperFactory;

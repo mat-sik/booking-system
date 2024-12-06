@@ -12,6 +12,11 @@ mongo:
   authDatabase: admin
   database: booking-service-db
 
+kafka:
+  clientId: command-consumer
+  hosts: localhost:9092
+  groupId: command-consumers
+
 logging:
   level:
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG

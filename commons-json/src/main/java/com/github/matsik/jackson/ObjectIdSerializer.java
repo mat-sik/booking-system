@@ -1,4 +1,4 @@
-package com.github.matsik.query.jackson;
+package com.github.matsik.jackson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
