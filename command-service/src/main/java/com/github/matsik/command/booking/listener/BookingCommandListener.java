@@ -7,6 +7,7 @@ import com.github.matsik.kafka.task.CommandValue;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 
 @Component
 @RequiredArgsConstructor
+@Log
 public class BookingCommandListener {
 
     private final BookingService service;
@@ -31,7 +33,7 @@ public class BookingCommandListener {
             DeleteBookingCommand command = DeleteBookingCommand.Factory.create(key, deleteBookingCommandValue);
             service.deleteBooking(command);
         } else {
-            throw new IllegalArgumentException("Unexpected CommandValue");
+            log.severe(String.format("Unexpected CommandValue: %s", value.toString()));
         }
     }
 
