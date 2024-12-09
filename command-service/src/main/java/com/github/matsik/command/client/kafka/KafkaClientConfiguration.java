@@ -14,6 +14,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.time.LocalDate;
@@ -44,6 +45,7 @@ public class KafkaClientConfiguration {
     ) {
         ConcurrentKafkaListenerContainerFactory<LocalDate, CommandValue> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(localDateCommandValueConsumerFactory);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
         return factory;
     }
@@ -57,7 +59,7 @@ public class KafkaClientConfiguration {
         return new DefaultKafkaConsumerFactory<>(consumerConfig, new LocalDateDeserializer(), commandValueJsonDeserializer);
     }
 
-    public Map<String, Object> consumerConfig(KafkaClientProperties kafkaClientProperties) {
+    private Map<String, Object> consumerConfig(KafkaClientProperties kafkaClientProperties) {
         return Map.of(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClientProperties.hosts(),
                 ConsumerConfig.GROUP_ID_CONFIG, kafkaClientProperties.groupId(),
