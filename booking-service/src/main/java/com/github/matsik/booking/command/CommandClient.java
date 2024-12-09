@@ -11,7 +11,7 @@ import java.time.LocalDate;
 
 @Component
 @RequiredArgsConstructor
-public class CommandProducer {
+public class CommandClient {
     private static final String TOPIC_NAME = "bookings";
 
     private final KafkaTemplate<LocalDate, CommandValue> template;
