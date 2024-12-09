@@ -1,4 +1,4 @@
-package com.github.matsik.query.converter;
+package com.github.matsik.query.config.converter;
 
 import org.bson.types.ObjectId;
 import org.springframework.core.convert.converter.Converter;

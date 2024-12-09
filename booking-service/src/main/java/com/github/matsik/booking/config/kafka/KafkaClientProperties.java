@@ -1,4 +1,4 @@
-package com.github.matsik.booking.client.kafka;
+package com.github.matsik.booking.config.kafka;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

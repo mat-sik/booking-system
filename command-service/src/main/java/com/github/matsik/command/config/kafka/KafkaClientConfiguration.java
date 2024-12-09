@@ -1,4 +1,4 @@
-package com.github.matsik.command.client.kafka;
+package com.github.matsik.command.config.kafka;
 
 import com.github.matsik.kafka.mapping.LocalDateDeserializer;
 import com.github.matsik.kafka.task.CommandValue;

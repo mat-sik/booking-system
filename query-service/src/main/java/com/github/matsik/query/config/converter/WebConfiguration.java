@@ -1,4 +1,4 @@
-package com.github.matsik.query.converter;
+package com.github.matsik.query.config.converter;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;

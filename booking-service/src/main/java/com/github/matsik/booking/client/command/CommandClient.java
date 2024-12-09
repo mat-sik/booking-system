@@ -1,4 +1,4 @@
-package com.github.matsik.booking.command;
+package com.github.matsik.booking.client.command;
 
 import com.github.matsik.kafka.task.CommandValue;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;

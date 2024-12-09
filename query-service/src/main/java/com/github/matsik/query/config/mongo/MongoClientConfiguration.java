@@ -1,4 +1,4 @@
-package com.github.matsik.command.client.mongo;
+package com.github.matsik.query.config.mongo;
 
 import com.mongodb.MongoCredential;
 import com.mongodb.client.MongoClient;

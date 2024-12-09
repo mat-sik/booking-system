@@ -1,4 +1,4 @@
-package com.github.matsik.booking.client.kafka;
+package com.github.matsik.booking.config.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.matsik.kafka.mapping.LocalDateSerializer;

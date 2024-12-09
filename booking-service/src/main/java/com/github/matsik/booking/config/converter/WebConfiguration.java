@@ -1,4 +1,4 @@
-package com.github.matsik.booking.converter;
+package com.github.matsik.booking.config.converter;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package com.github.matsik.booking.converter;
+package com.github.matsik.booking.config.converter;
 
 import org.bson.types.ObjectId;
 import org.springframework.core.convert.converter.Converter;

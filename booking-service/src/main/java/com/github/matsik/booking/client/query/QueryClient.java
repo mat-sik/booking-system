@@ -1,4 +1,4 @@
-package com.github.matsik.booking.query;
+package com.github.matsik.booking.client.query;
 
 import com.github.matsik.query.response.ServiceBookingResponse;
 import com.github.matsik.query.response.TimeRangeResponse;

@@ -1,4 +1,4 @@
-package com.github.matsik.query.mongo;
+package com.github.matsik.command.config.mongo;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

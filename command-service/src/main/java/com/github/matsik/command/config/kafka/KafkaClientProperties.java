@@ -1,4 +1,4 @@
-package com.github.matsik.command.client.kafka;
+package com.github.matsik.command.config.kafka;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

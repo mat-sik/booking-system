@@ -1,9 +1,9 @@
 package com.github.matsik.booking.controller;
 
-import com.github.matsik.booking.command.CommandClient;
+import com.github.matsik.booking.client.command.CommandClient;
+import com.github.matsik.booking.client.query.QueryClient;
 import com.github.matsik.booking.controller.request.CreateBookingRequest;
 import com.github.matsik.booking.controller.request.DeleteBookingRequest;
-import com.github.matsik.booking.query.QueryClient;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
 import com.github.matsik.query.response.ServiceBookingResponse;
