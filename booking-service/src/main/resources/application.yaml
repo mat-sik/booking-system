@@ -5,3 +5,10 @@ spring:
 kafka:
   clientId: command-producer
   hosts: localhost:9092
+
+query:
+  service:
+    url: http://localhost:8080
+
+server:
+  port: 8081
