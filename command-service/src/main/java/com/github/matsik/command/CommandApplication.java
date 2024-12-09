@@ -5,6 +5,7 @@ import com.github.matsik.command.client.kafka.KafkaClientProperties;
 import com.github.matsik.kafka.mapping.LocalDateSerializer;
 import com.github.matsik.kafka.task.CommandValue;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
+import lombok.extern.java.Log;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.bson.types.ObjectId;
 import org.springframework.boot.CommandLineRunner;
@@ -22,6 +23,7 @@ import java.util.Map;
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
+@Log
 public class CommandApplication {
 
     public static void main(String[] args) {
@@ -34,11 +36,13 @@ public class CommandApplication {
             LocalDate date = LocalDate.of(2024, 12, 6);
             ObjectId serviceId = new ObjectId();
             ObjectId userId = new ObjectId();
-            int start = 100;
-            int end = 200;
-            CommandValue commandValue = new CreateBookingCommandValue(serviceId, userId, start, end);
+            for (int start = 0; start < 1000; start += 100) {
+                int end = start + 100;
+                CommandValue commandValue = new CreateBookingCommandValue(serviceId, userId, start, end);
 
-            kafkaTemplate.send("bookings", date, commandValue);
+                kafkaTemplate.send("bookings", date, commandValue);
+                log.info("send");
+            }
         };
     }
 
