@@ -18,7 +18,6 @@ public class FeignConfiguration {
             registrar.setDateFormatter(DateTimeFormatter.ISO_LOCAL_DATE);
             registrar.registerFormatters(formatterRegistry);
         };
-
     }
 
 }
