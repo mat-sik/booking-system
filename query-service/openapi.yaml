@@ -1,0 +1,159 @@
+openapi: 3.0.0
+info:
+  title: Booking API
+  description: API for managing service bookings.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /booking/available:
+    get:
+      summary: Get available time ranges for a service on a specific date.
+      parameters:
+        - name: date
+          in: query
+          description: The date to check for available time ranges.
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: serviceId
+          in: query
+          description: The ID of the service for which time ranges are being queried.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+        - name: serviceDuration
+          in: query
+          description: The duration of the service in minutes.
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        '200':
+          description: A list of available time ranges for the service.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeRangeResponse'
+
+  /booking:
+    get:
+      summary: Get the booking information for a specific user.
+      parameters:
+        - name: date
+          in: query
+          description: The date of the booking.
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: serviceId
+          in: query
+          description: The ID of the service for the booking.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+        - name: bookingId
+          in: query
+          description: The ID of the booking.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      responses:
+        '200':
+          description: User booking information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserBookingResponse'
+
+  /booking/all:
+    get:
+      summary: Get all bookings for specified dates, services, and users.
+      parameters:
+        - name: dates
+          in: query
+          description: A comma-separated list of dates to fetch bookings for.
+          required: true
+          schema:
+            type: string
+            example: "2024-12-01,2024-12-02"
+        - name: serviceIds
+          in: query
+          description: A comma-separated list of service IDs to filter bookings.
+          required: true
+          schema:
+            type: string
+            example: "5f8d0d55b4e1c1a6b4f7d4f7,5f8d0d55b4e1c1a6b4f7d4f8"
+        - name: userIds
+          in: query
+          description: A comma-separated list of user IDs to filter bookings.
+          required: true
+          schema:
+            type: string
+            example: "5f8d0d55b4e1c1a6b4f7d4f9,5f8d0d55b4e1c1a6b4f7d4fa"
+      responses:
+        '200':
+          description: A list of service bookings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceBookingResponse'
+
+components:
+  schemas:
+    ObjectId:
+      type: string
+      pattern: "^[a-fA-F0-9]{24}$" # MongoDB ObjectId format
+
+    TimeRangeResponse:
+      type: object
+      properties:
+        start:
+          type: integer
+        end:
+          type: integer
+
+    UserBookingResponse:
+      type: object
+      properties:
+        userId:
+          $ref: '#/components/schemas/ObjectId'
+        start:
+          type: integer
+        end:
+          type: integer
+
+    ServiceBookingResponse:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectId'
+        date:
+          type: string
+          format: date
+        serviceId:
+          $ref: '#/components/schemas/ObjectId'
+        bookings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Booking'
+
+    Booking:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectId'
+        userId:
+          $ref: '#/components/schemas/ObjectId'
+        start:
+          type: integer
+        end:
+          type: integer
