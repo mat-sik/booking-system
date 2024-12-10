@@ -9,7 +9,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 @ConfigurationPropertiesScan
 @Log
-@EnableFeignClients(basePackages = "com.github.matsik.booking.query")
+@EnableFeignClients(basePackages = "com.github.matsik.booking.client.query")
 public class BookingServiceApplication {
 
     public static void main(String[] args) {
