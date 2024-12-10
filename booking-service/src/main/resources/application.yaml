@@ -3,12 +3,9 @@ spring:
     name: booking-service
 
 kafka:
-  clientId: command-producer
-  hosts: localhost:9092
+  hosts: ${BOOKING_SYSTEM_KAFKA_HOSTS}
+  clientId: ${BOOKING_SYSTEM_KAFKA_BOOKING_SERVICE_CLIENT_ID}
 
 query:
   service:
-    url: http://localhost:8081
-
-server:
-  port: 8080
+    url: http://${BOOKING_SYSTEM_QUERY_SERVICE_HOST}:8080

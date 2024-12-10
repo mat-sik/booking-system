@@ -3,18 +3,15 @@ spring:
     name: query
 
 mongo:
-  host: localhost
+  host: ${BOOKING_SYSTEM_MONGO_HOST}
   port: 27017
-  login: admin
-  password: pass
-  authDatabase: admin
-  database: booking-service-db
+  login: ${BOOKING_SYSTEM_MONGO_LOGIN}
+  password: ${BOOKING_SYSTEM_MONGO_PASSWORD}
+  authDatabase: ${BOOKING_SYSTEM_MONGO_AUTH_DB}
+  database: ${BOOKING_SYSTEM_MONGO_DB}
 
 logging:
   level:
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
     com.mongodb: DEBUG
     org.mongodb.driver: DEBUG
-
-server:
-  port: 8081

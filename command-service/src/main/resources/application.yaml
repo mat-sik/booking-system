@@ -5,17 +5,17 @@ spring:
     active: logging-profile
 
 mongo:
-  host: localhost
+  host: ${BOOKING_SYSTEM_MONGO_HOST}
   port: 27017
-  login: admin
-  password: pass
-  authDatabase: admin
-  database: booking-service-db
+  login: ${BOOKING_SYSTEM_MONGO_LOGIN}
+  password: ${BOOKING_SYSTEM_MONGO_PASSWORD}
+  authDatabase: ${BOOKING_SYSTEM_MONGO_AUTH_DB}
+  database: ${BOOKING_SYSTEM_MONGO_DB}
 
 kafka:
-  clientId: command-consumer
-  hosts: localhost:9092
-  groupId: command-consumers
+  hosts: ${BOOKING_SYSTEM_KAFKA_HOSTS}
+  clientId: ${BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_CLIENT_ID}
+  groupId: ${BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_GROUP_ID}
 
 logging:
   level:
