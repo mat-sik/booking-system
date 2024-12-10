@@ -1,8 +1,8 @@
 services:
-  booking-service-kafka:
+  booking-system-kafka:
     image: apache/kafka:3.8.0
-    container_name: booking-service-kafka
-    hostname: booking-service-kafka
+    container_name: booking-system-kafka
+    hostname: booking-system-kafka
     ports:
       - "9092:9092"
     environment:
@@ -19,13 +19,13 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1            # behaviour.
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     volumes:
-      - booking-service-kafka-data:/var/lib/kafka/data
-      - booking-service-kafka-secrets:/etc/kafka/secrets
-      - booking-service-kafka-config:/mnt/shared/config
-  booking-service-mongo:
+      - booking-system-kafka-data:/var/lib/kafka/data
+      - booking-system-kafka-secrets:/etc/kafka/secrets
+      - booking-system-kafka-config:/mnt/shared/config
+  booking-system-mongo:
     image: mongo:8.0.0
-    container_name: booking-service-mongo
-    hostname: booking-service-mongo
+    container_name: booking-system-mongo
+    hostname: booking-system-mongo
     networks:
       - net
     ports:
@@ -33,13 +33,13 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=pass
-      - MONGO_INITDB_ROOT_DATABASE=booking-service-db
+      - MONGO_INITDB_ROOT_DATABASE=booking-system-db
     volumes:
-      - booking-service-mongo-db-data:/data/db
-      - booking-service-mongo-db-config:/data/configdb
-  booking-service-mongo-express:
+      - booking-system-mongo-db-data:/data/db
+      - booking-system-mongo-db-config:/data/configdb
+  booking-system-mongo-express:
     image: mongo-express
-    container_name: booking-service-mongo-express
+    container_name: booking-system-mongo-express
     restart: always
     networks:
       - net
@@ -48,15 +48,15 @@ services:
     environment:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
       - ME_CONFIG_MONGODB_ADMINPASSWORD=pass
-      - ME_CONFIG_MONGODB_SERVER=booking-service-mongo
+      - ME_CONFIG_MONGODB_SERVER=booking-system-mongo
       - ME_CONFIG_MONGODB_PORT=27017
 
 volumes:
-  booking-service-kafka-data:
-  booking-service-kafka-secrets:
-  booking-service-kafka-config:
-  booking-service-mongo-db-data:
-  booking-service-mongo-db-config:
+  booking-system-kafka-data:
+  booking-system-kafka-secrets:
+  booking-system-kafka-config:
+  booking-system-mongo-db-data:
+  booking-system-mongo-db-config:
 
 networks:
   net:
