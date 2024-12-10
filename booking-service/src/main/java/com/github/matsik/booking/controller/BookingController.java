@@ -60,9 +60,9 @@ public class BookingController {
 
     @GetMapping("/all")
     public ResponseEntity<List<ServiceBookingResponse>> getBookings(
-            @RequestParam("dates") List<LocalDate> dates,
-            @RequestParam("serviceIds") List<ObjectId> serviceIds,
-            @RequestParam("userIds") List<ObjectId> userIds
+            @RequestParam(required = false, defaultValue = "") List<LocalDate> dates,
+            @RequestParam(required = false, defaultValue = "") List<ObjectId> serviceIds,
+            @RequestParam(required = false, defaultValue = "") List<ObjectId> userIds
     ) {
         List<ServiceBookingResponse> responses = queryService.getBookings(dates, serviceIds, userIds);
         return ResponseEntity.ok(responses);

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -78,9 +79,9 @@ public class BookingController {
 
     @GetMapping("/all")
     public ResponseEntity<List<ServiceBookingResponse>> getBookings(
-            @RequestParam List<LocalDate> dates,
-            @RequestParam List<ObjectId> serviceIds,
-            @RequestParam List<ObjectId> userIds
+            @RequestParam(required = false, defaultValue = "") List<LocalDate> dates,
+            @RequestParam(required = false, defaultValue = "") List<ObjectId> serviceIds,
+            @RequestParam(required = false, defaultValue = "") List<ObjectId> userIds
     ) {
         GetBookingsQuery query = new GetBookingsQuery(dates, serviceIds, userIds);
         List<ServiceBooking> serviceBookings = service.getBookings(query);
