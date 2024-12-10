@@ -17,12 +17,14 @@ paths:
           schema:
             type: string
             format: date
+          example: "2024-12-01"
         - name: serviceId
           in: query
           description: The ID of the service for which time ranges are being queried.
           required: true
           schema:
             $ref: '#/components/schemas/ObjectId'
+          example: "5f8d0d55b4e1c1a6b4f7d4f7"
         - name: serviceDuration
           in: query
           description: The duration of the service in minutes.
@@ -31,6 +33,7 @@ paths:
             type: integer
             format: int32
             minimum: 1
+          example: 60
       responses:
         '200':
           description: A list of available time ranges for the service.
@@ -40,18 +43,33 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TimeRangeResponse'
+              example:
+                - start: 540
+                  end: 600
+                - start: 660
+                  end: 720
         '400':
           description: Bad request due to invalid parameters or malformed input.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+              example:
+                type: "https://example.com/validation-error"
+                title: "Validation Error"
+                status: 400
+                detail: "Invalid date format. Expected YYYY-MM-DD."
         '500':
           description: Internal server error due to an unexpected condition.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+              example:
+                type: "https://example.com/server-error"
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred."
 
   /booking:
     get:
@@ -64,18 +82,21 @@ paths:
           schema:
             type: string
             format: date
+          example: "2024-12-01"
         - name: serviceId
           in: query
           description: The ID of the service for the booking.
           required: true
           schema:
             $ref: '#/components/schemas/ObjectId'
+          example: "5f8d0d55b4e1c1a6b4f7d4f7"
         - name: bookingId
           in: query
           description: The ID of the booking.
           required: true
           schema:
             $ref: '#/components/schemas/ObjectId'
+          example: "5f8d0d55b4e1c1a6b4f7d4f9"
       responses:
         '200':
           description: User booking information.
@@ -83,24 +104,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserBookingResponse'
+              example:
+                userId: "5f8d0d55b4e1c1a6b4f7d4f8"
+                start: 540
+                end: 600
         '400':
           description: Bad request due to invalid parameters or malformed input.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+              example:
+                type: "https://example.com/validation-error"
+                title: "Validation Error"
+                status: 400
+                detail: "Missing required parameter 'date'."
         '404':
           description: User booking not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+              example:
+                type: "https://example.com/not-found"
+                title: "Not Found"
+                status: 404
+                detail: "Booking with ID 5f8d0d55b4e1c1a6b4f7d4f9 not found."
         '500':
           description: Internal server error due to an unexpected condition.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+              example:
+                type: "https://example.com/server-error"
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred."
 
   /booking/all:
     get:
@@ -109,21 +149,18 @@ paths:
         - name: dates
           in: query
           description: A comma-separated list of dates to fetch bookings for.
-          required: true
           schema:
             type: string
             example: "2024-12-01,2024-12-02"
         - name: serviceIds
           in: query
           description: A comma-separated list of service IDs to filter bookings.
-          required: true
           schema:
             type: string
             example: "5f8d0d55b4e1c1a6b4f7d4f7,5f8d0d55b4e1c1a6b4f7d4f8"
         - name: userIds
           in: query
           description: A comma-separated list of user IDs to filter bookings.
-          required: true
           schema:
             type: string
             example: "5f8d0d55b4e1c1a6b4f7d4f9,5f8d0d55b4e1c1a6b4f7d4fa"
@@ -136,18 +173,37 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ServiceBookingResponse'
+              example:
+                - id: "5f8d0d55b4e1c1a6b4f7d4fa"
+                  date: "2024-12-01"
+                  serviceId: "5f8d0d55b4e1c1a6b4f7d4f7"
+                  bookings:
+                    - id: "5f8d0d55b4e1c1a6b4f7d4fb"
+                      userId: "5f8d0d55b4e1c1a6b4f7d4f9"
+                      start: 540
+                      end: 600
         '400':
           description: Bad request due to invalid parameters or malformed input.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+              example:
+                type: "https://example.com/validation-error"
+                title: "Validation Error"
+                status: 400
+                detail: "Invalid service ID format."
         '500':
           description: Internal server error due to an unexpected condition.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+              example:
+                type: "https://example.com/server-error"
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred."
 
 components:
   schemas:
@@ -162,6 +218,9 @@ components:
           type: integer
         end:
           type: integer
+      example:
+        start: 540
+        end: 600
 
     UserBookingResponse:
       type: object
@@ -172,6 +231,10 @@ components:
           type: integer
         end:
           type: integer
+      example:
+        userId: "5f8d0d55b4e1c1a6b4f7d4f8"
+        start: 540
+        end: 600
 
     ServiceBookingResponse:
       type: object
@@ -187,6 +250,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Booking'
+      example:
+        id: "5f8d0d55b4e1c1a6b4f7d4fa"
+        date: "2024-12-01"
+        serviceId: "5f8d0d55b4e1c1a6b4f7d4f7"
+        bookings:
+          - id: "5f8d0d55b4e1c1a6b4f7d4fb"
+            userId: "5f8d0d55b4e1c1a6b4f7d4f9"
+            start: 540
+            end: 600
 
     Booking:
       type: object
@@ -199,6 +271,11 @@ components:
           type: integer
         end:
           type: integer
+      example:
+        id: "5f8d0d55b4e1c1a6b4f7d4fb"
+        userId: "5f8d0d55b4e1c1a6b4f7d4f9"
+        start: 540
+        end: 600
 
     ProblemDetail:
       type: object
@@ -211,3 +288,8 @@ components:
           type: integer
         detail:
           type: string
+      example:
+        type: "https://example.com/validation-error"
+        title: "Validation Error"
+        status: 400
+        detail: "Invalid input data."
