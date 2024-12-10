@@ -16,7 +16,6 @@
         <java.version>23</java.version>
         <org.projectlombok.version>1.18.36</org.projectlombok.version>
         <org.mongodb.bson.version>5.2.1</org.mongodb.bson.version>
-        <jakarta.validation.version>3.1.0</jakarta.validation.version>
     </properties>
 
     <dependencies>
@@ -30,11 +29,6 @@
             <artifactId>lombok</artifactId>
             <version>${org.projectlombok.version}</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-            <version>${jakarta.validation.version}</version>
         </dependency>
     </dependencies>
 
