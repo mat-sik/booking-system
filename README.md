@@ -369,3 +369,22 @@ Output:
   { _id: ObjectId('67500fbf03727dde1663113a'), start: 720, end: 780 }
 ]
 ```
+
+## Helper Modules
+
+To streamline the integration of microservices, I created several helper modules:
+
+### `commons-models`
+
+This module defines common data models for bookings, providing a standardized structure that is shared across the
+system.
+
+### `commons-json`
+
+This module includes common Jackson configurations and classes that represent API responses. The response classes are
+used, for example, in the **Query Service** and **Booking Service** to ensure consistent response structures.
+
+### `commons-kafka`
+
+This module, like `commons-json`, provides shared Kafka configurations and defines classes for Kafka message values. It
+ensures consistent Kafka message formats and configurations across the **Command Service** and **Booking Service**.
