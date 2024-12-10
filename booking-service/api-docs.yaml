@@ -230,18 +230,21 @@ paths:
         - name: dates
           in: query
           description: A comma-separated list of dates to fetch bookings for.
+          required: false
           schema:
             type: string
             example: "2024-12-01,2024-12-02"
         - name: serviceIds
           in: query
           description: A comma-separated list of service IDs to filter bookings.
+          required: false
           schema:
             type: string
             example: "5f8d0d55b4e1c1a6b4f7d4f7,5f8d0d55b4e1c1a6b4f7d4f8"
         - name: userIds
           in: query
           description: A comma-separated list of user IDs to filter bookings.
+          required: false
           schema:
             type: string
             example: "5f8d0d55b4e1c1a6b4f7d4f9,5f8d0d55b4e1c1a6b4f7d4fa"
