@@ -71,6 +71,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserBookingResponse'
+        '404':
+          description: User booking not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
 
   /booking/all:
     get:
@@ -157,3 +163,15 @@ components:
           type: integer
         end:
           type: integer
+
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
