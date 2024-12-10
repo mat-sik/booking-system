@@ -50,8 +50,8 @@ services:
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: BROKER://0.0.0.0:9092,CONTROLLER://localhost:9093 # Interesting detail, 0.0.0.0 ip must be used
-      KAFKA_ADVERTISED_LISTENERS: BROKER://booking-system-kafka:9092,                # to allow clients to connect.
+      KAFKA_LISTENERS: BROKER://0.0.0.0:9092,CONTROLLER://localhost:9093 # Interesting detail, 0.0.0.0 ip must be used to allow clients to connect.
+      KAFKA_ADVERTISED_LISTENERS: BROKER://booking-system-kafka:9092,    # Because here we use full docker compose deployment, the advertised hostname is docker compose specific DNS name.
       KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,BROKER:PLAINTEXT
@@ -90,7 +90,7 @@ services:
     environment:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=${BOOKING_SYSTEM_MONGO_LOGIN}
       - ME_CONFIG_MONGODB_ADMINPASSWORD=${BOOKING_SYSTEM_MONGO_PASSWORD}
-      - ME_CONFIG_MONGODB_SERVER=${BOOKING_SYSTEM_MONGO_HOST}
+      - ME_CONFIG_MONGODB_SERVER=booking-system-mongo
       - ME_CONFIG_MONGODB_PORT=27017
 
 volumes:
