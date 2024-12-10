@@ -52,9 +52,27 @@ information might very quickly become stale, but this is acceptable.
 
 The **Booking Service** interacts with **Query Service** to perform users query requests.
 
+### Swagger API Documentation
+
+The **Query Service** API is fully documented using Swagger. You can explore the available endpoints, their parameters,
+and responses directly in the Swagger UI. This provides an interactive interface to test the API and understand the
+request/response structures.
+
+- [Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/mat-sik/booking-service/refs/heads/main/query-service/api-docs.yaml)
+- [Raw API File](query-service/api-docs.yaml)
+
 ## Booking Service
 
 The **Booking Services** serves as an entry point for the application. It provides REST API to interact with the system.
+
+### Swagger API Documentation
+
+The **Booking Service** API is fully documented using Swagger. You can explore the available endpoints, their parameters,
+and responses directly in the Swagger UI. This provides an interactive interface to test the API and understand the
+request/response structures.
+
+- [Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/mat-sik/booking-service/438095b02009952554ab3a60458ea83fe2daf9ca/booking-service/api-docs.yaml)
+- [Raw API File](booking-service/api-docs.yaml)
 
 ## MongoDB data model
 
