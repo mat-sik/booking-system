@@ -46,6 +46,7 @@ public class KafkaClientConfiguration {
         ConcurrentKafkaListenerContainerFactory<LocalDate, CommandValue> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(localDateCommandValueConsumerFactory);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        factory.setBatchListener(true);
 
         return factory;
     }

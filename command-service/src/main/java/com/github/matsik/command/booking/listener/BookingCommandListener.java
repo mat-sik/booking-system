@@ -14,6 +14,7 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -23,7 +24,12 @@ public class BookingCommandListener {
     private final BookingService service;
 
     @KafkaListener(topics = "bookings", groupId = "${kafka.groupId}", containerFactory = "kafkaListenerContainerFactory")
-    public void listen(ConsumerRecord<LocalDate, CommandValue> record, Acknowledgment ack) {
+    public void listen(List<ConsumerRecord<LocalDate, CommandValue>> records, Acknowledgment ack) {
+        records.forEach(this::processRecord);
+        ack.acknowledge();
+    }
+
+    private void processRecord(ConsumerRecord<LocalDate, CommandValue> record) {
         LocalDate key = record.key();
         CommandValue value = record.value();
 
@@ -36,8 +42,6 @@ public class BookingCommandListener {
         } else {
             log.severe(String.format("Unexpected CommandValue: %s", value.toString()));
         }
-
-        ack.acknowledge();
     }
 
 }
