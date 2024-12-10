@@ -1,4 +1,4 @@
-# Booking Service
+# Booking System
 
 This project implements a booking system that allows users to reserve services for specific dates and times. Users can
 choose a service, specify a desired date, and book a time slot for a specified duration (e.g., booking a service on
