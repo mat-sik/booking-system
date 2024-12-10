@@ -20,7 +20,17 @@ paths:
         '200':
           description: Booking successfully created.
         '400':
-          description: Invalid input provided.
+          description: Bad request due to invalid parameters or malformed input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '500':
+          description: Internal server error due to an unexpected condition.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
 
   /booking/delete:
     post:
@@ -36,9 +46,17 @@ paths:
         '200':
           description: Booking successfully deleted.
         '400':
-          description: Invalid input provided.
-        '404':
-          description: Booking not found.
+          description: Bad request due to invalid parameters or malformed input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '500':
+          description: Internal server error due to an unexpected condition.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
 
   /booking/available:
     get:
@@ -74,6 +92,18 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TimeRangeResponse'
+        '400':
+          description: Bad request due to invalid parameters or malformed input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '500':
+          description: Internal server error due to an unexpected condition.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
 
   /booking:
     get:
@@ -99,12 +129,24 @@ paths:
           schema:
             $ref: '#/components/schemas/ObjectId'
       responses:
-        '200':
-          description: User booking information.
+        '400':
+          description: Bad request due to invalid parameters or malformed input.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserBookingResponse'
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: User booking not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '500':
+          description: Internal server error due to an unexpected condition.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
 
   /booking/all:
     get:
@@ -140,6 +182,18 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ServiceBookingResponse'
+        '400':
+          description: Bad request due to invalid parameters or malformed input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '500':
+          description: Internal server error due to an unexpected condition.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
 
 components:
   schemas:
@@ -230,3 +284,15 @@ components:
           type: integer
         end:
           type: integer
+
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string

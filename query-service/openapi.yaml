@@ -83,14 +83,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserBookingResponse'
-        '404':
-          description: User booking not found.
+        '400':
+          description: Bad request due to invalid parameters or malformed input.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
-        '400':
-          description: Bad request due to invalid parameters or malformed input.
+        '404':
+          description: User booking not found.
           content:
             application/json:
               schema:
