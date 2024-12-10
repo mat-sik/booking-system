@@ -67,7 +67,8 @@ The **Booking Services** serves as an entry point for the application. It provid
 
 ### Swagger API Documentation
 
-The **Booking Service** API is fully documented using Swagger. You can explore the available endpoints, their parameters,
+The **Booking Service** API is fully documented using Swagger. You can explore the available endpoints, their
+parameters,
 and responses directly in the Swagger UI. This provides an interactive interface to test the API and understand the
 request/response structures.
 
@@ -406,3 +407,89 @@ used, for example, in the **Query Service** and **Booking Service** to ensure co
 
 This module, like `commons-json`, provides shared Kafka configurations and defines classes for Kafka message values. It
 ensures consistent Kafka message formats and configurations across the **Command Service** and **Booking Service**.
+
+## **Docker**
+
+### Prerequisites
+
+#### Helper Modules
+
+Before building the Docker images, ensure the common modules are installed by running:
+
+```shell
+mvn clean install -DskipTests
+```
+
+The resulting JAR files will be used during the Docker image build process.
+
+#### `.env` files
+
+##### For deploying everything with Docker Compose
+
+```
+BOOKING_SYSTEM_MONGO_HOST=booking-system-mongo
+BOOKING_SYSTEM_MONGO_LOGIN=admin
+BOOKING_SYSTEM_MONGO_PASSWORD=pass
+BOOKING_SYSTEM_MONGO_AUTH_DB=admin
+BOOKING_SYSTEM_MONGO_DB=booking-system-db
+
+BOOKING_SYSTEM_KAFKA_HOSTS=booking-system-kafka:9092
+
+BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_CLIENT_ID=command-consumer
+BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_GROUP_ID=command-consumers
+
+BOOKING_SYSTEM_KAFKA_BOOKING_SERVICE_CLIENT_ID=command-consumer
+
+BOOKING_SYSTEM_QUERY_SERVICE_HOST=booking-system-query-service
+```
+
+##### for java apps running on host
+
+```
+BOOKING_SYSTEM_MONGO_HOST=localhost
+BOOKING_SYSTEM_MONGO_LOGIN=admin
+BOOKING_SYSTEM_MONGO_PASSWORD=pass
+BOOKING_SYSTEM_MONGO_AUTH_DB=admin
+BOOKING_SYSTEM_MONGO_DB=booking-system-db
+
+BOOKING_SYSTEM_KAFKA_HOSTS=localhost:9092
+
+BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_CLIENT_ID=command-consumer
+BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_GROUP_ID=command-consumers
+
+BOOKING_SYSTEM_KAFKA_BOOKING_SERVICE_CLIENT_ID=command-consumer
+
+BOOKING_SYSTEM_QUERY_SERVICE_HOST=localhost
+```
+
+### Building **Docker** images
+
+Execute the following commands from the root directory of the repository to build each service's Docker image:
+
+#### Query Service
+
+```shell
+docker build -f ./query-service/Dockerfile . -t query-service
+```
+
+#### Booking Service
+
+```shell
+docker build -f ./booking-service/Dockerfile . -t booking-service
+```
+
+#### Command Service
+
+```shell
+docker build -f ./command-service/Dockerfile . -t command -service
+```
+
+Once the common modules are installed and available, you can use standard Docker Compose commands to manage the
+services. For example:
+
+### **Docker Compose**
+
+All required services can be started seamlessly using Docker Compose. If image building is necessary, ensure the common
+modules are compiled and their JAR files are available beforehand. These JAR files are essential for successfully
+building the Docker images.
+
