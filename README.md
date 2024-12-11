@@ -9,6 +9,23 @@ follows the **CQRS** (Command Query Responsibility Segregation) and **Data Sourc
 pattern and its associated log are used to control concurrent bookings for the same date and time by multiple users,
 ensuring data consistency and preventing conflicts.
 
+## How to Try Out the App
+
+To quickly get started with the app, follow the steps below:
+
+1. **Set Up the Environment**  
+   Follow the instructions in the [Docker Compose section](#docker-compose) to set up the application locally with
+   docker.
+
+2. **Explore the API with Swagger UI**  
+   Visit [Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/mat-sik/booking-system/refs/heads/main/booking-service/api-docs.yaml)
+   to interact with the app's API. The API documentation is automatically pulled from the `api-docs.yaml` file hosted on
+   my GitHub repository.
+
+**CORS Configuration**  
+The app is configured with CORS to allow seamless integration with Swagger UI, so you can test the API directly from the
+Swagger interface.
+
 ## Request Types
 
 ### Command Requests
@@ -414,15 +431,21 @@ ensures consistent Kafka message formats and configurations across the **Command
 
 #### Helper Modules
 
-Before building the Docker images, ensure the common modules are installed by running:
+Before building the Docker images, ensure that the common modules are installed by running the following command:
 
 ```shell
 mvn clean install -DskipTests
 ```
 
-The resulting JAR files will be used during the Docker image build process.
+**Note:**
+
+- You must be in the directory of the module when running the command.
+- The resulting JAR files will be used during the Docker image build process.
+- It is assumed that the JAR files will be located in the `/target` directory of the respective modules.
 
 #### `.env` files
+
+When deploying your application using Docker Compose, configure the following environment variables:
 
 ##### For deploying everything with Docker Compose
 
@@ -443,7 +466,14 @@ BOOKING_SYSTEM_KAFKA_BOOKING_SERVICE_CLIENT_ID=command-consumer
 BOOKING_SYSTEM_QUERY_SERVICE_HOST=booking-system-query-service
 ```
 
+**Notes**:
+
+- The hostnames (`booking-system-mongo`, `booking-system-kafka`, `booking-system-query-service`) correspond to the
+  service names defined in your Docker Compose file.
+
 ##### for java apps running on host
+
+To configure the Java apps running on your host, set the following environment variables:
 
 ```
 BOOKING_SYSTEM_MONGO_HOST=localhost
@@ -461,6 +491,12 @@ BOOKING_SYSTEM_KAFKA_BOOKING_SERVICE_CLIENT_ID=command-consumer
 
 BOOKING_SYSTEM_QUERY_SERVICE_HOST=localhost
 ```
+
+**Notes**:
+
+- When running the apps on your host, you need to pass the `.env` file by configuring the IntelliJ run configuration.
+- Ensure that the `booking-service` port is set to **8081** to avoid conflicts with other services. The default port
+  **8080** is hardcoded in `booking-service` as the port for `query-service`.
 
 ### Building **Docker** images
 
@@ -489,7 +525,13 @@ services. For example:
 
 ### **Docker Compose**
 
-All required services can be started seamlessly using Docker Compose. If image building is necessary, ensure the common
-modules are compiled and their JAR files are available beforehand. These JAR files are essential for successfully
-building the Docker images.
+All required services can be started seamlessly using Docker Compose.
 
+#### Setup Instructions:
+
+1. Ensure that you have an `.env` file created in the same directory as `docker-compose.yaml`.
+2. If image building is necessary:
+    - Compile the common modules and ensure their JAR files are available beforehand.
+    - These JAR files are essential for successfully building the Docker images.
+
+For help with prerequisites, refer to [this](#prerequisites).
