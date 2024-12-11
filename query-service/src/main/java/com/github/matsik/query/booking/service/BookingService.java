@@ -45,6 +45,8 @@ public class BookingService {
      * time complexity would be of O(min(n,m)*log(max(n,m))) plus time to build the tree, so basically O(nlogn).
      */
     private static List<TimeRange> getAvailableTimeRanges(List<BookingTimeRange> unavailableTimeRanges, int serviceDuration) {
+        serviceDuration = Math.max(SKIP, serviceDuration);
+
         List<TimeRange> availableTimeRanges = new ArrayList<>();
         for (int start = START; start <= END - SERVICE_TIME_SLICE; start += serviceDuration) {
             boolean isAvailable = true;
