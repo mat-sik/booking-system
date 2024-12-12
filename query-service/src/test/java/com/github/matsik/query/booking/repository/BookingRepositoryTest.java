@@ -301,9 +301,9 @@ class BookingRepositoryTest {
         assertThat(result).isEqualTo(expected);
     }
 
-    private static Stream<Object[]> provideGetBookingTimeRangesTestCases() {
+    private static Stream<Arguments> provideGetBookingTimeRangesTestCases() {
         return Stream.of(
-                new Object[]{
+                Arguments.of("first service booking",
                         getGetBookingTimeRangesQuery(
                                 SERVICE_BOOKINGS.get(0).date(),
                                 SERVICE_BOOKINGS.get(0).serviceId()
@@ -313,8 +313,8 @@ class BookingRepositoryTest {
                                 bookingTimeRangeFrom(SERVICE_BOOKINGS.get(0).bookings().get(1)),
                                 bookingTimeRangeFrom(SERVICE_BOOKINGS.get(0).bookings().get(2))
                         )
-                },
-                new Object[]{
+                ),
+                Arguments.of("second service booking",
                         getGetBookingTimeRangesQuery(
                                 SERVICE_BOOKINGS.get(1).date(),
                                 SERVICE_BOOKINGS.get(1).serviceId()
@@ -323,8 +323,8 @@ class BookingRepositoryTest {
                                 bookingTimeRangeFrom(SERVICE_BOOKINGS.get(1).bookings().get(0)),
                                 bookingTimeRangeFrom(SERVICE_BOOKINGS.get(1).bookings().get(1))
                         )
-                },
-                new Object[]{
+                ),
+                Arguments.of("third service booking",
                         getGetBookingTimeRangesQuery(
                                 SERVICE_BOOKINGS.get(2).date(),
                                 SERVICE_BOOKINGS.get(2).serviceId()
@@ -332,13 +332,13 @@ class BookingRepositoryTest {
                         List.of(
                                 bookingTimeRangeFrom(SERVICE_BOOKINGS.get(2).bookings().get(0))
                         )
-                }
+                )
         );
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "{0}")
     @MethodSource("provideGetBookingTimeRangesTestCases")
-    void getBookingTimeRanges(GetBookingTimeRangesQuery query, List<TimeRange> expected) {
+    void getBookingTimeRanges(String name, GetBookingTimeRangesQuery query, List<TimeRange> expected) {
         // when
         List<TimeRange> result = REPOSITORY.getBookingTimeRanges(query);
 
