@@ -181,13 +181,118 @@ class BookingRepositoryTest {
 
     private static Stream<Object[]> provideGetBookingsTestCases() {
         return Stream.of(
-                getTestCase(0, 0),
-                getTestCase(0, 1),
-                getTestCase(0, 2),
-                getTestCase(1, 0),
-                getTestCase(1, 1),
-                getTestCase(2, 0),
-                getTestCase(-1, -1)
+                new Object[]{ // NO FILTERING, RETURN ALL
+                        new GetBookingsQuery(
+                                List.of(), List.of(), List.of()),
+                        SERVICE_BOOKINGS
+                },
+                new Object[]{ // FILTER FOR ONE SPECIFIC BY DATE AND SERVICE ID
+                        new GetBookingsQuery(
+                                List.of(
+                                        LocalDate.parse(SERVICE_BOOKINGS.get(1).date(), DateTimeFormatter.ISO_LOCAL_DATE)
+                                ),
+                                List.of(
+                                        SERVICE_BOOKINGS.get(1).serviceId()
+                                ),
+                                List.of(
+
+                                )
+                        ),
+                        List.of(
+                                SERVICE_BOOKINGS.get(1)
+                        )
+                },
+                new Object[]{ // FILTER FOR ONE SPECIFIC BY DATE AND SERVICE ID, FILTER BY ONE USER
+                        new GetBookingsQuery(
+                                List.of(
+                                        LocalDate.parse(SERVICE_BOOKINGS.get(1).date(), DateTimeFormatter.ISO_LOCAL_DATE)
+                                ),
+                                List.of(
+                                        SERVICE_BOOKINGS.get(1).serviceId()
+                                ),
+                                List.of(
+                                        SERVICE_BOOKINGS.get(1).bookings().get(0).userId()
+                                )
+                        ),
+                        List.of(
+                                new ServiceBooking(
+                                        SERVICE_BOOKINGS.get(1).id(),
+                                        SERVICE_BOOKINGS.get(1).date(),
+                                        SERVICE_BOOKINGS.get(1).serviceId(),
+                                        List.of(
+                                                SERVICE_BOOKINGS.get(1).bookings().get(0)
+                                        )
+                                )
+                        )
+                },
+                new Object[]{ // FILTER BY DATE
+                        new GetBookingsQuery(
+                                List.of(
+                                        LocalDate.parse(SERVICE_BOOKINGS.get(1).date(), DateTimeFormatter.ISO_LOCAL_DATE)
+                                ),
+                                List.of(
+                                ),
+                                List.of(
+                                )
+                        ),
+                        List.of(
+                                SERVICE_BOOKINGS.get(1),
+                                SERVICE_BOOKINGS.get(2)
+                        )
+                },
+                new Object[]{ // FILTER BY SERVICE ID
+                        new GetBookingsQuery(
+                                List.of(
+                                ),
+                                List.of(
+                                        SERVICE_BOOKINGS.get(0).serviceId()
+                                ),
+                                List.of(
+                                )
+                        ),
+                        List.of(
+                                SERVICE_BOOKINGS.get(0),
+                                SERVICE_BOOKINGS.get(1)
+                        )
+                },
+                new Object[]{ // FILTER BY USER
+                        new GetBookingsQuery(
+                                List.of(
+                                ),
+                                List.of(
+                                ),
+                                List.of(
+                                    SERVICE_BOOKINGS.get(0).bookings().get(0).userId()
+                                )
+                        ),
+                        List.of(
+                                new ServiceBooking(
+                                        SERVICE_BOOKINGS.get(0).id(),
+                                        SERVICE_BOOKINGS.get(0).date(),
+                                        SERVICE_BOOKINGS.get(0).serviceId(),
+                                        List.of(
+                                                SERVICE_BOOKINGS.get(0).bookings().get(0),
+                                                SERVICE_BOOKINGS.get(0).bookings().get(1)
+                                        )
+                                ),
+                                new ServiceBooking(
+                                        SERVICE_BOOKINGS.get(1).id(),
+                                        SERVICE_BOOKINGS.get(1).date(),
+                                        SERVICE_BOOKINGS.get(1).serviceId(),
+                                        List.of(
+                                                SERVICE_BOOKINGS.get(1).bookings().get(0)
+                                        )
+                                ),
+                                new ServiceBooking(
+                                        SERVICE_BOOKINGS.get(2).id(),
+                                        SERVICE_BOOKINGS.get(2).date(),
+                                        SERVICE_BOOKINGS.get(2).serviceId(),
+                                        List.of(
+                                                SERVICE_BOOKINGS.get(2).bookings().get(0)
+                                        )
+                                )
+                        )
+                }
         );
     }
 
