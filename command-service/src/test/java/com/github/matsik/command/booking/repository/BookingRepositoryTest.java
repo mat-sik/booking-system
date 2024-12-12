@@ -1,6 +1,7 @@
 package com.github.matsik.command.booking.repository;
 
 import com.github.matsik.command.booking.command.CreateBookingCommand;
+import com.github.matsik.command.booking.command.DeleteBookingCommand;
 import com.github.matsik.command.booking.model.ServiceBooking;
 import com.github.matsik.mongo.model.Booking;
 import com.github.matsik.mongo.model.ServiceBookingIdentifier;
@@ -10,7 +11,6 @@ import com.mongodb.client.result.UpdateResult;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -124,7 +124,8 @@ class BookingRepositoryTest {
                 ),
                 Arguments.of(
                         "Successful booking creation, when required document is not present(or not matched).",
-                        (Runnable) () -> {},
+                        (Runnable) () -> {
+                        },
                         new CreateBookingCommand(
                                 ServiceBookingIdentifier.Factory.create(
                                         LocalDate.of(2024, 12, 12),
@@ -145,7 +146,7 @@ class BookingRepositoryTest {
                                         new ObjectId("100000000000000000000000"),
                                         List.of()
                                 )
-                        ).forEach(MONGO_TEMPLATE::save),                                new CreateBookingCommand(
+                        ).forEach(MONGO_TEMPLATE::save), new CreateBookingCommand(
                                 ServiceBookingIdentifier.Factory.create(
                                         LocalDate.of(2024, 12, 12),
                                         new ObjectId("100000000000000000000000")
@@ -180,8 +181,97 @@ class BookingRepositoryTest {
         }
     }
 
-    @Test
-    void deleteBooking() {
+    private static Stream<Arguments> provideDeleteBookingTestCases() {
+        return Stream.of(
+                Arguments.of(
+                        "Successful deletion, when document and booking exist.",
+                        (Runnable) () -> List.of(
+                                new ServiceBooking(
+                                        new ObjectId("000000000000000000000000"),
+                                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                                        new ObjectId("100000000000000000000000"),
+                                        List.of(
+                                                new Booking(
+                                                        new ObjectId("110000000000000000000000"),
+                                                        new ObjectId("010000000000000000000000"),
+                                                        0,
+                                                        1100
+                                                )
+                                        )
+                                )
+                        ).forEach(MONGO_TEMPLATE::save),
+                        new DeleteBookingCommand(
+                                ServiceBookingIdentifier.Factory.create(
+                                        LocalDate.of(2024, 12, 12),
+                                        new ObjectId("100000000000000000000000")
+                                ),
+                                new ObjectId("110000000000000000000000")
+                        ),
+                        true,
+                        false
+                ),
+                Arguments.of(
+                        "Unsuccessful deletion, when document exist but booking doesn't.",
+                        (Runnable) () -> List.of(
+                                new ServiceBooking(
+                                        new ObjectId("000000000000000000000000"),
+                                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                                        new ObjectId("100000000000000000000000"),
+                                        List.of()
+                                )
+                        ).forEach(MONGO_TEMPLATE::save),
+                        new DeleteBookingCommand(
+                                ServiceBookingIdentifier.Factory.create(
+                                        LocalDate.of(2024, 12, 12),
+                                        new ObjectId("100000000000000000000000")
+                                ),
+                                new ObjectId("110000000000000000000000")
+                        ),
+                        false,
+                        true
+                ),
+                Arguments.of(
+                        "Unsuccessful deletion, when document doesn't exist.",
+                        (Runnable) () -> {},
+                        new DeleteBookingCommand(
+                                ServiceBookingIdentifier.Factory.create(
+                                        LocalDate.of(2024, 12, 12),
+                                        new ObjectId("100000000000000000000000")
+                                ),
+                                new ObjectId("110000000000000000000000")
+                        ),
+                        false,
+                        false
+                )
+        );
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("provideDeleteBookingTestCases")
+    void deleteBooking(String name, Runnable createPreExistingBookings, DeleteBookingCommand command, boolean isSuccessful, boolean matchedButNoBooking) {
+        // given
+        createPreExistingBookings.run();
+
+        // when
+        UpdateResult result = REPOSITORY.deleteBooking(command);
+
+        // then
+        long matched = result.getMatchedCount();
+        long modified = result.getModifiedCount();
+
+        if (matchedButNoBooking) {
+            assertThat(matched).isOne();
+            assertThat(modified).isZero();
+            return;
+        }
+
+        if (isSuccessful) {
+            assertThat(matched).isOne();
+            assertThat(modified).isOne();
+        } else {
+            assertThat(matched).isZero();
+            assertThat(modified).isZero();
+        }
     }
 
 }
