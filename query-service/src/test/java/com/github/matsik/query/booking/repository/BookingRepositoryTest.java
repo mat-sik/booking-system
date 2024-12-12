@@ -122,7 +122,7 @@ class BookingRepositoryTest {
                 getTestCase("serviceBooking-1, booking-0", 1, 0),
                 getTestCase("serviceBooking-1, booking-1", 1, 1),
                 getTestCase("serviceBooking-2, booking-0", 2, 0),
-                getTestCase("none matching", -1, -1)
+                getTestCase("None matching.", -1, -1)
         );
     }
 
@@ -184,12 +184,12 @@ class BookingRepositoryTest {
 
     private static Stream<Arguments> provideGetBookingsTestCases() {
         return Stream.of(
-                Arguments.of("no filtering, return all",
+                Arguments.of("No filtering, return all.",
                         new GetBookingsQuery(
                                 List.of(), List.of(), List.of()),
                         SERVICE_BOOKINGS
                 ),
-                Arguments.of("filter for one specific by date and service id",
+                Arguments.of("Filter for one specific by date and service id.",
                         new GetBookingsQuery(
                                 List.of(
                                         LocalDate.parse(SERVICE_BOOKINGS.get(1).date(), DateTimeFormatter.ISO_LOCAL_DATE)
@@ -203,7 +203,7 @@ class BookingRepositoryTest {
                                 SERVICE_BOOKINGS.get(1)
                         )
                 ),
-                Arguments.of("filter for one specific by date and service id, filter by one user",
+                Arguments.of("Filter for one specific by date and service id, filter by one user.",
                         new GetBookingsQuery(
                                 List.of(
                                         LocalDate.parse(SERVICE_BOOKINGS.get(1).date(), DateTimeFormatter.ISO_LOCAL_DATE)
@@ -226,7 +226,7 @@ class BookingRepositoryTest {
                                 )
                         )
                 ),
-                Arguments.of("filter by date",
+                Arguments.of("Filter by date.",
                         new GetBookingsQuery(
                                 List.of(
                                         LocalDate.parse(SERVICE_BOOKINGS.get(1).date(), DateTimeFormatter.ISO_LOCAL_DATE)
@@ -239,7 +239,7 @@ class BookingRepositoryTest {
                                 SERVICE_BOOKINGS.get(2)
                         )
                 ),
-                Arguments.of("filter by service id",
+                Arguments.of("Filter by service id.",
                         new GetBookingsQuery(
                                 List.of(),
                                 List.of(
@@ -252,7 +252,7 @@ class BookingRepositoryTest {
                                 SERVICE_BOOKINGS.get(1)
                         )
                 ),
-                Arguments.of("filter by user",
+                Arguments.of("Filter by user.",
                         new GetBookingsQuery(
                                 List.of(),
                                 List.of(),
@@ -303,7 +303,7 @@ class BookingRepositoryTest {
 
     private static Stream<Arguments> provideGetBookingTimeRangesTestCases() {
         return Stream.of(
-                Arguments.of("first service booking",
+                Arguments.of("First service booking.",
                         getGetBookingTimeRangesQuery(
                                 SERVICE_BOOKINGS.get(0).date(),
                                 SERVICE_BOOKINGS.get(0).serviceId()
@@ -314,7 +314,7 @@ class BookingRepositoryTest {
                                 bookingTimeRangeFrom(SERVICE_BOOKINGS.get(0).bookings().get(2))
                         )
                 ),
-                Arguments.of("second service booking",
+                Arguments.of("Second service booking.",
                         getGetBookingTimeRangesQuery(
                                 SERVICE_BOOKINGS.get(1).date(),
                                 SERVICE_BOOKINGS.get(1).serviceId()
@@ -324,7 +324,7 @@ class BookingRepositoryTest {
                                 bookingTimeRangeFrom(SERVICE_BOOKINGS.get(1).bookings().get(1))
                         )
                 ),
-                Arguments.of("third service booking",
+                Arguments.of("Third service booking.",
                         getGetBookingTimeRangesQuery(
                                 SERVICE_BOOKINGS.get(2).date(),
                                 SERVICE_BOOKINGS.get(2).serviceId()
