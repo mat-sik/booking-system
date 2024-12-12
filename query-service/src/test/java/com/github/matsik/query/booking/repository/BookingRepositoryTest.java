@@ -13,6 +13,7 @@ import com.mongodb.client.MongoClients;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.testcontainers.containers.MongoDBContainer;
@@ -179,14 +180,14 @@ class BookingRepositoryTest {
         return new GetBookingQuery(identifier, bookingId);
     }
 
-    private static Stream<Object[]> provideGetBookingsTestCases() {
+    private static Stream<Arguments> provideGetBookingsTestCases() {
         return Stream.of(
-                new Object[]{ // NO FILTERING, RETURN ALL
+                Arguments.of("NO FILTERING, RETURN ALL", // Test name as first argument
                         new GetBookingsQuery(
                                 List.of(), List.of(), List.of()),
                         SERVICE_BOOKINGS
-                },
-                new Object[]{ // FILTER FOR ONE SPECIFIC BY DATE AND SERVICE ID
+                ),
+                Arguments.of("FILTER FOR ONE SPECIFIC BY DATE AND SERVICE ID",
                         new GetBookingsQuery(
                                 List.of(
                                         LocalDate.parse(SERVICE_BOOKINGS.get(1).date(), DateTimeFormatter.ISO_LOCAL_DATE)
@@ -194,15 +195,13 @@ class BookingRepositoryTest {
                                 List.of(
                                         SERVICE_BOOKINGS.get(1).serviceId()
                                 ),
-                                List.of(
-
-                                )
+                                List.of()
                         ),
                         List.of(
                                 SERVICE_BOOKINGS.get(1)
                         )
-                },
-                new Object[]{ // FILTER FOR ONE SPECIFIC BY DATE AND SERVICE ID, FILTER BY ONE USER
+                ),
+                Arguments.of("FILTER FOR ONE SPECIFIC BY DATE AND SERVICE ID, FILTER BY ONE USER",
                         new GetBookingsQuery(
                                 List.of(
                                         LocalDate.parse(SERVICE_BOOKINGS.get(1).date(), DateTimeFormatter.ISO_LOCAL_DATE)
@@ -224,43 +223,37 @@ class BookingRepositoryTest {
                                         )
                                 )
                         )
-                },
-                new Object[]{ // FILTER BY DATE
+                ),
+                Arguments.of("FILTER BY DATE",
                         new GetBookingsQuery(
                                 List.of(
                                         LocalDate.parse(SERVICE_BOOKINGS.get(1).date(), DateTimeFormatter.ISO_LOCAL_DATE)
                                 ),
-                                List.of(
-                                ),
-                                List.of(
-                                )
+                                List.of(),
+                                List.of()
                         ),
                         List.of(
                                 SERVICE_BOOKINGS.get(1),
                                 SERVICE_BOOKINGS.get(2)
                         )
-                },
-                new Object[]{ // FILTER BY SERVICE ID
+                ),
+                Arguments.of("FILTER BY SERVICE ID",
                         new GetBookingsQuery(
-                                List.of(
-                                ),
+                                List.of(),
                                 List.of(
                                         SERVICE_BOOKINGS.get(0).serviceId()
                                 ),
-                                List.of(
-                                )
+                                List.of()
                         ),
                         List.of(
                                 SERVICE_BOOKINGS.get(0),
                                 SERVICE_BOOKINGS.get(1)
                         )
-                },
-                new Object[]{ // FILTER BY USER
+                ),
+                Arguments.of("FILTER BY USER",
                         new GetBookingsQuery(
-                                List.of(
-                                ),
-                                List.of(
-                                ),
+                                List.of(),
+                                List.of(),
                                 List.of(
                                         SERVICE_BOOKINGS.get(0).bookings().get(0).userId()
                                 )
@@ -292,13 +285,13 @@ class BookingRepositoryTest {
                                         )
                                 )
                         )
-                }
+                )
         );
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "{0}")
     @MethodSource("provideGetBookingsTestCases")
-    void getBookings(GetBookingsQuery query, List<ServiceBooking> expected) {
+    void getBookings(String name, GetBookingsQuery query, List<ServiceBooking> expected) {
         // when
         List<ServiceBooking> result = REPOSITORY.getBookings(query);
 
