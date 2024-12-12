@@ -125,6 +125,21 @@ class BookingRepositoryTest {
         );
     }
 
+    @ParameterizedTest
+    @MethodSource("provideGetUserBookingTestCases")
+    void testGetUserBooking(GetBookingQuery query, UserBooking expected, boolean isEmpty) {
+        // when
+        Optional<UserBooking> result = REPOSITORY.getUserBooking(query);
+
+        // then
+        if (!isEmpty) {
+            assertThat(result).isNotEmpty();
+            assertThat(result.get()).isEqualTo(expected);
+        } else {
+            assertThat(result).isEmpty();
+        }
+    }
+
     private static Object[] getTestCase(int serviceBookingIdx, int bookingIdx) {
         GetBookingQuery query = getBookingQueryForNonExisting();
         UserBooking expected = null;
@@ -164,32 +179,26 @@ class BookingRepositoryTest {
         return new GetBookingQuery(identifier, bookingId);
     }
 
-    @ParameterizedTest
-    @MethodSource("provideGetUserBookingTestCases")
-    void testGetUserBooking(GetBookingQuery query, UserBooking expected, boolean isEmpty) {
-        // when
-        Optional<UserBooking> result = REPOSITORY.getUserBooking(query);
-
-        // then
-        if (!isEmpty) {
-            assertThat(result).isNotEmpty();
-            assertThat(result.get()).isEqualTo(expected);
-        } else {
-            assertThat(result).isEmpty();
-        }
+    private static Stream<Object[]> provideGetBookingsTestCases() {
+        return Stream.of(
+                getTestCase(0, 0),
+                getTestCase(0, 1),
+                getTestCase(0, 2),
+                getTestCase(1, 0),
+                getTestCase(1, 1),
+                getTestCase(2, 0),
+                getTestCase(-1, -1)
+        );
     }
 
-    @Test
-    void getBookings() {
-        List<LocalDate> dates = List.of(
-                LocalDate.of(2024, 12, 3),
-                LocalDate.of(2024, 12, 4)
-        );
-        List<ObjectId> serviceIds = List.of(new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa"));
-        List<ObjectId> userIds = List.of(new ObjectId("bbbbbbbbbbbbbbbbbbbbbbbb"));
-        GetBookingsQuery request = new GetBookingsQuery(dates, serviceIds, userIds);
-        var out = REPOSITORY.getBookings(request);
-        System.out.println(out);
+    @ParameterizedTest
+    @MethodSource("provideGetBookingsTestCases")
+    void getBookings(GetBookingsQuery query, List<ServiceBooking> expected) {
+        // when
+        List<ServiceBooking> result = REPOSITORY.getBookings(query);
+
+        // then
+        assertThat(result).isEqualTo(expected);
     }
 
     @Test
