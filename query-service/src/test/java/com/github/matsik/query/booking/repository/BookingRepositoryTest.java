@@ -114,21 +114,21 @@ class BookingRepositoryTest {
         MONGO_DB_CONTAINER.close();
     }
 
-    private static Stream<Object[]> provideGetUserBookingTestCases() {
+    private static Stream<Arguments> provideGetUserBookingTestCases() {
         return Stream.of(
-                getTestCase(0, 0),
-                getTestCase(0, 1),
-                getTestCase(0, 2),
-                getTestCase(1, 0),
-                getTestCase(1, 1),
-                getTestCase(2, 0),
-                getTestCase(-1, -1)
+                getTestCase("serviceBooking-0, booking-0", 0, 0),
+                getTestCase("serviceBooking-0, booking-1", 0, 1),
+                getTestCase("serviceBooking-0, booking-2", 0, 2),
+                getTestCase("serviceBooking-1, booking-0", 1, 0),
+                getTestCase("serviceBooking-1, booking-1", 1, 1),
+                getTestCase("serviceBooking-2, booking-0", 2, 0),
+                getTestCase("none matching", -1, -1)
         );
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "{0}")
     @MethodSource("provideGetUserBookingTestCases")
-    void testGetUserBooking(GetBookingQuery query, UserBooking expected, boolean isEmpty) {
+    void testGetUserBooking(String name, GetBookingQuery query, UserBooking expected, boolean isEmpty) {
         // when
         Optional<UserBooking> result = REPOSITORY.getUserBooking(query);
 
@@ -141,16 +141,18 @@ class BookingRepositoryTest {
         }
     }
 
-    private static Object[] getTestCase(int serviceBookingIdx, int bookingIdx) {
+    private static Arguments getTestCase(String testName, int serviceBookingIdx, int bookingIdx) {
         GetBookingQuery query = getBookingQueryForNonExisting();
         UserBooking expected = null;
         boolean isEmpty = true;
+
         if (serviceBookingIdx != -1 && bookingIdx != -1) {
             query = getGetBookingQuery(serviceBookingIdx, bookingIdx);
             expected = getExpected(serviceBookingIdx, bookingIdx);
             isEmpty = false;
         }
-        return new Object[]{query, expected, isEmpty};
+
+        return Arguments.of(testName, query, expected, isEmpty);
     }
 
     private static UserBooking getExpected(int serviceBookingIdx, int bookingIdx) {
