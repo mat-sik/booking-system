@@ -184,12 +184,12 @@ class BookingRepositoryTest {
 
     private static Stream<Arguments> provideGetBookingsTestCases() {
         return Stream.of(
-                Arguments.of("NO FILTERING, RETURN ALL", // Test name as first argument
+                Arguments.of("no filtering, return all",
                         new GetBookingsQuery(
                                 List.of(), List.of(), List.of()),
                         SERVICE_BOOKINGS
                 ),
-                Arguments.of("FILTER FOR ONE SPECIFIC BY DATE AND SERVICE ID",
+                Arguments.of("filter for one specific by date and service id",
                         new GetBookingsQuery(
                                 List.of(
                                         LocalDate.parse(SERVICE_BOOKINGS.get(1).date(), DateTimeFormatter.ISO_LOCAL_DATE)
@@ -203,7 +203,7 @@ class BookingRepositoryTest {
                                 SERVICE_BOOKINGS.get(1)
                         )
                 ),
-                Arguments.of("FILTER FOR ONE SPECIFIC BY DATE AND SERVICE ID, FILTER BY ONE USER",
+                Arguments.of("filter for one specific by date and service id, filter by one user",
                         new GetBookingsQuery(
                                 List.of(
                                         LocalDate.parse(SERVICE_BOOKINGS.get(1).date(), DateTimeFormatter.ISO_LOCAL_DATE)
@@ -226,7 +226,7 @@ class BookingRepositoryTest {
                                 )
                         )
                 ),
-                Arguments.of("FILTER BY DATE",
+                Arguments.of("filter by date",
                         new GetBookingsQuery(
                                 List.of(
                                         LocalDate.parse(SERVICE_BOOKINGS.get(1).date(), DateTimeFormatter.ISO_LOCAL_DATE)
@@ -239,7 +239,7 @@ class BookingRepositoryTest {
                                 SERVICE_BOOKINGS.get(2)
                         )
                 ),
-                Arguments.of("FILTER BY SERVICE ID",
+                Arguments.of("filter by service id",
                         new GetBookingsQuery(
                                 List.of(),
                                 List.of(
@@ -252,7 +252,7 @@ class BookingRepositoryTest {
                                 SERVICE_BOOKINGS.get(1)
                         )
                 ),
-                Arguments.of("FILTER BY USER",
+                Arguments.of("filter by user",
                         new GetBookingsQuery(
                                 List.of(),
                                 List.of(),
