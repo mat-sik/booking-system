@@ -1,12 +1,28 @@
 package com.github.matsik.command.booking.repository;
 
+import com.github.matsik.command.booking.command.CreateBookingCommand;
+import com.github.matsik.command.booking.model.ServiceBooking;
+import com.github.matsik.mongo.model.Booking;
+import com.github.matsik.mongo.model.ServiceBookingIdentifier;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.testcontainers.containers.MongoDBContainer;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class BookingRepositoryTest {
 
@@ -31,9 +47,137 @@ class BookingRepositoryTest {
         MONGO_DB_CONTAINER.close();
     }
 
-    @Test
-    void createBooking() {
+    @BeforeEach
+    void beforeEach() {
+        MONGO_TEMPLATE.dropCollection(ServiceBooking.class);
+    }
 
+    private static Stream<Arguments> provideCreateBookingTestCases() {
+        return Stream.of(
+                Arguments.of(
+                        "Successful booking creation, when required booking is present and has some bookings.",
+                        (Runnable) () -> List.of(
+                                new ServiceBooking(
+                                        new ObjectId("000000000000000000000000"),
+                                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                                        new ObjectId("100000000000000000000000"),
+                                        List.of(
+                                                new Booking(
+                                                        new ObjectId("110000000000000000000000"),
+                                                        new ObjectId("010000000000000000000000"),
+                                                        0,
+                                                        1000
+                                                ),
+                                                new Booking(
+                                                        new ObjectId("110000000000000000000001"),
+                                                        new ObjectId("010000000000000000000000"),
+                                                        1100,
+                                                        1440
+                                                )
+                                        )
+                                )
+                        ).forEach(MONGO_TEMPLATE::save),
+                        new CreateBookingCommand(
+                                ServiceBookingIdentifier.Factory.create(
+                                        LocalDate.of(2024, 12, 12),
+                                        new ObjectId("100000000000000000000000")
+                                ),
+                                new ObjectId("010000000000000000000001"),
+                                1000,
+                                1100
+                        ),
+                        true
+                ),
+                Arguments.of(
+                        "Unsuccessful booking creation, when there is collision.",
+                        (Runnable) () -> List.of(
+                                new ServiceBooking(
+                                        new ObjectId("000000000000000000000000"),
+                                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                                        new ObjectId("100000000000000000000000"),
+                                        List.of(
+                                                new Booking(
+                                                        new ObjectId("110000000000000000000000"),
+                                                        new ObjectId("010000000000000000000000"),
+                                                        0,
+                                                        1100
+                                                ),
+                                                new Booking(
+                                                        new ObjectId("110000000000000000000001"),
+                                                        new ObjectId("010000000000000000000000"),
+                                                        1100,
+                                                        1440
+                                                )
+                                        )
+                                )
+                        ).forEach(MONGO_TEMPLATE::save),
+                        new CreateBookingCommand(
+                                ServiceBookingIdentifier.Factory.create(
+                                        LocalDate.of(2024, 12, 12),
+                                        new ObjectId("100000000000000000000000")
+                                ),
+                                new ObjectId("010000000000000000000001"),
+                                1000,
+                                1100
+                        ),
+                        false
+                ),
+                Arguments.of(
+                        "Successful booking creation, when required document is not present(or not matched).",
+                        (Runnable) () -> {},
+                        new CreateBookingCommand(
+                                ServiceBookingIdentifier.Factory.create(
+                                        LocalDate.of(2024, 12, 12),
+                                        new ObjectId("100000000000000000000000")
+                                ),
+                                new ObjectId("010000000000000000000001"),
+                                1000,
+                                1100
+                        ),
+                        true
+                ),
+                Arguments.of(
+                        "Successful booking creation, when required document is present, but empty.",
+                        (Runnable) () -> List.of(
+                                new ServiceBooking(
+                                        new ObjectId("000000000000000000000000"),
+                                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                                        new ObjectId("100000000000000000000000"),
+                                        List.of()
+                                )
+                        ).forEach(MONGO_TEMPLATE::save),                                new CreateBookingCommand(
+                                ServiceBookingIdentifier.Factory.create(
+                                        LocalDate.of(2024, 12, 12),
+                                        new ObjectId("100000000000000000000000")
+                                ),
+                                new ObjectId("010000000000000000000001"),
+                                1000,
+                                1100
+                        ),
+                        true
+                )
+        );
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("provideCreateBookingTestCases")
+    void createBooking(String name, Runnable createPreExistingBookings, CreateBookingCommand command, boolean isSuccessful) {
+        // given
+        createPreExistingBookings.run();
+
+        // when
+        UpdateResult result = REPOSITORY.createBooking(command);
+
+        // then
+        long matched = result.getMatchedCount();
+        long modified = result.getModifiedCount();
+        if (isSuccessful) {
+            assertThat(matched).isOne();
+            assertThat(modified).isOne();
+        } else {
+            assertThat(matched).isZero();
+            assertThat(modified).isZero();
+        }
     }
 
     @Test
