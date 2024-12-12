@@ -6,6 +6,7 @@ import com.github.matsik.query.booking.query.GetBookingTimeRangesQuery;
 import com.github.matsik.query.booking.repository.BookingRepository;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
@@ -23,9 +24,9 @@ class BookingServiceTest {
 
     private final BookingService service = new BookingService(repository);
 
-    private static Stream<GetAvailableTimeRangesTestCase> provideGetAvailableTimeRangesTestScenarios() {
+    private static Stream<Arguments> provideGetAvailableTimeRangesTestScenarios() {
         return Stream.of(
-                new GetAvailableTimeRangesTestCase(
+                getGetAvailableTimeRangesArguments(
                         "Many available time ranges.",
                         100,
                         List.of(
@@ -45,7 +46,7 @@ class BookingServiceTest {
                                 new TimeRange(1320, 1440)
                         )
                 ),
-                new GetAvailableTimeRangesTestCase(
+                getGetAvailableTimeRangesArguments(
                         "No unavailable time ranges.",
                         100,
                         List.of(),
@@ -64,7 +65,7 @@ class BookingServiceTest {
                                 new TimeRange(1320, 1440)
                         )
                 ),
-                new GetAvailableTimeRangesTestCase(
+                getGetAvailableTimeRangesArguments(
                         "No available time ranges.",
                         100,
                         List.of(
@@ -72,7 +73,7 @@ class BookingServiceTest {
                         ),
                         List.of()
                 ),
-                new GetAvailableTimeRangesTestCase(
+                getGetAvailableTimeRangesArguments(
                         "Zero service duration.",
                         0,
                         List.of(
@@ -90,48 +91,50 @@ class BookingServiceTest {
         );
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "{0}")
     @MethodSource("provideGetAvailableTimeRangesTestScenarios")
-    void getAvailableTimeRanges(GetAvailableTimeRangesTestCase testCase) {
+    void getAvailableTimeRanges(
+            String name,
+            GetBookingTimeRangesQuery getBookingTimeRangesQuery,
+            GetAvailableTimeRangesQuery getAvailableTimeRangesQuery,
+            List<TimeRange> unavailableTimeRanges,
+            List<TimeRange> expected
+    ) {
         // given
-        given(repository.getBookingTimeRanges(testCase.getBookingTimeRangesQuery)).willReturn(testCase.unavailableTimeRanges);
+        given(repository.getBookingTimeRanges(getBookingTimeRangesQuery)).willReturn(unavailableTimeRanges);
 
         // when
-        List<TimeRange> result = service.getAvailableTimeRanges(testCase.getAvailableTimeRangesQuery);
+        List<TimeRange> result = service.getAvailableTimeRanges(getAvailableTimeRangesQuery);
 
         // then
-        then(repository).should().getBookingTimeRanges(testCase.getBookingTimeRangesQuery);
+        then(repository).should().getBookingTimeRanges(getBookingTimeRangesQuery);
         then(repository).shouldHaveNoMoreInteractions();
 
-        assertThat(result).isEqualTo(testCase.expected);
+        assertThat(result).isEqualTo(expected);
     }
 
-    private static class GetAvailableTimeRangesTestCase {
-        private static final ObjectId SERVICE_ID = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
-        private static final LocalDate DATE = LocalDate.of(2024, 12, 3);
+    private static Arguments getGetAvailableTimeRangesArguments(
+            String name,
+            int serviceDuration,
+            List<TimeRange> unavailableTimeRanges,
+            List<TimeRange> expected
+    ) {
+        ServiceBookingIdentifier identifier = getDefaultIdentifier();
+        GetBookingTimeRangesQuery getBookingTimeRangesQuery = new GetBookingTimeRangesQuery(identifier);
+        GetAvailableTimeRangesQuery getAvailableTimeRangesQuery = new GetAvailableTimeRangesQuery(getBookingTimeRangesQuery, serviceDuration);
 
-        private final String description;
-        private final GetBookingTimeRangesQuery getBookingTimeRangesQuery;
-        private final GetAvailableTimeRangesQuery getAvailableTimeRangesQuery;
-        private final List<TimeRange> unavailableTimeRanges;
-        private final List<TimeRange> expected;
+        return Arguments.of(
+                name,
+                getBookingTimeRangesQuery,
+                getAvailableTimeRangesQuery,
+                unavailableTimeRanges,
+                expected
+        );
+    }
 
-        private GetAvailableTimeRangesTestCase(String description, int serviceDuration, List<TimeRange> unavailableTimeRanges, List<TimeRange> expected) {
-            this.description = description;
-
-            var serviceBookingIdentifier = ServiceBookingIdentifier.Factory.create(DATE, SERVICE_ID);
-
-            this.getBookingTimeRangesQuery = new GetBookingTimeRangesQuery(serviceBookingIdentifier);
-            this.getAvailableTimeRangesQuery = new GetAvailableTimeRangesQuery(getBookingTimeRangesQuery, serviceDuration);
-
-            this.unavailableTimeRanges = unavailableTimeRanges;
-
-            this.expected = expected;
-        }
-
-        @Override
-        public String toString() {
-            return "Scenario: " + description;
-        }
+    private static ServiceBookingIdentifier getDefaultIdentifier() {
+        LocalDate date = LocalDate.of(2024, 12, 3);
+        ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
+        return ServiceBookingIdentifier.Factory.create(date, serviceId);
     }
 }
