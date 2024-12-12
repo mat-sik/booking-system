@@ -1,51 +1,43 @@
 package com.github.matsik.command.booking.repository;
 
-import com.github.matsik.command.booking.command.CreateBookingCommand;
-import com.github.matsik.command.booking.command.DeleteBookingCommand;
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
-import com.mongodb.client.result.UpdateResult;
-import org.bson.types.ObjectId;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.testcontainers.containers.MongoDBContainer;
 
-import java.time.LocalDate;
-
-@SpringBootTest
 class BookingRepositoryTest {
 
-    private final BookingRepository repository;
+    private static final MongoDBContainer MONGO_DB_CONTAINER;
+    private static final MongoClient MONGO_CLIENT;
+    private static final MongoTemplate MONGO_TEMPLATE;
+    private static final BookingRepository REPOSITORY;
 
-    @Autowired
-    BookingRepositoryTest(BookingRepository repository) {
-        this.repository = repository;
+    static {
+        MONGO_DB_CONTAINER = new MongoDBContainer("mongo:8.0.0");
+        MONGO_DB_CONTAINER.start();
+
+        MONGO_CLIENT = MongoClients.create(MONGO_DB_CONTAINER.getReplicaSetUrl());
+        MONGO_TEMPLATE = new MongoTemplate(MONGO_CLIENT, "test");
+
+        REPOSITORY = new BookingRepository(MONGO_TEMPLATE);
+    }
+
+    @AfterAll
+    static void afterAll() {
+        MONGO_CLIENT.close();
+        MONGO_DB_CONTAINER.close();
     }
 
     @Test
     void createBooking() {
-        LocalDate date = LocalDate.of(2024, 12, 4);
 
-        ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaab");
-        ObjectId userId = new ObjectId("bbbbbbbbbbbbbbbbbbbbbbba");
-
-        ServiceBookingIdentifier serviceBookingIdentifier = ServiceBookingIdentifier.Factory.create(date, serviceId);
-        CreateBookingCommand createBookingCommand = new CreateBookingCommand(serviceBookingIdentifier, userId, 720, 780);
-        UpdateResult out = repository.createBooking(createBookingCommand);
-
-        System.out.println(out);
     }
 
     @Test
     void deleteBooking() {
-        LocalDate date = LocalDate.of(2024, 12, 3);
-
-        ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
-        ObjectId bookingId = new ObjectId("67500fbf4752c73da3a096e5");
-
-        ServiceBookingIdentifier serviceBookingIdentifier = ServiceBookingIdentifier.Factory.create(date, serviceId);
-        DeleteBookingCommand deleteBooking = new DeleteBookingCommand(serviceBookingIdentifier, bookingId);
-        UpdateResult out = repository.deleteBooking(deleteBooking);
-
-        System.out.println(out);
     }
+
 }
