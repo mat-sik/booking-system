@@ -1,6 +1,5 @@
 package com.github.matsik.query.booking.service;
 
-import com.github.matsik.query.booking.model.BookingTimeRange;
 import com.github.matsik.query.booking.model.ServiceBooking;
 import com.github.matsik.query.booking.model.UserBooking;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
@@ -30,7 +29,7 @@ public class BookingService {
     private final BookingRepository repository;
 
     public List<TimeRange> getAvailableTimeRanges(GetAvailableTimeRangesQuery query) {
-        List<BookingTimeRange> unavailableTimeRanges = repository.getBookingTimeRanges(query.getBookingTimeRangesQuery());
+        List<TimeRange> unavailableTimeRanges = repository.getBookingTimeRanges(query.getBookingTimeRangesQuery());
 
         int serviceDuration = getSystemServiceDuration(query.serviceDuration());
 
@@ -44,7 +43,7 @@ public class BookingService {
      * I believe that Interval Tree could be used to efficiently check for overlap. When using this data structure, the
      * time complexity would be of O(min(n,m)*log(max(n,m))) plus time to build the tree, so basically O(nlogn).
      */
-    private static List<TimeRange> getAvailableTimeRanges(List<BookingTimeRange> unavailableTimeRanges, int serviceDuration) {
+    private static List<TimeRange> getAvailableTimeRanges(List<TimeRange> unavailableTimeRanges, int serviceDuration) {
         serviceDuration = Math.max(SKIP, serviceDuration);
 
         List<TimeRange> availableTimeRanges = new ArrayList<>();
@@ -52,8 +51,8 @@ public class BookingService {
             boolean isAvailable = true;
             int end = start + serviceDuration;
 
-            for (BookingTimeRange unavailableTimeRange : unavailableTimeRanges) {
-                if (isOverlap(unavailableTimeRange, start, end)) {
+            for (TimeRange range : unavailableTimeRanges) {
+                if (isOverlap(range, start, end)) {
                     isAvailable = false;
                     break;
                 }
@@ -70,8 +69,8 @@ public class BookingService {
         return Math.ceilDiv(rawServiceDuration + SKIP, SERVICE_TIME_SLICE) * SERVICE_TIME_SLICE;
     }
 
-    private static boolean isOverlap(BookingTimeRange bookingTimeRange, int start, int end) {
-        return start < bookingTimeRange.end() && end > bookingTimeRange.start();
+    private static boolean isOverlap(TimeRange range, int start, int end) {
+        return start < range.end() && end > range.start();
     }
 
     public UserBooking getUserBooking(GetBookingQuery query) {

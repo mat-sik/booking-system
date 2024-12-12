@@ -1,7 +1,6 @@
 package com.github.matsik.query.booking.service;
 
 import com.github.matsik.mongo.model.ServiceBookingIdentifier;
-import com.github.matsik.query.booking.model.BookingTimeRange;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetBookingTimeRangesQuery;
 import com.github.matsik.query.booking.repository.BookingRepository;
@@ -30,8 +29,8 @@ class BookingServiceTest {
                         "Many available time ranges.",
                         100,
                         List.of(
-                                getBookingTimeRange(600, 660),
-                                getBookingTimeRange(850, 900)
+                                new TimeRange(600, 660),
+                                new TimeRange(850, 900)
                         ),
                         List.of(
                                 new TimeRange(0, 120),
@@ -69,7 +68,7 @@ class BookingServiceTest {
                         "No available time ranges.",
                         100,
                         List.of(
-                                getBookingTimeRange(60, 1400)
+                                new TimeRange(60, 1400)
                         ),
                         List.of()
                 ),
@@ -77,8 +76,8 @@ class BookingServiceTest {
                         "Zero service duration.",
                         0,
                         List.of(
-                                getBookingTimeRange(0, 1200),
-                                getBookingTimeRange(1320, 1440)
+                                new TimeRange(0, 1200),
+                                new TimeRange(1320, 1440)
                         ),
                         List.of(
 
@@ -107,10 +106,6 @@ class BookingServiceTest {
         assertThat(result).isEqualTo(testCase.expected);
     }
 
-    private static BookingTimeRange getBookingTimeRange(int start, int end) {
-        return new BookingTimeRange(new ObjectId(), start, end);
-    }
-
     private static class GetAvailableTimeRangesTestCase {
         private static final ObjectId SERVICE_ID = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
         private static final LocalDate DATE = LocalDate.of(2024, 12, 3);
@@ -118,10 +113,10 @@ class BookingServiceTest {
         private final String description;
         private final GetBookingTimeRangesQuery getBookingTimeRangesQuery;
         private final GetAvailableTimeRangesQuery getAvailableTimeRangesQuery;
-        private final List<BookingTimeRange> unavailableTimeRanges;
+        private final List<TimeRange> unavailableTimeRanges;
         private final List<TimeRange> expected;
 
-        private GetAvailableTimeRangesTestCase(String description, int serviceDuration, List<BookingTimeRange> unavailableTimeRanges, List<TimeRange> expected) {
+        private GetAvailableTimeRangesTestCase(String description, int serviceDuration, List<TimeRange> unavailableTimeRanges, List<TimeRange> expected) {
             this.description = description;
 
             var serviceBookingIdentifier = ServiceBookingIdentifier.Factory.create(DATE, SERVICE_ID);

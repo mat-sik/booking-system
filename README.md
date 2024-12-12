@@ -373,6 +373,8 @@ Output:
 
 To fulfill this request, the query should retrieve all booking time ranges for a specified date and service.
 
+The rest is calculated in memory.
+
 Query:
 
 ```
@@ -388,6 +390,7 @@ db.service_bookings.aggregate([
 },
 {
     $project: {
+        "_id": 0,
         start: "$bookings.start",
         end: "$bookings.end"
    }
@@ -399,10 +402,10 @@ Output:
 
 ```
 [
-  { _id: ObjectId('67500fbf03727dde1663113a'), start: 540, end: 600 },
-  { _id: ObjectId('67500fbf03727dde1663113a'), start: 600, end: 660 },
-  { _id: ObjectId('67500fbf03727dde1663113a'), start: 660, end: 720 },
-  { _id: ObjectId('67500fbf03727dde1663113a'), start: 720, end: 780 }
+  { start: 540, end: 600 },
+  { start: 600, end: 660 },
+  { start: 660, end: 720 },
+  { start: 720, end: 780 }
 ]
 ```
 

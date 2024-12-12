@@ -7,11 +7,11 @@ import com.github.matsik.query.booking.model.UserBooking;
 import com.github.matsik.query.booking.query.GetBookingQuery;
 import com.github.matsik.query.booking.query.GetBookingTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetBookingsQuery;
+import com.github.matsik.query.booking.service.TimeRange;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -262,7 +262,7 @@ class BookingRepositoryTest {
                                 List.of(
                                 ),
                                 List.of(
-                                    SERVICE_BOOKINGS.get(0).bookings().get(0).userId()
+                                        SERVICE_BOOKINGS.get(0).bookings().get(0).userId()
                                 )
                         ),
                         List.of(
@@ -306,13 +306,61 @@ class BookingRepositoryTest {
         assertThat(result).isEqualTo(expected);
     }
 
-    @Test
-    void getBookingTimeRanges() {
-        LocalDate localDate = LocalDate.of(2024, 12, 3);
-        ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
+    private static Stream<Object[]> provideGetBookingTimeRangesTestCases() {
+        return Stream.of(
+                new Object[]{
+                        getGetBookingTimeRangesQuery(
+                                SERVICE_BOOKINGS.get(0).date(),
+                                SERVICE_BOOKINGS.get(0).serviceId()
+                        ),
+                        List.of(
+                                bookingTimeRangeFrom(SERVICE_BOOKINGS.get(0).bookings().get(0)),
+                                bookingTimeRangeFrom(SERVICE_BOOKINGS.get(0).bookings().get(1)),
+                                bookingTimeRangeFrom(SERVICE_BOOKINGS.get(0).bookings().get(2))
+                        )
+                },
+                new Object[]{
+                        getGetBookingTimeRangesQuery(
+                                SERVICE_BOOKINGS.get(1).date(),
+                                SERVICE_BOOKINGS.get(1).serviceId()
+                        ),
+                        List.of(
+                                bookingTimeRangeFrom(SERVICE_BOOKINGS.get(1).bookings().get(0)),
+                                bookingTimeRangeFrom(SERVICE_BOOKINGS.get(1).bookings().get(1))
+                        )
+                },
+                new Object[]{
+                        getGetBookingTimeRangesQuery(
+                                SERVICE_BOOKINGS.get(2).date(),
+                                SERVICE_BOOKINGS.get(2).serviceId()
+                        ),
+                        List.of(
+                                bookingTimeRangeFrom(SERVICE_BOOKINGS.get(2).bookings().get(0))
+                        )
+                }
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideGetBookingTimeRangesTestCases")
+    void getBookingTimeRanges(GetBookingTimeRangesQuery query, List<TimeRange> expected) {
+        // when
+        List<TimeRange> result = REPOSITORY.getBookingTimeRanges(query);
+
+        // then
+        assertThat(result).isEqualTo(expected);
+    }
+
+    private static GetBookingTimeRangesQuery getGetBookingTimeRangesQuery(String date, ObjectId serviceId) {
+        LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE);
         ServiceBookingIdentifier identifier = ServiceBookingIdentifier.Factory.create(localDate, serviceId);
-        GetBookingTimeRangesQuery request = new GetBookingTimeRangesQuery(identifier);
-        var out = REPOSITORY.getBookingTimeRanges(request);
-        System.out.println(out);
+        return new GetBookingTimeRangesQuery(identifier);
+    }
+
+    private static TimeRange bookingTimeRangeFrom(Booking booking) {
+        return new TimeRange(
+                booking.start(),
+                booking.end()
+        );
     }
 }

@@ -1,12 +1,12 @@
 package com.github.matsik.query.booking.repository;
 
 import com.github.matsik.mongo.model.ServiceBookingIdentifier;
-import com.github.matsik.query.booking.model.BookingTimeRange;
 import com.github.matsik.query.booking.model.ServiceBooking;
 import com.github.matsik.query.booking.model.UserBooking;
 import com.github.matsik.query.booking.query.GetBookingQuery;
 import com.github.matsik.query.booking.query.GetBookingTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetBookingsQuery;
+import com.github.matsik.query.booking.service.TimeRange;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -56,14 +56,15 @@ public class BookingRepository {
     }
 
 
-    public List<BookingTimeRange> getBookingTimeRanges(GetBookingTimeRangesQuery query) {
+    public List<TimeRange> getBookingTimeRanges(GetBookingTimeRangesQuery query) {
         AggregationOperation matchByDateServiceId = getMatchOperation(query.serviceBookingIdentifier());
 
         AggregationOperation unwindBookings = Aggregation.unwind("$bookings");
 
         AggregationOperation projectTimeRange = Aggregation.project()
                 .and("$bookings.start").as("start")
-                .and("$bookings.end").as("end");
+                .and("$bookings.end").as("end")
+                .andExclude("_id");
 
         Aggregation aggregation = Aggregation.newAggregation(
                 matchByDateServiceId,
@@ -71,7 +72,7 @@ public class BookingRepository {
                 projectTimeRange
         );
 
-        return template.aggregate(aggregation, "service_bookings", BookingTimeRange.class)
+        return template.aggregate(aggregation, "service_bookings", TimeRange.class)
                 .getMappedResults();
     }
 
