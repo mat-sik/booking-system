@@ -82,17 +82,16 @@ class BookingControllerTest {
                                 new TimeRange(900, 990),
                                 new TimeRange(990, 1080)
                         ),
-                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
-                            resultActions
-                                    .andExpect(status().isBadRequest())
-                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                                    .andExpect(jsonPath("$", aMapWithSize(5)))
-                                    .andExpect(jsonPath("$.type").value("about:blank"))
-                                    .andExpect(jsonPath("$.title").value("Bad Request"))
-                                    .andExpect(jsonPath("$.status").value(400))
-                                    .andExpect(jsonPath("$.detail").value("For input string: \"invalidformat\""))
-                                    .andExpect(jsonPath("$.instance").value("/booking/available"));
-                        },
+                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) ->
+                                resultActions
+                                        .andExpect(status().isBadRequest())
+                                        .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                                        .andExpect(jsonPath("$", aMapWithSize(5)))
+                                        .andExpect(jsonPath("$.type").value("about:blank"))
+                                        .andExpect(jsonPath("$.title").value("Bad Request"))
+                                        .andExpect(jsonPath("$.status").value(400))
+                                        .andExpect(jsonPath("$.detail").value("For input string: \"invalidformat\""))
+                                        .andExpect(jsonPath("$.instance").value("/booking/available")),
                         (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) -> then(service).shouldHaveNoMoreInteractions()
                 ),
                 Arguments.of(
@@ -104,17 +103,16 @@ class BookingControllerTest {
                                 new TimeRange(900, 990),
                                 new TimeRange(990, 1080)
                         ),
-                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
-                            resultActions
-                                    .andExpect(status().isBadRequest())
-                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                                    .andExpect(jsonPath("$", aMapWithSize(5)))
-                                    .andExpect(jsonPath("$.type").value("about:blank"))
-                                    .andExpect(jsonPath("$.title").value("Bad Request"))
-                                    .andExpect(jsonPath("$.status").value(400))
-                                    .andExpect(jsonPath("$.detail").value("getAvailableTimeRanges.serviceDuration: must be greater than 0"))
-                                    .andExpect(jsonPath("$.instance").value("/booking/available"));
-                        },
+                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) ->
+                                resultActions
+                                        .andExpect(status().isBadRequest())
+                                        .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                                        .andExpect(jsonPath("$", aMapWithSize(5)))
+                                        .andExpect(jsonPath("$.type").value("about:blank"))
+                                        .andExpect(jsonPath("$.title").value("Bad Request"))
+                                        .andExpect(jsonPath("$.status").value(400))
+                                        .andExpect(jsonPath("$.detail").value("getAvailableTimeRanges.serviceDuration: must be greater than 0"))
+                                        .andExpect(jsonPath("$.instance").value("/booking/available")),
                         (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) -> then(service).shouldHaveNoMoreInteractions()
                 ),
                 Arguments.of(
@@ -126,17 +124,16 @@ class BookingControllerTest {
                                 new TimeRange(900, 990),
                                 new TimeRange(990, 1080)
                         ),
-                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
-                            resultActions
-                                    .andExpect(status().isBadRequest())
-                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                                    .andExpect(jsonPath("$", aMapWithSize(5)))
-                                    .andExpect(jsonPath("$.type").value("about:blank"))
-                                    .andExpect(jsonPath("$.title").value("Bad Request"))
-                                    .andExpect(jsonPath("$.status").value(400))
-                                    .andExpect(jsonPath("$.detail").value("Invalid ObjectId: Incorrect hex string"))
-                                    .andExpect(jsonPath("$.instance").value("/booking/available"));
-                        },
+                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) ->
+                                resultActions
+                                        .andExpect(status().isBadRequest())
+                                        .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                                        .andExpect(jsonPath("$", aMapWithSize(5)))
+                                        .andExpect(jsonPath("$.type").value("about:blank"))
+                                        .andExpect(jsonPath("$.title").value("Bad Request"))
+                                        .andExpect(jsonPath("$.status").value(400))
+                                        .andExpect(jsonPath("$.detail").value("Invalid ObjectId: Incorrect hex string"))
+                                        .andExpect(jsonPath("$.instance").value("/booking/available")),
                         (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) -> then(service).shouldHaveNoMoreInteractions()
                 ),
                 Arguments.of(
@@ -148,17 +145,16 @@ class BookingControllerTest {
                                 new TimeRange(900, 990),
                                 new TimeRange(990, 1080)
                         ),
-                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
-                            resultActions
-                                    .andExpect(status().isBadRequest())
-                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                                    .andExpect(jsonPath("$", aMapWithSize(5)))
-                                    .andExpect(jsonPath("$.type").value("about:blank"))
-                                    .andExpect(jsonPath("$.title").value("Bad Request"))
-                                    .andExpect(jsonPath("$.status").value(400))
-                                    .andExpect(jsonPath("$.detail").value("Parse attempt failed for value [22004-10-33]"))
-                                    .andExpect(jsonPath("$.instance").value("/booking/available"));
-                        },
+                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) ->
+                                resultActions
+                                        .andExpect(status().isBadRequest())
+                                        .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                                        .andExpect(jsonPath("$", aMapWithSize(5)))
+                                        .andExpect(jsonPath("$.type").value("about:blank"))
+                                        .andExpect(jsonPath("$.title").value("Bad Request"))
+                                        .andExpect(jsonPath("$.status").value(400))
+                                        .andExpect(jsonPath("$.detail").value("Parse attempt failed for value [22004-10-33]"))
+                                        .andExpect(jsonPath("$.instance").value("/booking/available")),
                         (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) -> then(service).shouldHaveNoMoreInteractions()
                 )
         );
@@ -225,18 +221,38 @@ class BookingControllerTest {
                                 60,
                                 120
                         ),
-                        (MockMvcExpectationAssertion<UserBooking>) (resultActions, userBooking) -> {
-                            resultActions
-                                    .andExpect(status().isOk())
-                                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                                    .andExpect(jsonPath("$", aMapWithSize(3)))
-                                    .andExpect(jsonPath("$.userId").value("110000000000000000000000"))
-                                    .andExpect(jsonPath("$.start").value(60))
-                                    .andExpect(jsonPath("$.end").value(120));
-                        },
-                        (MockServiceAssertion<GetBookingQuery>) (service, query) -> {
-                            then(service).should().getUserBooking(query);
-                        }
+                        (MockMvcExpectationAssertion<UserBooking>) (resultActions, userBooking) ->
+                                resultActions
+                                        .andExpect(status().isOk())
+                                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                        .andExpect(jsonPath("$", aMapWithSize(3)))
+                                        .andExpect(jsonPath("$.userId").value("110000000000000000000000"))
+                                        .andExpect(jsonPath("$.start").value(60))
+                                        .andExpect(jsonPath("$.end").value(120)),
+                        (MockServiceAssertion<GetBookingQuery>) (service, query) -> then(service).should().getUserBooking(query)
+
+                ),
+                Arguments.of(
+                        "Incorrect date.",
+                        "22004-10-33",
+                        new ObjectId("000000000000000000000000").toHexString(),
+                        new ObjectId("100000000000000000000000").toHexString(),
+                        new UserBooking(
+                                new ObjectId("110000000000000000000000"),
+                                60,
+                                120
+                        ),
+                        (MockMvcExpectationAssertion<UserBooking>) (resultActions, userBooking) -> resultActions
+                                .andExpect(status().isBadRequest())
+                                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                                .andExpect(jsonPath("$", aMapWithSize(6)))
+                                .andExpect(jsonPath("$.type").value("about:blank"))
+                                .andExpect(jsonPath("$.title").value("Bad Request"))
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.detail").value("Parse attempt failed for value [22004-10-33]"))
+                                .andExpect(jsonPath("$.instance").value("/booking"))
+                                .andExpect(jsonPath("$.properties").isEmpty()),
+                        (MockServiceAssertion<GetBookingQuery>) (service, query) -> then(service).shouldHaveNoMoreInteractions()
 
                 )
         );
