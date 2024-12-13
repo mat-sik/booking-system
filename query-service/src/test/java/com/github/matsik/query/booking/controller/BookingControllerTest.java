@@ -173,7 +173,7 @@ class BookingControllerTest {
     ) throws Exception {
         // given
         GetAvailableTimeRangesQuery query = getGetAvailableTimeRangesQueryOrDefault(date, serviceId, serviceDuration);
-        when(service.getAvailableTimeRanges(eq(query)))
+        when(service.getAvailableTimeRanges(query))
                 .thenReturn(availableTimeRanges);
 
         // when
