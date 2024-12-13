@@ -1,6 +1,5 @@
 package com.github.matsik.query.booking.controller;
 
-import com.fasterxml.jackson.databind.util.JacksonCollectors;
 import com.github.matsik.query.booking.model.UserBooking;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetBookingQuery;

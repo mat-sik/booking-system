@@ -237,7 +237,8 @@ class BookingRepositoryTest {
                 ),
                 Arguments.of(
                         "Unsuccessful deletion, when document doesn't exist.",
-                        (Runnable) () -> {},
+                        (Runnable) () -> {
+                        },
                         new DeleteBookingCommand(
                                 ServiceBookingIdentifier.Factory.create(
                                         LocalDate.of(2024, 12, 12),
