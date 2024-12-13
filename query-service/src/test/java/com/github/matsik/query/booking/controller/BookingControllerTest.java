@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.aMapWithSize;
@@ -64,7 +65,29 @@ class BookingControllerTest {
                                         .andExpect(jsonPath("$[%d].end", i).value(availableTimeRanges.get(i).end()))
                                         .andExpect(jsonPath(String.format("$[%d]", i), aMapWithSize(2)));
                             }
+                        },
+                        (Consumer<GetAvailableTimeRangesQuery>) (query) -> {
+                            then(SERVICE).should().getAvailableTimeRanges(query);
+                            then(SERVICE).shouldHaveNoMoreInteractions();
                         }
+                ),
+                Arguments.of(
+                        "Invalid service duration number format.",
+                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        new ObjectId("000000000000000000000000").toHexString(),
+                        "invalid format",
+                        List.of(
+                                new TimeRange(900, 990),
+                                new TimeRange(990, 1080)
+                        ),
+                        (MvcAssertExpectation<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
+                            resultActions
+                                    .andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                                    .andExpect(jsonPath("$", aMapWithSize(5)));
+                        },
+                        (Consumer<GetAvailableTimeRangesQuery>) (query) -> then(SERVICE).shouldHaveNoMoreInteractions()
                 )
         );
     }
@@ -77,7 +100,8 @@ class BookingControllerTest {
             String serviceId,
             String serviceDuration,
             List<TimeRange> availableTimeRanges,
-            MvcAssertExpectation<List<TimeRange>> mvcAssertExpectation
+            MvcAssertExpectation<List<TimeRange>> mvcAssertExpectation,
+            Consumer<GetAvailableTimeRangesQuery> assertMock
     ) throws Exception {
         // given
         GetAvailableTimeRangesQuery query = getGetAvailableTimeRangesQueryOrDefault(date, serviceId, serviceDuration);
@@ -94,8 +118,7 @@ class BookingControllerTest {
         // then
         mvcAssertExpectation.expect(resultActions, availableTimeRanges);
 
-        then(SERVICE).should().getAvailableTimeRanges(query);
-        then(SERVICE).shouldHaveNoMoreInteractions();
+        assertMock.accept(query);
     }
 
     @FunctionalInterface
