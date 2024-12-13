@@ -41,7 +41,7 @@ class BookingControllerTest {
 
     private static Stream<Arguments> provideGetAvailableTimeRangesTestCases() {
         return Stream.of(
-                getArguments(
+                Arguments.of(
                         "OK response.",
                         LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         new ObjectId("000000000000000000000000").toHexString(),
@@ -50,7 +50,7 @@ class BookingControllerTest {
                                 new TimeRange(900, 990),
                                 new TimeRange(990, 1080)
                         ),
-                        (resultActions, availableTimeRanges) -> {
+                        (MvcAssertExpectation<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
                             resultActions.andExpect(status().isOk())
                                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                                     .andExpect(jsonPath("$").isArray());
@@ -69,56 +69,34 @@ class BookingControllerTest {
     @MethodSource("provideGetAvailableTimeRangesTestCases")
     void getAvailableTimeRanges(
             String name,
-            GetAvailableTimeRangesQuery query,
-            List<TimeRange> availableTimeRanges,
-            Runnable assertMvc
-    ) {
-        // given
-        when(SERVICE.getAvailableTimeRanges(eq(query)))
-                .thenReturn(availableTimeRanges);
-
-        // when && then
-        assertMvc.run();
-    }
-
-    private static Arguments getArguments(
-            String name,
             String date,
             String serviceId,
             String serviceDuration,
             List<TimeRange> availableTimeRanges,
-            MvcAssertExpectations mvcAssertExpectations
-    ) {
+            MvcAssertExpectation<List<TimeRange>> mvcAssertExpectation
+    ) throws Exception {
+        // given
         GetAvailableTimeRangesQuery query = getGetAvailableTimeRangesQueryOrDefault(date, serviceId, serviceDuration);
+        when(SERVICE.getAvailableTimeRanges(eq(query)))
+                .thenReturn(availableTimeRanges);
 
-        Runnable assertMvc = () -> {
-            try {
-                ResultActions resultActions = MOCK_MVC.perform(get("/booking/available")
-                        .param("date", date)
-                        .param("serviceId", serviceId)
-                        .param("serviceDuration", serviceDuration)
-                        .contentType(MediaType.APPLICATION_JSON));
+        // when
+        ResultActions resultActions = MOCK_MVC.perform(get("/booking/available")
+                .param("date", date)
+                .param("serviceId", serviceId)
+                .param("serviceDuration", serviceDuration)
+                .contentType(MediaType.APPLICATION_JSON));
 
-                mvcAssertExpectations.expect(resultActions, availableTimeRanges);
+        // then
+        mvcAssertExpectation.expect(resultActions, availableTimeRanges);
 
-                then(SERVICE).should().getAvailableTimeRanges(query);
-                then(SERVICE).shouldHaveNoMoreInteractions();
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        };
-
-        return Arguments.of(
-                name,
-                query,
-                availableTimeRanges,
-                assertMvc
-        );
+        then(SERVICE).should().getAvailableTimeRanges(query);
+        then(SERVICE).shouldHaveNoMoreInteractions();
     }
 
     @FunctionalInterface
-    private interface MvcAssertExpectations {
-        void expect(ResultActions resultActions, List<TimeRange> availableTimeRanges) throws Exception;
+    private interface MvcAssertExpectation<T> {
+        void expect(ResultActions resultActions, T expectation) throws Exception;
     }
 
     private static GetAvailableTimeRangesQuery getGetAvailableTimeRangesQueryOrDefault(
