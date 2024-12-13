@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
@@ -51,14 +52,17 @@ class BookingControllerTest {
                                 new TimeRange(990, 1080)
                         ),
                         (MvcAssertExpectation<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
-                            resultActions.andExpect(status().isOk())
+                            resultActions
+                                    .andExpect(status().isOk())
                                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                                    .andExpect(jsonPath("$").isArray());
+                                    .andExpect(jsonPath("$").isArray())
+                                    .andExpect(jsonPath("$.length()").value(availableTimeRanges.size()));
 
                             for (int i = 0; i < availableTimeRanges.size(); i++) {
                                 resultActions
                                         .andExpect(jsonPath("$[%d].start", i).value(availableTimeRanges.get(i).start()))
-                                        .andExpect(jsonPath("$[%d].end", i).value(availableTimeRanges.get(i).end()));
+                                        .andExpect(jsonPath("$[%d].end", i).value(availableTimeRanges.get(i).end()))
+                                        .andExpect(jsonPath(String.format("$[%d]", i), aMapWithSize(2)));
                             }
                         }
                 )
