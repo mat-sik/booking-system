@@ -64,7 +64,7 @@ class BookingControllerTest {
                                         .andExpect(jsonPath(String.format("$[%d]", i), aMapWithSize(2)));
                             }
                         },
-                        (MockServiceAssertion) (service, query) -> {
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) -> {
                             then(service).should().getAvailableTimeRanges(query);
                             then(service).shouldHaveNoMoreInteractions();
                         }
@@ -89,7 +89,7 @@ class BookingControllerTest {
                                     .andExpect(jsonPath("$.detail").value("For input string: \"invalidformat\""))
                                     .andExpect(jsonPath("$.instance").value("/booking/available"));
                         },
-                        (MockServiceAssertion) (service, query) -> then(service).shouldHaveNoMoreInteractions()
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) -> then(service).shouldHaveNoMoreInteractions()
                 ),
                 Arguments.of(
                         "Constraint violation of service duration.",
@@ -111,7 +111,7 @@ class BookingControllerTest {
                                     .andExpect(jsonPath("$.detail").value("getAvailableTimeRanges.serviceDuration: must be greater than 0"))
                                     .andExpect(jsonPath("$.instance").value("/booking/available"));
                         },
-                        (MockServiceAssertion) (service, query) -> then(service).shouldHaveNoMoreInteractions()
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) -> then(service).shouldHaveNoMoreInteractions()
                 ),
                 Arguments.of(
                         "Incorrect hex string for serviceId.",
@@ -133,7 +133,7 @@ class BookingControllerTest {
                                     .andExpect(jsonPath("$.detail").value("Invalid ObjectId: Incorrect hex string"))
                                     .andExpect(jsonPath("$.instance").value("/booking/available"));
                         },
-                        (MockServiceAssertion) (service, query) -> then(service).shouldHaveNoMoreInteractions()
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) -> then(service).shouldHaveNoMoreInteractions()
                 ),
                 Arguments.of(
                         "Incorrect date.",
@@ -155,7 +155,7 @@ class BookingControllerTest {
                                     .andExpect(jsonPath("$.detail").value("Parse attempt failed for value [22004-10-33]"))
                                     .andExpect(jsonPath("$.instance").value("/booking/available"));
                         },
-                        (MockServiceAssertion) (service, query) -> then(service).shouldHaveNoMoreInteractions()
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) -> then(service).shouldHaveNoMoreInteractions()
                 )
         );
     }
@@ -169,7 +169,7 @@ class BookingControllerTest {
             String serviceDuration,
             List<TimeRange> availableTimeRanges,
             MockMvcExpectationAssertion<List<TimeRange>> mockMvcExpectationAssertion,
-            MockServiceAssertion mockServiceAssertion
+            MockServiceAssertion<GetAvailableTimeRangesQuery> mockServiceAssertion
     ) throws Exception {
         // given
         GetAvailableTimeRangesQuery query = getGetAvailableTimeRangesQueryOrDefault(date, serviceId, serviceDuration);
@@ -187,15 +187,6 @@ class BookingControllerTest {
         mockMvcExpectationAssertion.assertExpectations(resultActions, availableTimeRanges);
 
         mockServiceAssertion.assertMock(service, query);
-    }
-
-    private interface MockServiceAssertion {
-        void assertMock(BookingService service, GetAvailableTimeRangesQuery query);
-    }
-
-    @FunctionalInterface
-    private interface MockMvcExpectationAssertion<T> {
-        void assertExpectations(ResultActions resultActions, T expectation) throws Exception;
     }
 
     private static GetAvailableTimeRangesQuery getGetAvailableTimeRangesQueryOrDefault(
@@ -224,5 +215,14 @@ class BookingControllerTest {
 
     @Test
     void getBookings() {
+    }
+
+    private interface MockServiceAssertion<T> {
+        void assertMock(BookingService service, T query);
+    }
+
+    @FunctionalInterface
+    private interface MockMvcExpectationAssertion<T> {
+        void assertExpectations(ResultActions resultActions, T expectation) throws Exception;
     }
 }
