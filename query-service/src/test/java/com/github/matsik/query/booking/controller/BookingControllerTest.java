@@ -1,6 +1,5 @@
 package com.github.matsik.query.booking.controller;
 
-import com.github.matsik.query.ControllerAdvice;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.service.BookingService;
 import com.github.matsik.query.booking.service.TimeRange;
@@ -9,21 +8,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -31,15 +30,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
+@WebMvcTest(BookingController.class)
 class BookingControllerTest {
 
-    private static final BookingService SERVICE = mock(BookingService.class);
-    private static final BookingController CONTROLLER = new BookingController(SERVICE);
-    private static final ControllerAdvice CONTROLLER_ADVICE = new ControllerAdvice();
-    private static final MockMvc MOCK_MVC = MockMvcBuilders
-            .standaloneSetup(CONTROLLER)
-            .setControllerAdvice(CONTROLLER_ADVICE)
-            .build();
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private BookingService service;
 
     private static Stream<Arguments> provideGetAvailableTimeRangesTestCases() {
         return Stream.of(
@@ -52,7 +50,7 @@ class BookingControllerTest {
                                 new TimeRange(900, 990),
                                 new TimeRange(990, 1080)
                         ),
-                        (MvcAssertExpectation<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
+                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
                             resultActions
                                     .andExpect(status().isOk())
                                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -66,9 +64,9 @@ class BookingControllerTest {
                                         .andExpect(jsonPath(String.format("$[%d]", i), aMapWithSize(2)));
                             }
                         },
-                        (Consumer<GetAvailableTimeRangesQuery>) (query) -> {
-                            then(SERVICE).should().getAvailableTimeRanges(query);
-                            then(SERVICE).shouldHaveNoMoreInteractions();
+                        (MockServiceAssertion) (service, query) -> {
+                            then(service).should().getAvailableTimeRanges(query);
+                            then(service).shouldHaveNoMoreInteractions();
                         }
                 ),
                 Arguments.of(
@@ -80,7 +78,7 @@ class BookingControllerTest {
                                 new TimeRange(900, 990),
                                 new TimeRange(990, 1080)
                         ),
-                        (MvcAssertExpectation<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
+                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
                             resultActions
                                     .andExpect(status().isBadRequest())
                                     .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
@@ -91,7 +89,29 @@ class BookingControllerTest {
                                     .andExpect(jsonPath("$.detail").value("For input string: \"invalidformat\""))
                                     .andExpect(jsonPath("$.instance").value("/booking/available"));
                         },
-                        (Consumer<GetAvailableTimeRangesQuery>) (query) -> then(SERVICE).shouldHaveNoMoreInteractions()
+                        (MockServiceAssertion) (service, query) -> then(service).shouldHaveNoMoreInteractions()
+                ),
+                Arguments.of(
+                        "Constraint violation of service duration.",
+                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        new ObjectId("000000000000000000000000").toHexString(),
+                        String.valueOf(-1),
+                        List.of(
+                                new TimeRange(900, 990),
+                                new TimeRange(990, 1080)
+                        ),
+                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
+                            resultActions
+                                    .andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                                    .andExpect(jsonPath("$", aMapWithSize(5)))
+                                    .andExpect(jsonPath("$.type").value("about:blank"))
+                                    .andExpect(jsonPath("$.title").value("Bad Request"))
+                                    .andExpect(jsonPath("$.status").value(400))
+                                    .andExpect(jsonPath("$.detail").value("getAvailableTimeRanges.serviceDuration: must be greater than 0"))
+                                    .andExpect(jsonPath("$.instance").value("/booking/available"));
+                        },
+                        (MockServiceAssertion) (service, query) -> then(service).shouldHaveNoMoreInteractions()
                 )
         );
     }
@@ -104,30 +124,34 @@ class BookingControllerTest {
             String serviceId,
             String serviceDuration,
             List<TimeRange> availableTimeRanges,
-            MvcAssertExpectation<List<TimeRange>> mvcAssertExpectation,
-            Consumer<GetAvailableTimeRangesQuery> assertMock
+            MockMvcExpectationAssertion<List<TimeRange>> mockMvcExpectationAssertion,
+            MockServiceAssertion mockServiceAssertion
     ) throws Exception {
         // given
         GetAvailableTimeRangesQuery query = getGetAvailableTimeRangesQueryOrDefault(date, serviceId, serviceDuration);
-        when(SERVICE.getAvailableTimeRanges(eq(query)))
+        when(service.getAvailableTimeRanges(eq(query)))
                 .thenReturn(availableTimeRanges);
 
         // when
-        ResultActions resultActions = MOCK_MVC.perform(get("/booking/available")
+        ResultActions resultActions = mockMvc.perform(get("/booking/available")
                 .param("date", date)
                 .param("serviceId", serviceId)
                 .param("serviceDuration", serviceDuration)
                 .contentType(MediaType.APPLICATION_JSON));
 
         // then
-        mvcAssertExpectation.expect(resultActions, availableTimeRanges);
+        mockMvcExpectationAssertion.assertExpectations(resultActions, availableTimeRanges);
 
-        assertMock.accept(query);
+        mockServiceAssertion.assertMock(service, query);
+    }
+
+    private interface MockServiceAssertion {
+        void assertMock(BookingService service, GetAvailableTimeRangesQuery query);
     }
 
     @FunctionalInterface
-    private interface MvcAssertExpectation<T> {
-        void expect(ResultActions resultActions, T expectation) throws Exception;
+    private interface MockMvcExpectationAssertion<T> {
+        void assertExpectations(ResultActions resultActions, T expectation) throws Exception;
     }
 
     private static GetAvailableTimeRangesQuery getGetAvailableTimeRangesQueryOrDefault(
