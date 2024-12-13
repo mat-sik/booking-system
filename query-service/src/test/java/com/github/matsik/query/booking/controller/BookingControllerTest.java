@@ -327,6 +327,8 @@ class BookingControllerTest {
             MockServiceAssertion<GetBookingQuery> mockServiceAssertion
     ) throws Exception {
         // given
+        // TODO: Handle the case when user booking not found exception is thrown, to do so, extract when..., to its
+        //  own passable function like assert ones.
         GetBookingQuery query = getGetBookingQueryOrDefault(date, serviceId, bookingId);
         when(service.getUserBooking(query))
                 .thenReturn(userBooking);
