@@ -84,8 +84,12 @@ class BookingControllerTest {
                             resultActions
                                     .andExpect(status().isBadRequest())
                                     .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                                    .andExpect(jsonPath("$", aMapWithSize(5)));
+                                    .andExpect(jsonPath("$", aMapWithSize(5)))
+                                    .andExpect(jsonPath("$.type").value("about:blank"))
+                                    .andExpect(jsonPath("$.title").value("Bad Request"))
+                                    .andExpect(jsonPath("$.status").value(400))
+                                    .andExpect(jsonPath("$.detail").value("For input string: \"invalidformat\""))
+                                    .andExpect(jsonPath("$.instance").value("/booking/available"));
                         },
                         (Consumer<GetAvailableTimeRangesQuery>) (query) -> then(SERVICE).shouldHaveNoMoreInteractions()
                 )
