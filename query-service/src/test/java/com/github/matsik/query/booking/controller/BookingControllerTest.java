@@ -5,6 +5,7 @@ import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetBookingQuery;
 import com.github.matsik.query.booking.service.BookingService;
 import com.github.matsik.query.booking.service.TimeRange;
+import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
 import com.github.matsik.query.config.jackson.JacksonConfiguration;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
@@ -237,6 +238,8 @@ class BookingControllerTest {
                                         .andExpect(jsonPath("$.userId").value("110000000000000000000000"))
                                         .andExpect(jsonPath("$.start").value(60))
                                         .andExpect(jsonPath("$.end").value(120)),
+                        (MockServiceSetUp) (service, query, userBooking) ->
+                                when(service.getUserBooking(query)).thenReturn(userBooking),
                         (MockServiceAssertion<GetBookingQuery>) (service, query) ->
                                 then(service).should().getUserBooking(query)
 
@@ -261,6 +264,8 @@ class BookingControllerTest {
                                 .andExpect(jsonPath("$.detail").value("Parse attempt failed for value [22004-10-33]"))
                                 .andExpect(jsonPath("$.instance").value("/booking"))
                                 .andExpect(jsonPath("$.properties").isEmpty()),
+                        (MockServiceSetUp) (service, query, userBooking) ->
+                                when(service.getUserBooking(query)).thenReturn(userBooking),
                         (MockServiceAssertion<GetBookingQuery>) (service, query) ->
                                 then(service).shouldHaveNoMoreInteractions()
 
@@ -285,6 +290,8 @@ class BookingControllerTest {
                                 .andExpect(jsonPath("$.detail").value("Invalid ObjectId: foo"))
                                 .andExpect(jsonPath("$.instance").value("/booking"))
                                 .andExpect(jsonPath("$.properties").isEmpty()),
+                        (MockServiceSetUp) (service, query, userBooking) ->
+                                when(service.getUserBooking(query)).thenReturn(userBooking),
                         (MockServiceAssertion<GetBookingQuery>) (service, query) ->
                                 then(service).shouldHaveNoMoreInteractions()
 
@@ -309,8 +316,37 @@ class BookingControllerTest {
                                 .andExpect(jsonPath("$.detail").value("Invalid ObjectId: bar"))
                                 .andExpect(jsonPath("$.instance").value("/booking"))
                                 .andExpect(jsonPath("$.properties").isEmpty()),
+                        (MockServiceSetUp) (service, query, userBooking) ->
+                                when(service.getUserBooking(query)).thenReturn(userBooking),
                         (MockServiceAssertion<GetBookingQuery>) (service, query) ->
                                 then(service).shouldHaveNoMoreInteractions()
+                ),
+                Arguments.of(
+                        "User Booking not found.",
+                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        new ObjectId("000000000000000000000000").toHexString(),
+                        new ObjectId("100000000000000000000000").toHexString(),
+                        new UserBooking(
+                                new ObjectId("110000000000000000000000"),
+                                60,
+                                120
+                        ),
+                        (MockMvcExpectationAssertion<UserBooking>) (resultActions, userBooking) -> resultActions
+                                .andExpect(status().isNotFound())
+                                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                                .andExpect(jsonPath("$", aMapWithSize(6)))
+                                .andExpect(jsonPath("$.type").value("about:blank"))
+                                .andExpect(jsonPath("$.title").value("Not Found"))
+                                .andExpect(jsonPath("$.status").value(404))
+                                .andExpect(jsonPath("$.detail").value("UserBooking(date: 2024-12-12, serviceId: 000000000000000000000000, bookingId: 100000000000000000000000) was not found."))
+                                .andExpect(jsonPath("$.instance").value("/booking"))
+                                .andExpect(jsonPath("$.properties").isEmpty()),
+                        (MockServiceSetUp) (service, query, userBooking) ->
+                                when(service.getUserBooking(query)).thenThrow(new UserBookingNotFoundException(query)),
+                        (MockServiceAssertion<GetBookingQuery>) (service, query) -> {
+                            then(service).should().getUserBooking(query);
+                            then(service).shouldHaveNoMoreInteractions();
+                        }
                 )
         );
     }
@@ -324,14 +360,12 @@ class BookingControllerTest {
             String bookingId,
             UserBooking userBooking,
             MockMvcExpectationAssertion<UserBooking> mockMvcExpectationAssertion,
+            MockServiceSetUp mockServiceSetUp,
             MockServiceAssertion<GetBookingQuery> mockServiceAssertion
     ) throws Exception {
         // given
-        // TODO: Handle the case when user booking not found exception is thrown, to do so, extract when..., to its
-        //  own passable function like assert ones.
         GetBookingQuery query = getGetBookingQueryOrDefault(date, serviceId, bookingId);
-        when(service.getUserBooking(query))
-                .thenReturn(userBooking);
+        mockServiceSetUp.setUp(service, query, userBooking);
 
         // when
         ResultActions resultActions = mockMvc.perform(get("/booking")
@@ -364,6 +398,10 @@ class BookingControllerTest {
                     new ObjectId("bbbbbbbbbbbbbbbbbbbbbbbb")
             );
         }
+    }
+
+    private interface MockServiceSetUp {
+        void setUp(BookingService service, GetBookingQuery query, UserBooking userBooking);
     }
 
     @Test
