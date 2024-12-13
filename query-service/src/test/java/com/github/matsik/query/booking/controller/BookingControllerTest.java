@@ -112,6 +112,50 @@ class BookingControllerTest {
                                     .andExpect(jsonPath("$.instance").value("/booking/available"));
                         },
                         (MockServiceAssertion) (service, query) -> then(service).shouldHaveNoMoreInteractions()
+                ),
+                Arguments.of(
+                        "Incorrect hex string for serviceId.",
+                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        "Incorrect hex string",
+                        String.valueOf(75),
+                        List.of(
+                                new TimeRange(900, 990),
+                                new TimeRange(990, 1080)
+                        ),
+                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
+                            resultActions
+                                    .andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                                    .andExpect(jsonPath("$", aMapWithSize(5)))
+                                    .andExpect(jsonPath("$.type").value("about:blank"))
+                                    .andExpect(jsonPath("$.title").value("Bad Request"))
+                                    .andExpect(jsonPath("$.status").value(400))
+                                    .andExpect(jsonPath("$.detail").value("Invalid ObjectId: Incorrect hex string"))
+                                    .andExpect(jsonPath("$.instance").value("/booking/available"));
+                        },
+                        (MockServiceAssertion) (service, query) -> then(service).shouldHaveNoMoreInteractions()
+                ),
+                Arguments.of(
+                        "Incorrect date.",
+                        "22004-10-33",
+                        new ObjectId("000000000000000000000000").toHexString(),
+                        String.valueOf(75),
+                        List.of(
+                                new TimeRange(900, 990),
+                                new TimeRange(990, 1080)
+                        ),
+                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
+                            resultActions
+                                    .andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                                    .andExpect(jsonPath("$", aMapWithSize(5)))
+                                    .andExpect(jsonPath("$.type").value("about:blank"))
+                                    .andExpect(jsonPath("$.title").value("Bad Request"))
+                                    .andExpect(jsonPath("$.status").value(400))
+                                    .andExpect(jsonPath("$.detail").value("Parse attempt failed for value [22004-10-33]"))
+                                    .andExpect(jsonPath("$.instance").value("/booking/available"));
+                        },
+                        (MockServiceAssertion) (service, query) -> then(service).shouldHaveNoMoreInteractions()
                 )
         );
     }
