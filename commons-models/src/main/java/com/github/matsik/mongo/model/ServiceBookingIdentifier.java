@@ -1,5 +1,6 @@
 package com.github.matsik.mongo.model;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.bson.types.ObjectId;
@@ -9,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 
 @Getter
 @Accessors(fluent = true)
+@EqualsAndHashCode
 public class ServiceBookingIdentifier {
 
     public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
