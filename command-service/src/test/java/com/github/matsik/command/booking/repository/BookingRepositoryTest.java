@@ -162,7 +162,12 @@ class BookingRepositoryTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideCreateBookingTestCases")
-    void createBooking(String name, Runnable createPreExistingBookings, CreateBookingCommand command, boolean isSuccessful) {
+    void createBooking(
+            String name,
+            Runnable createPreExistingBookings,
+            CreateBookingCommand command,
+            boolean isSuccessful
+    ) {
         // given
         createPreExistingBookings.run();
 
@@ -248,7 +253,13 @@ class BookingRepositoryTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideDeleteBookingTestCases")
-    void deleteBooking(String name, Runnable createPreExistingBookings, DeleteBookingCommand command, boolean isSuccessful, boolean matchedButNoBooking) {
+    void deleteBooking(
+            String name,
+            Runnable createPreExistingBookings,
+            DeleteBookingCommand command,
+            boolean isSuccessful,
+            boolean matchedButNoBooking
+    ) {
         // given
         createPreExistingBookings.run();
 
