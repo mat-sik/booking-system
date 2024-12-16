@@ -53,42 +53,42 @@ class BookingControllerTest {
         return Stream.of(
                 Arguments.of(
                         "OK response.",
-                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
-                        new ObjectId("000000000000000000000000").toHexString(),
+                        COMMON_SERVICE_BOOKINGS.get(0).date(),
+                        COMMON_SERVICE_BOOKINGS.get(0).serviceId().toHexString(),
                         String.valueOf(75),
-                        List.of(
-                                new TimeRange(900, 990),
-                                new TimeRange(990, 1080)
-                        ),
-                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
+                        (MockServiceSetUp<GetAvailableTimeRangesQuery>) (service, query) ->
+                                when(service.getAvailableTimeRanges(query))
+                                        .thenReturn(COMMON_TIME_RANGES),
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) -> {
+                            then(service).should().getAvailableTimeRanges(query);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions
                                     .andExpect(status().isOk())
                                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                                     .andExpect(jsonPath("$").isArray())
-                                    .andExpect(jsonPath("$.length()").value(availableTimeRanges.size()));
+                                    .andExpect(jsonPath("$.length()").value(COMMON_TIME_RANGES.size()));
 
-                            for (int i = 0; i < availableTimeRanges.size(); i++) {
+                            for (int i = 0; i < COMMON_TIME_RANGES.size(); i++) {
                                 resultActions
-                                        .andExpect(jsonPath("$[%d].start", i).value(availableTimeRanges.get(i).start()))
-                                        .andExpect(jsonPath("$[%d].end", i).value(availableTimeRanges.get(i).end()))
+                                        .andExpect(jsonPath("$[%d].start", i).value(COMMON_TIME_RANGES.get(i).start()))
+                                        .andExpect(jsonPath("$[%d].end", i).value(COMMON_TIME_RANGES.get(i).end()))
                                         .andExpect(jsonPath(String.format("$[%d]", i), aMapWithSize(2)));
                             }
-                        },
-                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) -> {
-                            then(service).should().getAvailableTimeRanges(query);
-                            then(service).shouldHaveNoMoreInteractions();
                         }
                 ),
                 Arguments.of(
                         "Invalid service duration number format.",
-                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
-                        new ObjectId("000000000000000000000000").toHexString(),
+                        COMMON_SERVICE_BOOKINGS.get(0).date(),
+                        COMMON_SERVICE_BOOKINGS.get(0).serviceId().toHexString(),
                         "invalid format",
-                        List.of(
-                                new TimeRange(900, 990),
-                                new TimeRange(990, 1080)
-                        ),
-                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
+                        (MockServiceSetUp<GetAvailableTimeRangesQuery>) (service, query) ->
+                                when(service.getAvailableTimeRanges(query))
+                                        .thenReturn(COMMON_TIME_RANGES),
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
                                     .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
                             assertProblemDetailExpectations(
@@ -99,20 +99,19 @@ class BookingControllerTest {
                                     "For input string: \"invalidformat\"",
                                     "/booking/available"
                             );
-                        },
-                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
-                                then(service).shouldHaveNoInteractions()
+                        }
                 ),
                 Arguments.of(
                         "Constraint violation of service duration.",
-                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
-                        new ObjectId("000000000000000000000000").toHexString(),
+                        COMMON_SERVICE_BOOKINGS.get(0).date(),
+                        COMMON_SERVICE_BOOKINGS.get(0).serviceId().toHexString(),
                         String.valueOf(-1),
-                        List.of(
-                                new TimeRange(900, 990),
-                                new TimeRange(990, 1080)
-                        ),
-                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
+                        (MockServiceSetUp<GetAvailableTimeRangesQuery>) (service, query) ->
+                                when(service.getAvailableTimeRanges(query))
+                                        .thenReturn(COMMON_TIME_RANGES),
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
                                     .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
                             assertProblemDetailExpectations(
@@ -123,20 +122,19 @@ class BookingControllerTest {
                                     "getAvailableTimeRanges.serviceDuration: must be greater than 0",
                                     "/booking/available"
                             );
-                        },
-                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
-                                then(service).shouldHaveNoInteractions()
+                        }
                 ),
                 Arguments.of(
                         "Incorrect hex string for serviceId",
-                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        COMMON_SERVICE_BOOKINGS.get(0).date(),
                         "Incorrect hex string",
                         String.valueOf(75),
-                        List.of(
-                                new TimeRange(900, 990),
-                                new TimeRange(990, 1080)
-                        ),
-                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
+                        (MockServiceSetUp<GetAvailableTimeRangesQuery>) (service, query) ->
+                                when(service.getAvailableTimeRanges(query))
+                                        .thenReturn(COMMON_TIME_RANGES),
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
                                     .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
                             assertProblemDetailExpectations(
@@ -147,20 +145,19 @@ class BookingControllerTest {
                                     "Invalid ObjectId: Incorrect hex string",
                                     "/booking/available"
                             );
-                        },
-                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
-                                then(service).shouldHaveNoInteractions()
+                        }
                 ),
                 Arguments.of(
                         "Incorrect date string format.",
                         "22004-10-33",
-                        new ObjectId("000000000000000000000000").toHexString(),
+                        COMMON_SERVICE_BOOKINGS.get(0).serviceId().toHexString(),
                         String.valueOf(75),
-                        List.of(
-                                new TimeRange(900, 990),
-                                new TimeRange(990, 1080)
-                        ),
-                        (MockMvcExpectationAssertion<List<TimeRange>>) (resultActions, availableTimeRanges) -> {
+                        (MockServiceSetUp<GetAvailableTimeRangesQuery>) (service, query) ->
+                                when(service.getAvailableTimeRanges(query))
+                                        .thenReturn(COMMON_TIME_RANGES),
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions
                                     .andExpect(status().isBadRequest())
                                     .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
@@ -172,9 +169,7 @@ class BookingControllerTest {
                                     "Parse attempt failed for value [22004-10-33]",
                                     "/booking/available"
                             );
-                        },
-                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
-                                then(service).shouldHaveNoInteractions()
+                        }
                 )
         );
     }
@@ -186,14 +181,14 @@ class BookingControllerTest {
             String date,
             String serviceId,
             String serviceDuration,
-            List<TimeRange> availableTimeRanges,
-            MockMvcExpectationAssertion<List<TimeRange>> mockMvcExpectationAssertion,
-            MockServiceAssertion<GetAvailableTimeRangesQuery> mockServiceAssertion
+            MockServiceSetUp<GetAvailableTimeRangesQuery> mockServiceSetUp,
+            MockServiceAssertion<GetAvailableTimeRangesQuery> mockServiceAssertion,
+            MockMvcExpectationAssertion mockMvcExpectationAssertion
     ) throws Exception {
         // given
         GetAvailableTimeRangesQuery query = getGetAvailableTimeRangesQueryOrDefault(date, serviceId, serviceDuration);
-        when(service.getAvailableTimeRanges(query))
-                .thenReturn(availableTimeRanges);
+
+        mockServiceSetUp.setUp(service, query);
 
         // when
         ResultActions resultActions = mockMvc.perform(get("/booking/available")
@@ -203,7 +198,7 @@ class BookingControllerTest {
                 .contentType(MediaType.APPLICATION_JSON));
 
         // then
-        mockMvcExpectationAssertion.assertExpectations(resultActions, availableTimeRanges);
+        mockMvcExpectationAssertion.assertExpectations(resultActions);
 
         mockServiceAssertion.assertMock(service, query);
     }
@@ -232,38 +227,34 @@ class BookingControllerTest {
         return Stream.of(
                 Arguments.of(
                         "Ok response.",
-                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
-                        new ObjectId("000000000000000000000000").toHexString(),
-                        new ObjectId("100000000000000000000000").toHexString(),
-                        new UserBooking(
-                                new ObjectId("110000000000000000000000"),
-                                60,
-                                120
-                        ),
-                        (MockMvcExpectationAssertion<UserBooking>) (resultActions, userBooking) ->
+                        COMMON_SERVICE_BOOKINGS.get(0).date(),
+                        COMMON_SERVICE_BOOKINGS.get(0).serviceId().toHexString(),
+                        COMMON_SERVICE_BOOKINGS.get(0).bookings().get(0).id().toHexString(),
+                        (MockServiceSetUp<GetBookingQuery>) (service, query) ->
+                                when(service.getUserBooking(query)).thenReturn(COMMON_USER_BOOKING),
+                        (MockServiceAssertion<GetBookingQuery>) (service, query) -> {
+                            then(service).should().getUserBooking(query);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        (MockMvcExpectationAssertion) (resultActions) ->
                                 resultActions
                                         .andExpect(status().isOk())
                                         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                                         .andExpect(jsonPath("$", aMapWithSize(3)))
-                                        .andExpect(jsonPath("$.userId").value(userBooking.userId().toHexString()))
-                                        .andExpect(jsonPath("$.start").value(String.valueOf(userBooking.start())))
-                                        .andExpect(jsonPath("$.end").value(String.valueOf(userBooking.end()))),
-                        (MockServiceSetUp) (service, query, userBooking) ->
-                                when(service.getUserBooking(query)).thenReturn(userBooking),
-                        (MockServiceAssertion<GetBookingQuery>) (service, query) ->
-                                then(service).should().getUserBooking(query)
+                                        .andExpect(jsonPath("$.userId").value(COMMON_USER_BOOKING.userId().toHexString()))
+                                        .andExpect(jsonPath("$.start").value(String.valueOf(COMMON_USER_BOOKING.start())))
+                                        .andExpect(jsonPath("$.end").value(String.valueOf(COMMON_USER_BOOKING.end())))
                 ),
                 Arguments.of(
                         "Incorrect date string format.",
                         "22004-10-33",
-                        new ObjectId("000000000000000000000000").toHexString(),
-                        new ObjectId("100000000000000000000000").toHexString(),
-                        new UserBooking(
-                                new ObjectId("110000000000000000000000"),
-                                60,
-                                120
-                        ),
-                        (MockMvcExpectationAssertion<UserBooking>) (resultActions, userBooking) -> {
+                        COMMON_SERVICE_BOOKINGS.get(0).serviceId().toHexString(),
+                        COMMON_SERVICE_BOOKINGS.get(0).bookings().get(0).id().toHexString(),
+                        (MockServiceSetUp<GetBookingQuery>) (service, query) ->
+                                when(service.getUserBooking(query)).thenReturn(COMMON_USER_BOOKING),
+                        (MockServiceAssertion<GetBookingQuery>) (service, query) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
                                     .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
                             assertProblemDetailExpectations(
@@ -274,23 +265,18 @@ class BookingControllerTest {
                                     "Parse attempt failed for value [22004-10-33]",
                                     "/booking"
                             );
-                        },
-                        (MockServiceSetUp) (service, query, userBooking) ->
-                                when(service.getUserBooking(query)).thenReturn(userBooking),
-                        (MockServiceAssertion<GetBookingQuery>) (service, query) ->
-                                then(service).shouldHaveNoInteractions()
+                        }
                 ),
                 Arguments.of(
                         "Incorrect hex string for serviceId.",
-                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        COMMON_SERVICE_BOOKINGS.get(0).date(),
                         "foo",
-                        new ObjectId("100000000000000000000000").toHexString(),
-                        new UserBooking(
-                                new ObjectId("110000000000000000000000"),
-                                60,
-                                120
-                        ),
-                        (MockMvcExpectationAssertion<UserBooking>) (resultActions, userBooking) -> {
+                        COMMON_SERVICE_BOOKINGS.get(0).bookings().get(0).id().toHexString(),
+                        (MockServiceSetUp<GetBookingQuery>) (service, query) ->
+                                when(service.getUserBooking(query)).thenReturn(COMMON_USER_BOOKING),
+                        (MockServiceAssertion<GetBookingQuery>) (service, query) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
                                     .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
                             assertProblemDetailExpectations(
@@ -301,23 +287,18 @@ class BookingControllerTest {
                                     "Invalid ObjectId: foo",
                                     "/booking"
                             );
-                        },
-                        (MockServiceSetUp) (service, query, userBooking) ->
-                                when(service.getUserBooking(query)).thenReturn(userBooking),
-                        (MockServiceAssertion<GetBookingQuery>) (service, query) ->
-                                then(service).shouldHaveNoInteractions()
+                        }
                 ),
                 Arguments.of(
                         "Incorrect hex string for bookingId.",
-                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
-                        new ObjectId("000000000000000000000000").toHexString(),
+                        COMMON_SERVICE_BOOKINGS.get(0).date(),
+                        COMMON_SERVICE_BOOKINGS.get(0).serviceId().toHexString(),
                         "bar",
-                        new UserBooking(
-                                new ObjectId("110000000000000000000000"),
-                                60,
-                                120
-                        ),
-                        (MockMvcExpectationAssertion<UserBooking>) (resultActions, userBooking) -> {
+                        (MockServiceSetUp<GetBookingQuery>) (service, query) ->
+                                when(service.getUserBooking(query)).thenReturn(COMMON_USER_BOOKING),
+                        (MockServiceAssertion<GetBookingQuery>) (service, query) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
                                     .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
                             assertProblemDetailExpectations(
@@ -328,23 +309,20 @@ class BookingControllerTest {
                                     "Invalid ObjectId: bar",
                                     "/booking"
                             );
-                        },
-                        (MockServiceSetUp) (service, query, userBooking) ->
-                                when(service.getUserBooking(query)).thenReturn(userBooking),
-                        (MockServiceAssertion<GetBookingQuery>) (service, query) ->
-                                then(service).shouldHaveNoInteractions()
+                        }
                 ),
                 Arguments.of(
                         "User Booking not found.",
-                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
-                        new ObjectId("000000000000000000000000").toHexString(),
-                        new ObjectId("100000000000000000000000").toHexString(),
-                        new UserBooking(
-                                new ObjectId("110000000000000000000000"),
-                                60,
-                                120
-                        ),
-                        (MockMvcExpectationAssertion<UserBooking>) (resultActions, userBooking) -> {
+                        COMMON_SERVICE_BOOKINGS.get(0).date(),
+                        COMMON_SERVICE_BOOKINGS.get(0).serviceId().toHexString(),
+                        COMMON_SERVICE_BOOKINGS.get(1).bookings().get(0).id().toHexString(),
+                        (MockServiceSetUp<GetBookingQuery>) (service, query) ->
+                                when(service.getUserBooking(query)).thenThrow(new UserBookingNotFoundException(query)),
+                        (MockServiceAssertion<GetBookingQuery>) (service, query) -> {
+                            then(service).should().getUserBooking(query);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isNotFound())
                                     .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
                             assertProblemDetailExpectations(
@@ -352,15 +330,9 @@ class BookingControllerTest {
                                     "about:blank",
                                     "Not Found",
                                     404,
-                                    "UserBooking(date: 2024-12-12, serviceId: 000000000000000000000000, bookingId: 100000000000000000000000) was not found.",
+                                    "UserBooking(date: 2024-12-12, serviceId: 010000000000000000000000, bookingId: 100000000000000000000002) was not found.",
                                     "/booking"
                             );
-                        },
-                        (MockServiceSetUp) (service, query, userBooking) ->
-                                when(service.getUserBooking(query)).thenThrow(new UserBookingNotFoundException(query)),
-                        (MockServiceAssertion<GetBookingQuery>) (service, query) -> {
-                            then(service).should().getUserBooking(query);
-                            then(service).shouldHaveNoMoreInteractions();
                         }
                 )
         );
@@ -373,14 +345,13 @@ class BookingControllerTest {
             String date,
             String serviceId,
             String bookingId,
-            UserBooking userBooking,
-            MockMvcExpectationAssertion<UserBooking> mockMvcExpectationAssertion,
-            MockServiceSetUp mockServiceSetUp,
-            MockServiceAssertion<GetBookingQuery> mockServiceAssertion
+            MockServiceSetUp<GetBookingQuery> mockServiceSetUp,
+            MockServiceAssertion<GetBookingQuery> mockServiceAssertion,
+            MockMvcExpectationAssertion mockMvcExpectationAssertion
     ) throws Exception {
         // given
         GetBookingQuery query = getGetBookingQueryOrDefault(date, serviceId, bookingId);
-        mockServiceSetUp.setUp(service, query, userBooking);
+        mockServiceSetUp.setUp(service, query);
 
         // when
         ResultActions resultActions = mockMvc.perform(get("/booking")
@@ -390,7 +361,7 @@ class BookingControllerTest {
                 .contentType(MediaType.APPLICATION_JSON));
 
         // then
-        mockMvcExpectationAssertion.assertExpectations(resultActions, userBooking);
+        mockMvcExpectationAssertion.assertExpectations(resultActions);
 
         mockServiceAssertion.assertMock(service, query);
     }
@@ -415,46 +386,57 @@ class BookingControllerTest {
         }
     }
 
-    private interface MockServiceSetUp {
-        void setUp(BookingService service, GetBookingQuery query, UserBooking userBooking);
-    }
-
     private static Stream<Arguments> provideGetBookingsTestCases() {
         return Stream.of(
                 Arguments.of(
                         "Ok response.",
-                        COMMON_DATES_STR,
-                        COMMON_SERVICE_IDS_STR,
-                        COMMON_USER_IDS_STR,
-                        COMMON_SERVICE_BOOKINGS,
-                        COMMON_MOCK_MVC_EXPECTATION_ASSERTION,
-                        COMMON_MOCK_SERVICE_ASSERTION
+                        toStringParam(COMMON_DATES),
+                        toStringParam(COMMON_SERVICE_IDS),
+                        toStringParam(COMMON_USER_IDS),
+                        (MockServiceSetUp<GetBookingsQuery>) (service, query) ->
+                                when(service.getBookings(query)).thenReturn(COMMON_SERVICE_BOOKINGS),
+                        (MockServiceAssertion<GetBookingsQuery>) (service, query) -> {
+                            then(service).should().getBookings(query);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        COMMON_MOCK_MVC_GET_BOOKINGS_EXPECTATION_ASSERTION
                 ),
                 Arguments.of(
                         "Ok response, empty string params.",
                         "",
                         "",
                         "",
-                        COMMON_SERVICE_BOOKINGS,
-                        COMMON_MOCK_MVC_EXPECTATION_ASSERTION,
-                        COMMON_MOCK_SERVICE_ASSERTION
+                        (MockServiceSetUp<GetBookingsQuery>) (service, query) ->
+                                when(service.getBookings(query)).thenReturn(COMMON_SERVICE_BOOKINGS),
+                        (MockServiceAssertion<GetBookingsQuery>) (service, query) -> {
+                            then(service).should().getBookings(query);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        COMMON_MOCK_MVC_GET_BOOKINGS_EXPECTATION_ASSERTION
                 ),
                 Arguments.of(
                         "Ok response, params not set.",
                         null,
                         null,
                         null,
-                        COMMON_SERVICE_BOOKINGS,
-                        COMMON_MOCK_MVC_EXPECTATION_ASSERTION,
-                        COMMON_MOCK_SERVICE_ASSERTION
+                        (MockServiceSetUp<GetBookingsQuery>) (service, query) ->
+                                when(service.getBookings(query)).thenReturn(COMMON_SERVICE_BOOKINGS),
+                        (MockServiceAssertion<GetBookingsQuery>) (service, query) -> {
+                            then(service).should().getBookings(query);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        COMMON_MOCK_MVC_GET_BOOKINGS_EXPECTATION_ASSERTION
                 ),
                 Arguments.of(
                         "Incorrect date string format.",
-                        COMMON_DATES_STR + ",foo",
+                        toStringParam(COMMON_DATES) + ",foo",
                         null,
                         null,
-                        List.of(),
-                        (MockMvcExpectationAssertion<List<UserBooking>>) (resultActions, userBooking) -> {
+                        (MockServiceSetUp<GetBookingsQuery>) (service, query) ->
+                                when(service.getBookings(query)).thenReturn(COMMON_SERVICE_BOOKINGS),
+                        (MockServiceAssertion<GetBookingsQuery>) (service, query) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
                                     .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
                             assertProblemDetailExpectations(
@@ -465,38 +447,18 @@ class BookingControllerTest {
                                     "Parse attempt failed for value [2024-12-12,2024-12-13,foo]",
                                     "/booking/all"
                             );
-                        },
-                        (MockServiceAssertion<GetBookingsQuery>) (service, query) ->
-                                then(service).shouldHaveNoInteractions()
+                        }
                 ),
                 Arguments.of(
                         "Incorrect hex string for serviceId.",
                         null,
                         COMMON_SERVICE_IDS + ",foo",
                         null,
-                        List.of(),
-                        (MockMvcExpectationAssertion<List<UserBooking>>) (resultActions, userBooking) -> {
-                            resultActions.andExpect(status().isBadRequest())
-                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
-                            assertProblemDetailExpectations(
-                                    resultActions,
-                                    "about:blank",
-                                    "Bad Request",
-                                    400,
-                                    "Invalid ObjectId: [100000000000000000000000, 100000000000000000000001],foo",
-                                    "/booking/all"
-                            );
-                        },
+                        (MockServiceSetUp<GetBookingsQuery>) (service, query) ->
+                                when(service.getBookings(query)).thenReturn(COMMON_SERVICE_BOOKINGS),
                         (MockServiceAssertion<GetBookingsQuery>) (service, query) ->
-                                then(service).shouldHaveNoInteractions()
-                ),
-                Arguments.of(
-                        "Incorrect hex string for userId.",
-                        null,
-                        null,
-                        COMMON_USER_IDS + ",foo",
-                        List.of(),
-                        (MockMvcExpectationAssertion<List<UserBooking>>) (resultActions, userBooking) -> {
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
                                     .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
                             assertProblemDetailExpectations(
@@ -507,9 +469,29 @@ class BookingControllerTest {
                                     "Invalid ObjectId: [010000000000000000000000, 010000000000000000000001],foo",
                                     "/booking/all"
                             );
-                        },
+                        }
+                ),
+                Arguments.of(
+                        "Incorrect hex string for userId.",
+                        null,
+                        null,
+                        COMMON_USER_IDS + ",foo",
+                        (MockServiceSetUp<GetBookingsQuery>) (service, query) ->
+                                when(service.getBookings(query)).thenReturn(COMMON_SERVICE_BOOKINGS),
                         (MockServiceAssertion<GetBookingsQuery>) (service, query) ->
-                                then(service).shouldHaveNoInteractions()
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Invalid ObjectId: [110000000000000000000000, 110000000000000000000001],foo",
+                                    "/booking/all"
+                            );
+                        }
                 )
         );
     }
@@ -521,120 +503,24 @@ class BookingControllerTest {
             String dates,
             String serviceIds,
             String userIds,
-            List<ServiceBooking> serviceBookings,
-            MockMvcExpectationAssertion<List<ServiceBooking>> mockMvcExpectationAssertion,
-            MockServiceAssertion<GetBookingsQuery> mockServiceAssertion
+            MockServiceSetUp<GetBookingsQuery> mockServiceSetUp,
+            MockServiceAssertion<GetBookingsQuery> mockServiceAssertion,
+            MockMvcExpectationAssertion mockMvcExpectationAssertion
     ) throws Exception {
         // given
         GetBookingsQuery query = getGetBookingQuery(dates, serviceIds, userIds);
 
-        when(service.getBookings(query)).thenReturn(serviceBookings);
+        mockServiceSetUp.setUp(service, query);
 
         // then
         MockHttpServletRequestBuilder requestBuilder = getGetBookingsRequest(dates, serviceIds, userIds);
         ResultActions resultActions = mockMvc.perform(requestBuilder);
 
         // when
-        mockMvcExpectationAssertion.assertExpectations(resultActions, serviceBookings);
+        mockMvcExpectationAssertion.assertExpectations(resultActions);
 
         mockServiceAssertion.assertMock(service, query);
     }
-
-    private static final List<LocalDate> COMMON_DATES = List.of(
-            LocalDate.of(2024, 12, 12),
-            LocalDate.of(2024, 12, 13)
-    );
-
-    private static final String COMMON_DATES_STR = toStringParam(COMMON_DATES);
-
-    private static final List<ObjectId> COMMON_SERVICE_IDS = List.of(
-            new ObjectId("100000000000000000000000"),
-            new ObjectId("100000000000000000000001")
-    );
-
-    private static final String COMMON_SERVICE_IDS_STR = toStringParam(COMMON_SERVICE_IDS);
-
-    private static final List<ObjectId> COMMON_USER_IDS = List.of(
-            new ObjectId("010000000000000000000000"),
-            new ObjectId("010000000000000000000001")
-    );
-
-    private static final String COMMON_USER_IDS_STR = toStringParam(COMMON_USER_IDS);
-
-    private static final List<ServiceBooking> COMMON_SERVICE_BOOKINGS = List.of(
-            new ServiceBooking(
-                    new ObjectId("000000000000000000000000"),
-                    COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
-                    COMMON_SERVICE_IDS.get(0),
-                    List.of(
-                            new Booking(
-                                    new ObjectId("110000000000000000000000"),
-                                    COMMON_USER_IDS.get(0),
-                                    0,
-                                    30
-                            ),
-                            new Booking(
-                                    new ObjectId("110000000000000000000001"),
-                                    COMMON_USER_IDS.get(1),
-                                    30,
-                                    60
-                            )
-                    )
-            ),
-            new ServiceBooking(
-                    new ObjectId("000000000000000000000001"),
-                    COMMON_DATES.get(1).format(DateTimeFormatter.ISO_LOCAL_DATE),
-                    COMMON_SERVICE_IDS.get(1),
-                    List.of(
-                            new Booking(
-                                    new ObjectId("110000000000000000000002"),
-                                    COMMON_USER_IDS.get(0),
-                                    30,
-                                    60
-                            ),
-                            new Booking(
-                                    new ObjectId("110000000000000000000003"),
-                                    COMMON_USER_IDS.get(1),
-                                    60, 90
-                            )
-                    )
-            )
-    );
-
-    private static final MockMvcExpectationAssertion<List<ServiceBooking>> COMMON_MOCK_MVC_EXPECTATION_ASSERTION = (resultActions, serviceBookings) -> {
-        resultActions
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(serviceBookings.size()));
-
-        for (int i = 0; i < serviceBookings.size(); i++) {
-            ServiceBooking serviceBooking = serviceBookings.get(i);
-            List<Booking> bookings = serviceBooking.bookings();
-
-            resultActions
-                    .andExpect(jsonPath(String.format("$[%d]", i), aMapWithSize(4)))
-                    .andExpect(jsonPath("$[%d].id", i).value(serviceBooking.id().toHexString()))
-                    .andExpect(jsonPath("$[%d].date", i).value(serviceBooking.date()))
-                    .andExpect(jsonPath("$[%d].serviceId", i).value(serviceBooking.serviceId().toHexString()))
-                    .andExpect(jsonPath("$[%d].bookings", i).isArray());
-
-            for (int j = 0; j < bookings.size(); j++) {
-                Booking booking = bookings.get(j);
-                resultActions
-                        .andExpect(jsonPath(String.format("$[%d].bookings[%d]", i, j), aMapWithSize(4)))
-                        .andExpect(jsonPath(String.format("$[%d].bookings[%d].id", i, j)).value(booking.id().toHexString()))
-                        .andExpect(jsonPath(String.format("$[%d].bookings[%d].userId", i, j)).value(booking.userId().toHexString()))
-                        .andExpect(jsonPath(String.format("$[%d].bookings[%d].start", i, j)).value(booking.start()))
-                        .andExpect(jsonPath(String.format("$[%d].bookings[%d].end", i, j)).value(booking.end()));
-            }
-        }
-    };
-
-    private static final MockServiceAssertion<GetBookingsQuery> COMMON_MOCK_SERVICE_ASSERTION = (service, query) -> {
-        then(service).should().getBookings(query);
-        then(service).shouldHaveNoMoreInteractions();
-    };
 
     private static GetBookingsQuery getGetBookingQuery(
             String datesString,
@@ -693,13 +579,17 @@ class BookingControllerTest {
         }
     }
 
+    private interface MockServiceSetUp<T> {
+        void setUp(BookingService service, T query);
+    }
+
     private interface MockServiceAssertion<T> {
         void assertMock(BookingService service, T query);
     }
 
     @FunctionalInterface
-    private interface MockMvcExpectationAssertion<T> {
-        void assertExpectations(ResultActions resultActions, T expectation) throws Exception;
+    private interface MockMvcExpectationAssertion {
+        void assertExpectations(ResultActions resultActions) throws Exception;
     }
 
     private static void assertProblemDetailExpectations(
@@ -719,4 +609,121 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.instance").value(instance))
                 .andExpect(jsonPath("$.properties").isEmpty());
     }
+
+    private static final List<TimeRange> COMMON_TIME_RANGES = List.of(
+            new TimeRange(900, 990),
+            new TimeRange(990, 1080)
+    );
+
+    private static final List<ObjectId> COMMON_SERVICE_BOOKING_IDS = List.of(
+            new ObjectId("000000000000000000000000"),
+            new ObjectId("000000000000000000000001")
+    );
+
+    private static final List<ObjectId> COMMON_BOOKING_IDS = List.of(
+            new ObjectId("100000000000000000000000"),
+            new ObjectId("100000000000000000000001"),
+            new ObjectId("100000000000000000000002"),
+            new ObjectId("100000000000000000000003")
+    );
+
+    private static final List<ObjectId> COMMON_SERVICE_IDS = List.of(
+            new ObjectId("010000000000000000000000"),
+            new ObjectId("010000000000000000000001")
+    );
+
+    private static final List<ObjectId> COMMON_USER_IDS = List.of(
+            new ObjectId("110000000000000000000000"),
+            new ObjectId("110000000000000000000001")
+    );
+
+    private static final List<LocalDate> COMMON_DATES = List.of(
+            LocalDate.of(2024, 12, 12),
+            LocalDate.of(2024, 12, 13)
+    );
+
+    private static final List<Booking> COMMONG_BOOKINGS = List.of(
+            new Booking(
+                    COMMON_BOOKING_IDS.get(0),
+                    COMMON_USER_IDS.get(0),
+                    0,
+                    30
+            ),
+            new Booking(
+                    COMMON_BOOKING_IDS.get(1),
+                    COMMON_USER_IDS.get(1),
+                    30,
+                    60
+            ),
+            new Booking(
+                    COMMON_BOOKING_IDS.get(2),
+                    COMMON_USER_IDS.get(0),
+                    60,
+                    90
+            ),
+
+            new Booking(
+                    COMMON_BOOKING_IDS.get(3),
+                    COMMON_USER_IDS.get(1),
+                    90,
+                    120
+            )
+    );
+
+    private static final UserBooking COMMON_USER_BOOKING = new UserBooking(
+            COMMONG_BOOKINGS.get(0).id(),
+            COMMONG_BOOKINGS.get(0).start(),
+            COMMONG_BOOKINGS.get(0).end()
+    );
+
+    private static final List<ServiceBooking> COMMON_SERVICE_BOOKINGS = List.of(
+            new ServiceBooking(
+                    COMMON_SERVICE_BOOKING_IDS.get(0),
+                    COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                    COMMON_SERVICE_IDS.get(0),
+                    List.of(
+                            COMMONG_BOOKINGS.get(0),
+                            COMMONG_BOOKINGS.get(1)
+                    )
+            ),
+            new ServiceBooking(
+                    COMMON_SERVICE_BOOKING_IDS.get(1),
+                    COMMON_DATES.get(1).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                    COMMON_SERVICE_IDS.get(1),
+                    List.of(
+                            COMMONG_BOOKINGS.get(2),
+                            COMMONG_BOOKINGS.get(3)
+                    )
+            )
+    );
+
+    private static final MockMvcExpectationAssertion COMMON_MOCK_MVC_GET_BOOKINGS_EXPECTATION_ASSERTION = (resultActions) -> {
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(COMMON_SERVICE_BOOKINGS.size()));
+
+        for (int i = 0; i < COMMON_SERVICE_BOOKINGS.size(); i++) {
+            ServiceBooking serviceBooking = COMMON_SERVICE_BOOKINGS.get(i);
+            List<Booking> bookings = serviceBooking.bookings();
+
+            resultActions
+                    .andExpect(jsonPath(String.format("$[%d]", i), aMapWithSize(4)))
+                    .andExpect(jsonPath("$[%d].id", i).value(serviceBooking.id().toHexString()))
+                    .andExpect(jsonPath("$[%d].date", i).value(serviceBooking.date()))
+                    .andExpect(jsonPath("$[%d].serviceId", i).value(serviceBooking.serviceId().toHexString()))
+                    .andExpect(jsonPath("$[%d].bookings", i).isArray());
+
+            for (int j = 0; j < bookings.size(); j++) {
+                Booking booking = bookings.get(j);
+                resultActions
+                        .andExpect(jsonPath(String.format("$[%d].bookings[%d]", i, j), aMapWithSize(4)))
+                        .andExpect(jsonPath(String.format("$[%d].bookings[%d].id", i, j)).value(booking.id().toHexString()))
+                        .andExpect(jsonPath(String.format("$[%d].bookings[%d].userId", i, j)).value(booking.userId().toHexString()))
+                        .andExpect(jsonPath(String.format("$[%d].bookings[%d].start", i, j)).value(booking.start()))
+                        .andExpect(jsonPath(String.format("$[%d].bookings[%d].end", i, j)).value(booking.end()));
+            }
+        }
+    };
 }
