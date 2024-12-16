@@ -252,7 +252,6 @@ class BookingControllerTest {
                                 when(service.getUserBooking(query)).thenReturn(userBooking),
                         (MockServiceAssertion<GetBookingQuery>) (service, query) ->
                                 then(service).should().getUserBooking(query)
-
                 ),
                 Arguments.of(
                         "Incorrect date string format.",
@@ -280,7 +279,6 @@ class BookingControllerTest {
                                 when(service.getUserBooking(query)).thenReturn(userBooking),
                         (MockServiceAssertion<GetBookingQuery>) (service, query) ->
                                 then(service).shouldHaveNoInteractions()
-
                 ),
                 Arguments.of(
                         "Incorrect hex string for serviceId.",
@@ -308,7 +306,6 @@ class BookingControllerTest {
                                 when(service.getUserBooking(query)).thenReturn(userBooking),
                         (MockServiceAssertion<GetBookingQuery>) (service, query) ->
                                 then(service).shouldHaveNoInteractions()
-
                 ),
                 Arguments.of(
                         "Incorrect hex string for bookingId.",
