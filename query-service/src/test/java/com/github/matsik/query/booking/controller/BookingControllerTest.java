@@ -100,7 +100,7 @@ class BookingControllerTest {
                             );
                         },
                         (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
-                                then(service).shouldHaveNoMoreInteractions()
+                                then(service).shouldHaveNoInteractions()
                 ),
                 Arguments.of(
                         "Constraint violation of service duration.",
@@ -124,7 +124,7 @@ class BookingControllerTest {
                             );
                         },
                         (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
-                                then(service).shouldHaveNoMoreInteractions()
+                                then(service).shouldHaveNoInteractions()
                 ),
                 Arguments.of(
                         "Incorrect hex string for serviceId.",
@@ -148,7 +148,7 @@ class BookingControllerTest {
                             );
                         },
                         (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
-                                then(service).shouldHaveNoMoreInteractions()
+                                then(service).shouldHaveNoInteractions()
                 ),
                 Arguments.of(
                         "Incorrect date.",
@@ -173,7 +173,7 @@ class BookingControllerTest {
                             );
                         },
                         (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
-                                then(service).shouldHaveNoMoreInteractions()
+                                then(service).shouldHaveNoInteractions()
                 )
         );
     }
@@ -278,7 +278,7 @@ class BookingControllerTest {
                         (MockServiceSetUp) (service, query, userBooking) ->
                                 when(service.getUserBooking(query)).thenReturn(userBooking),
                         (MockServiceAssertion<GetBookingQuery>) (service, query) ->
-                                then(service).shouldHaveNoMoreInteractions()
+                                then(service).shouldHaveNoInteractions()
 
                 ),
                 Arguments.of(
@@ -306,7 +306,7 @@ class BookingControllerTest {
                         (MockServiceSetUp) (service, query, userBooking) ->
                                 when(service.getUserBooking(query)).thenReturn(userBooking),
                         (MockServiceAssertion<GetBookingQuery>) (service, query) ->
-                                then(service).shouldHaveNoMoreInteractions()
+                                then(service).shouldHaveNoInteractions()
 
                 ),
                 Arguments.of(
@@ -334,7 +334,7 @@ class BookingControllerTest {
                         (MockServiceSetUp) (service, query, userBooking) ->
                                 when(service.getUserBooking(query)).thenReturn(userBooking),
                         (MockServiceAssertion<GetBookingQuery>) (service, query) ->
-                                then(service).shouldHaveNoMoreInteractions()
+                                then(service).shouldHaveNoInteractions()
                 ),
                 Arguments.of(
                         "User Booking not found.",
