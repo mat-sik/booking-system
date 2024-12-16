@@ -1,14 +1,16 @@
 package com.github.matsik.query.booking.controller;
 
+import com.github.matsik.mongo.model.Booking;
+import com.github.matsik.query.booking.model.ServiceBooking;
 import com.github.matsik.query.booking.model.UserBooking;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetBookingQuery;
+import com.github.matsik.query.booking.query.GetBookingsQuery;
 import com.github.matsik.query.booking.service.BookingService;
 import com.github.matsik.query.booking.service.TimeRange;
 import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
 import com.github.matsik.query.config.jackson.JacksonConfiguration;
 import org.bson.types.ObjectId;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -404,9 +406,136 @@ class BookingControllerTest {
         void setUp(BookingService service, GetBookingQuery query, UserBooking userBooking);
     }
 
-    @Test
-    void getBookings() {
+    private static Stream<Arguments> provideGetBookingsTestCases() {
+        return Stream.of(
+                Arguments.of(
+                        "Ok response.",
+                        List.of(
+                                LocalDate.of(2024, 12, 12),
+                                LocalDate.of(2024, 12, 13)
+                        ),
+                        List.of(
+                                new ObjectId("100000000000000000000000"),
+                                new ObjectId("100000000000000000000001")
+                        ),
+                        List.of(
+
+                                new ObjectId("010000000000000000000000"),
+                                new ObjectId("010000000000000000000001")
+                        ),
+                        List.of(
+                                new ServiceBooking(
+                                        new ObjectId("000000000000000000000000"),
+                                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                                        new ObjectId("100000000000000000000000"),
+                                        List.of(
+                                                new Booking(
+                                                        new ObjectId("110000000000000000000000"),
+                                                        new ObjectId("010000000000000000000000"),
+                                                        0,
+                                                        30
+                                                ),
+                                                new Booking(
+                                                        new ObjectId("110000000000000000000001"),
+                                                        new ObjectId("010000000000000000000001"),
+                                                        30,
+                                                        60
+                                                )
+                                        )
+                                ),
+                                new ServiceBooking(
+                                        new ObjectId("000000000000000000000001"),
+                                        LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                                        new ObjectId("100000000000000000000001"),
+                                        List.of(
+                                                new Booking(
+                                                        new ObjectId("110000000000000000000002"),
+                                                        new ObjectId("010000000000000000000000"),
+                                                        30,
+                                                        60
+                                                ),
+                                                new Booking(
+                                                        new ObjectId("110000000000000000000003"),
+                                                        new ObjectId("010000000000000000000001"),
+                                                        60, 90
+                                                )
+                                        )
+                                )
+                        ),
+                        (MockMvcExpectationAssertion<List<ServiceBooking>>) (resultActions, serviceBookings) -> {
+                            resultActions
+                                    .andExpect(status().isOk())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                    .andExpect(jsonPath("$").isArray())
+                                    .andExpect(jsonPath("$.length()").value(serviceBookings.size()));
+
+                            for (int i = 0; i < serviceBookings.size(); i++) {
+                                ServiceBooking serviceBooking = serviceBookings.get(i);
+                                List<Booking> bookings = serviceBooking.bookings();
+
+                                resultActions
+                                        .andExpect(jsonPath(String.format("$[%d]", i), aMapWithSize(4)))
+                                        .andExpect(jsonPath("$[%d].id", i).value(serviceBooking.id().toHexString()))
+                                        .andExpect(jsonPath("$[%d].date", i).value(serviceBooking.date()))
+                                        .andExpect(jsonPath("$[%d].serviceId", i).value(serviceBooking.serviceId().toHexString()))
+                                        .andExpect(jsonPath("$[%d].bookings", i).isArray());
+
+                                for (int j = 0; j < bookings.size(); j++) {
+                                    Booking booking = bookings.get(j);
+                                    resultActions
+                                            .andExpect(jsonPath(String.format("$[%d].bookings[%d]", i, j), aMapWithSize(4)))
+                                            .andExpect(jsonPath(String.format("$[%d].bookings[%d].id", i, j)).value(booking.id().toHexString()))
+                                            .andExpect(jsonPath(String.format("$[%d].bookings[%d].userId", i, j)).value(booking.userId().toHexString()))
+                                            .andExpect(jsonPath(String.format("$[%d].bookings[%d].start", i, j)).value(booking.start()))
+                                            .andExpect(jsonPath(String.format("$[%d].bookings[%d].end", i, j)).value(booking.end()));
+                                }
+                            }
+                        },
+                        (MockServiceAssertion<GetBookingsQuery>) (service, query) -> {
+                            then(service).should().getBookings(query);
+                            then(service).shouldHaveNoMoreInteractions();
+                        }
+                )
+        );
     }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("provideGetBookingsTestCases")
+    void getBookings(
+            String name,
+            List<LocalDate> dates,
+            List<ObjectId> serviceIds,
+            List<ObjectId> userIds,
+            List<ServiceBooking> serviceBookings,
+            MockMvcExpectationAssertion<List<ServiceBooking>> mockMvcExpectationAssertion,
+            MockServiceAssertion<GetBookingsQuery> mockServiceAssertion
+    ) throws Exception {
+        // given
+        String datesParam = toStringParam(dates);
+        String serviceIdsParam = toStringParam(serviceIds);
+        String userIdsParam = toStringParam(userIds);
+
+        GetBookingsQuery query = new GetBookingsQuery(dates, serviceIds, userIds);
+
+        when(service.getBookings(query)).thenReturn(serviceBookings);
+
+        // then
+        ResultActions resultActions = mockMvc.perform(get("/booking/all")
+                .param("dates", datesParam)
+                .param("serviceIds", serviceIdsParam)
+                .param("userIds", userIdsParam)
+                .contentType(MediaType.APPLICATION_JSON));
+
+        // when
+        mockMvcExpectationAssertion.assertExpectations(resultActions, serviceBookings);
+
+        mockServiceAssertion.assertMock(service, query);
+    }
+
+    private static <T> String toStringParam(List<T> elements) {
+        return String.join(",", elements.stream().map(Object::toString).toList());
+    }
+
 
     private interface MockServiceAssertion<T> {
         void assertMock(BookingService service, T query);

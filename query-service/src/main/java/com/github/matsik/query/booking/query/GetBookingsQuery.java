@@ -1,6 +1,7 @@
 package com.github.matsik.query.booking.query;
 
 import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.bson.types.ObjectId;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Getter
 @Accessors(fluent = true)
+@EqualsAndHashCode
 public class GetBookingsQuery {
 
     private final List<String> dates;

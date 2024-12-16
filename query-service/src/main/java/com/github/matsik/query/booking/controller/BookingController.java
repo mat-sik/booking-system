@@ -76,7 +76,7 @@ public class BookingController {
         );
     }
 
-    @GetMapping("/all")
+   @GetMapping("/all")
     public ResponseEntity<List<ServiceBookingResponse>> getBookings(
             @RequestParam(required = false, defaultValue = "") List<LocalDate> dates,
             @RequestParam(required = false, defaultValue = "") List<ObjectId> serviceIds,
