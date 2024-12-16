@@ -128,7 +128,7 @@ class BookingControllerTest {
                                 then(service).shouldHaveNoInteractions()
                 ),
                 Arguments.of(
-                        "Incorrect hex string for serviceId.",
+                        "Incorrect hex string for serviceId",
                         LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         "Incorrect hex string",
                         String.valueOf(75),
@@ -152,7 +152,7 @@ class BookingControllerTest {
                                 then(service).shouldHaveNoInteractions()
                 ),
                 Arguments.of(
-                        "Incorrect date.",
+                        "Incorrect date string format.",
                         "22004-10-33",
                         new ObjectId("000000000000000000000000").toHexString(),
                         String.valueOf(75),
@@ -255,7 +255,7 @@ class BookingControllerTest {
 
                 ),
                 Arguments.of(
-                        "Incorrect date.",
+                        "Incorrect date string format.",
                         "22004-10-33",
                         new ObjectId("000000000000000000000000").toHexString(),
                         new ObjectId("100000000000000000000000").toHexString(),
@@ -283,7 +283,7 @@ class BookingControllerTest {
 
                 ),
                 Arguments.of(
-                        "Incorrect serviceId.",
+                        "Incorrect hex string for serviceId.",
                         LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         "foo",
                         new ObjectId("100000000000000000000000").toHexString(),
@@ -311,7 +311,7 @@ class BookingControllerTest {
 
                 ),
                 Arguments.of(
-                        "Incorrect bookingId.",
+                        "Incorrect hex string for bookingId.",
                         LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         new ObjectId("000000000000000000000000").toHexString(),
                         "bar",
@@ -452,7 +452,7 @@ class BookingControllerTest {
                         COMMON_MOCK_SERVICE_ASSERTION
                 ),
                 Arguments.of(
-                        "Incorrect date.",
+                        "Incorrect date string format.",
                         COMMON_DATES_STR + ",foo",
                         null,
                         null,
@@ -473,7 +473,7 @@ class BookingControllerTest {
                                 then(service).shouldHaveNoInteractions()
                 ),
                 Arguments.of(
-                        "Incorrect serviceId.",
+                        "Incorrect hex string for serviceId.",
                         null,
                         COMMON_SERVICE_IDS + ",foo",
                         null,
@@ -494,7 +494,7 @@ class BookingControllerTest {
                                 then(service).shouldHaveNoInteractions()
                 ),
                 Arguments.of(
-                        "Incorrect userId.",
+                        "Incorrect hex string for userId.",
                         null,
                         null,
                         COMMON_USER_IDS + ",foo",
