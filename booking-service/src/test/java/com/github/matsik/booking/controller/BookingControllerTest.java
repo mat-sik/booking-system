@@ -87,36 +87,55 @@ class BookingControllerTest {
                             then(service).should().getBookings(dates, serviceIds, userIds);
                             then(service).shouldHaveNoMoreInteractions();
                         },
-                        (MockMvcExpectationAssertion) (ResultActions resultActions) -> {
-                            resultActions
-                                    .andExpect(status().isOk())
-                                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                                    .andExpect(jsonPath("$").isArray())
-                                    .andExpect(jsonPath("$.length()").value(COMMON_SERVICE_BOOKING_RESPONSES.size()));
+                        COMMON_MOCK_MVC_GET_BOOKINGS_EXPECTATION_ASSERTION
+                ),
+                Arguments.of(
+                        "Ok response, empty string params.",
+                        "",
+                        "",
+                        "",
+                        (MockServiceSetUp<QueryRemoteService>) (service, args) -> {
+                            List<LocalDate> dates = toLocalDate((String) args[0]);
+                            List<ObjectId> serviceIds = toObjectId((String) args[1]);
+                            List<ObjectId> userIds = toObjectId((String) args[2]);
 
-                            for (int i = 0; i < COMMON_SERVICE_BOOKING_RESPONSES.size(); i++) {
-                                ServiceBookingResponse serviceBooking = COMMON_SERVICE_BOOKING_RESPONSES.get(i);
-                                List<Booking> bookings = serviceBooking.bookings();
+                            when(service.getBookings(dates, serviceIds, userIds))
+                                    .thenReturn(COMMON_SERVICE_BOOKING_RESPONSES);
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, args) -> {
+                            List<LocalDate> dates = toLocalDate((String) args[0]);
+                            List<ObjectId> serviceIds = toObjectId((String) args[1]);
+                            List<ObjectId> userIds = toObjectId((String) args[2]);
 
-                                resultActions
-                                        .andExpect(jsonPath(String.format("$[%d]", i), aMapWithSize(4)))
-                                        .andExpect(jsonPath("$[%d].id", i).value(serviceBooking.id().toHexString()))
-                                        .andExpect(jsonPath("$[%d].date", i).value(serviceBooking.date()))
-                                        .andExpect(jsonPath("$[%d].serviceId", i).value(serviceBooking.serviceId().toHexString()))
-                                        .andExpect(jsonPath("$[%d].bookings", i).isArray());
+                            then(service).should().getBookings(dates, serviceIds, userIds);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        COMMON_MOCK_MVC_GET_BOOKINGS_EXPECTATION_ASSERTION
+                ),
+                Arguments.of(
+                        "Ok response, params not set.",
+                        null,
+                        null,
+                        null,
+                        (MockServiceSetUp<QueryRemoteService>) (service, args) -> {
+                            List<LocalDate> dates = toLocalDate((String) args[0]);
+                            List<ObjectId> serviceIds = toObjectId((String) args[1]);
+                            List<ObjectId> userIds = toObjectId((String) args[2]);
 
-                                for (int j = 0; j < bookings.size(); j++) {
-                                    Booking booking = bookings.get(j);
-                                    resultActions
-                                            .andExpect(jsonPath(String.format("$[%d].bookings[%d]", i, j), aMapWithSize(4)))
-                                            .andExpect(jsonPath(String.format("$[%d].bookings[%d].id", i, j)).value(booking.id().toHexString()))
-                                            .andExpect(jsonPath(String.format("$[%d].bookings[%d].userId", i, j)).value(booking.userId().toHexString()))
-                                            .andExpect(jsonPath(String.format("$[%d].bookings[%d].start", i, j)).value(booking.start()))
-                                            .andExpect(jsonPath(String.format("$[%d].bookings[%d].end", i, j)).value(booking.end()));
-                                }
-                            }
-                        }
+                            when(service.getBookings(dates, serviceIds, userIds))
+                                    .thenReturn(COMMON_SERVICE_BOOKING_RESPONSES);
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, args) -> {
+                            List<LocalDate> dates = toLocalDate((String) args[0]);
+                            List<ObjectId> serviceIds = toObjectId((String) args[1]);
+                            List<ObjectId> userIds = toObjectId((String) args[2]);
+
+                            then(service).should().getBookings(dates, serviceIds, userIds);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        COMMON_MOCK_MVC_GET_BOOKINGS_EXPECTATION_ASSERTION
                 )
+
         );
     }
 
@@ -240,6 +259,36 @@ class BookingControllerTest {
                     )
             )
     );
+
+    private static final MockMvcExpectationAssertion COMMON_MOCK_MVC_GET_BOOKINGS_EXPECTATION_ASSERTION = (resultActions) -> {
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(COMMON_SERVICE_BOOKING_RESPONSES.size()));
+
+        for (int i = 0; i < COMMON_SERVICE_BOOKING_RESPONSES.size(); i++) {
+            ServiceBookingResponse serviceBooking = COMMON_SERVICE_BOOKING_RESPONSES.get(i);
+            List<Booking> bookings = serviceBooking.bookings();
+
+            resultActions
+                    .andExpect(jsonPath(String.format("$[%d]", i), aMapWithSize(4)))
+                    .andExpect(jsonPath("$[%d].id", i).value(serviceBooking.id().toHexString()))
+                    .andExpect(jsonPath("$[%d].date", i).value(serviceBooking.date()))
+                    .andExpect(jsonPath("$[%d].serviceId", i).value(serviceBooking.serviceId().toHexString()))
+                    .andExpect(jsonPath("$[%d].bookings", i).isArray());
+
+            for (int j = 0; j < bookings.size(); j++) {
+                Booking booking = bookings.get(j);
+                resultActions
+                        .andExpect(jsonPath(String.format("$[%d].bookings[%d]", i, j), aMapWithSize(4)))
+                        .andExpect(jsonPath(String.format("$[%d].bookings[%d].id", i, j)).value(booking.id().toHexString()))
+                        .andExpect(jsonPath(String.format("$[%d].bookings[%d].userId", i, j)).value(booking.userId().toHexString()))
+                        .andExpect(jsonPath(String.format("$[%d].bookings[%d].start", i, j)).value(booking.start()))
+                        .andExpect(jsonPath(String.format("$[%d].bookings[%d].end", i, j)).value(booking.end()));
+            }
+        }
+    };
 
     private static <T> String toStringParam(List<T> elements) {
         return String.join(",", elements.stream().map(Object::toString).toList());
