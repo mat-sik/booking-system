@@ -534,7 +534,7 @@ class BookingControllerTest {
         when(service.getBookings(query)).thenReturn(serviceBookings);
 
         // then
-        MockHttpServletRequestBuilder requestBuilder = createGetBookingsRequest(dates, serviceIds, userIds);
+        MockHttpServletRequestBuilder requestBuilder = getGetBookingsRequest(dates, serviceIds, userIds);
         ResultActions resultActions = mockMvc.perform(requestBuilder);
 
         // when
@@ -650,7 +650,7 @@ class BookingControllerTest {
         return new GetBookingsQuery(dates, serviceIds, userIds);
     }
 
-    private MockHttpServletRequestBuilder createGetBookingsRequest(
+    private MockHttpServletRequestBuilder getGetBookingsRequest(
             String dates,
             String serviceIds,
             String userIds
