@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -449,6 +450,69 @@ class BookingControllerTest {
                         COMMON_SERVICE_BOOKINGS,
                         COMMON_MOCK_MVC_EXPECTATION_ASSERTION,
                         COMMON_MOCK_SERVICE_ASSERTION
+                ),
+                Arguments.of(
+                        "Incorrect date.",
+                        COMMON_DATES_STR + ",foo",
+                        null,
+                        null,
+                        List.of(),
+                        (MockMvcExpectationAssertion<List<UserBooking>>) (resultActions, userBooking) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Parse attempt failed for value [2024-12-12,2024-12-13,foo]",
+                                    "/booking/all"
+                            );
+                        },
+                        (MockServiceAssertion<GetBookingsQuery>) (service, query) ->
+                                then(service).shouldHaveNoInteractions()
+                ),
+                Arguments.of(
+                        "Incorrect serviceId.",
+                        null,
+                        COMMON_SERVICE_IDS + ",foo",
+                        null,
+                        List.of(),
+                        (MockMvcExpectationAssertion<List<UserBooking>>) (resultActions, userBooking) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Invalid ObjectId: [100000000000000000000000, 100000000000000000000001],foo",
+                                    "/booking/all"
+                            );
+                        },
+                        (MockServiceAssertion<GetBookingsQuery>) (service, query) ->
+                                then(service).shouldHaveNoInteractions()
+                ),
+                Arguments.of(
+                        "Incorrect userId.",
+                        null,
+                        null,
+                        COMMON_USER_IDS + ",foo",
+                        List.of(),
+                        (MockMvcExpectationAssertion<List<UserBooking>>) (resultActions, userBooking) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Invalid ObjectId: [010000000000000000000000, 010000000000000000000001],foo",
+                                    "/booking/all"
+                            );
+                        },
+                        (MockServiceAssertion<GetBookingsQuery>) (service, query) ->
+                                then(service).shouldHaveNoInteractions()
                 )
         );
     }
@@ -612,21 +676,29 @@ class BookingControllerTest {
     }
 
     private static List<LocalDate> toLocalDate(String elements) {
-        if (elements == null || elements.isBlank()) {
+        try {
+            if (elements == null || elements.isBlank()) {
+                return List.of();
+            }
+            return Arrays.stream(elements.split(","))
+                    .map(el -> LocalDate.parse(el, DateTimeFormatter.ISO_LOCAL_DATE))
+                    .toList();
+        } catch (DateTimeParseException ex) {
             return List.of();
         }
-        return Arrays.stream(elements.split(","))
-                .map(el -> LocalDate.parse(el, DateTimeFormatter.ISO_LOCAL_DATE))
-                .toList();
     }
 
     private static List<ObjectId> toObjectId(String elements) {
-        if (elements == null || elements.isBlank()) {
+        try {
+            if (elements == null || elements.isBlank()) {
+                return List.of();
+            }
+            return Arrays.stream(elements.split(","))
+                    .map(ObjectId::new)
+                    .toList();
+        } catch (IllegalArgumentException ex) {
             return List.of();
         }
-        return Arrays.stream(elements.split(","))
-                .map(ObjectId::new)
-                .toList();
     }
 
     private interface MockServiceAssertion<T> {
