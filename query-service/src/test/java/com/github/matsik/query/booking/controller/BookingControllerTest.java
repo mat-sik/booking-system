@@ -455,6 +455,32 @@ class BookingControllerTest {
         );
     }
 
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("provideGetBookingsTestCases")
+    void getBookings(
+            String name,
+            List<LocalDate> dates,
+            List<ObjectId> serviceIds,
+            List<ObjectId> userIds,
+            List<ServiceBooking> serviceBookings,
+            MockMvcExpectationAssertion<List<ServiceBooking>> mockMvcExpectationAssertion,
+            MockServiceAssertion<GetBookingsQuery> mockServiceAssertion
+    ) throws Exception {
+        // given
+        GetBookingsQuery query = getGetBookingQuery(dates, serviceIds, userIds);
+
+        when(service.getBookings(query)).thenReturn(serviceBookings);
+
+        // then
+        MockHttpServletRequestBuilder requestBuilder = createGetBookingsRequest(dates, serviceIds, userIds);
+        ResultActions resultActions = mockMvc.perform(requestBuilder);
+
+        // when
+        mockMvcExpectationAssertion.assertExpectations(resultActions, serviceBookings);
+
+        mockServiceAssertion.assertMock(service, query);
+    }
+
     private static final List<LocalDate> COMMON_DATES = List.of(
             LocalDate.of(2024, 12, 12),
             LocalDate.of(2024, 12, 13)
@@ -544,32 +570,6 @@ class BookingControllerTest {
         then(service).should().getBookings(query);
         then(service).shouldHaveNoMoreInteractions();
     };
-
-    @ParameterizedTest(name = "{0}")
-    @MethodSource("provideGetBookingsTestCases")
-    void getBookings(
-            String name,
-            List<LocalDate> dates,
-            List<ObjectId> serviceIds,
-            List<ObjectId> userIds,
-            List<ServiceBooking> serviceBookings,
-            MockMvcExpectationAssertion<List<ServiceBooking>> mockMvcExpectationAssertion,
-            MockServiceAssertion<GetBookingsQuery> mockServiceAssertion
-    ) throws Exception {
-        // given
-        GetBookingsQuery query = getGetBookingQuery(dates, serviceIds, userIds);
-
-        when(service.getBookings(query)).thenReturn(serviceBookings);
-
-        // then
-        MockHttpServletRequestBuilder requestBuilder = createGetBookingsRequest(dates, serviceIds, userIds);
-        ResultActions resultActions = mockMvc.perform(requestBuilder);
-
-        // when
-        mockMvcExpectationAssertion.assertExpectations(resultActions, serviceBookings);
-
-        mockServiceAssertion.assertMock(service, query);
-    }
 
     private static GetBookingsQuery getGetBookingQuery(
             List<LocalDate> dates,
