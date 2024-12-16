@@ -235,9 +235,9 @@ class BookingControllerTest {
                                         .andExpect(status().isOk())
                                         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                                         .andExpect(jsonPath("$", aMapWithSize(3)))
-                                        .andExpect(jsonPath("$.userId").value("110000000000000000000000"))
-                                        .andExpect(jsonPath("$.start").value(60))
-                                        .andExpect(jsonPath("$.end").value(120)),
+                                        .andExpect(jsonPath("$.userId").value(userBooking.userId().toHexString()))
+                                        .andExpect(jsonPath("$.start").value(String.valueOf(userBooking.start())))
+                                        .andExpect(jsonPath("$.end").value(String.valueOf(userBooking.end()))),
                         (MockServiceSetUp) (service, query, userBooking) ->
                                 when(service.getUserBooking(query)).thenReturn(userBooking),
                         (MockServiceAssertion<GetBookingQuery>) (service, query) ->
