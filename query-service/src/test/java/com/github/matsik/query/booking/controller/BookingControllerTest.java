@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -424,21 +425,18 @@ class BookingControllerTest {
         return Stream.of(
                 Arguments.of(
                         "Ok response.",
-                        COMMON_DATES,
-                        COMMON_SERVICE_IDS,
-                        COMMON_USER_IDS,
+                        COMMON_DATES_STR,
+                        COMMON_SERVICE_IDS_STR,
+                        COMMON_USER_IDS_STR,
                         COMMON_SERVICE_BOOKINGS,
                         COMMON_MOCK_MVC_EXPECTATION_ASSERTION,
                         COMMON_MOCK_SERVICE_ASSERTION
                 ),
                 Arguments.of(
                         "Ok response, empty string params.",
-                        List.of(
-                        ),
-                        List.of(
-                        ),
-                        List.of(
-                        ),
+                        "",
+                        "",
+                        "",
                         COMMON_SERVICE_BOOKINGS,
                         COMMON_MOCK_MVC_EXPECTATION_ASSERTION,
                         COMMON_MOCK_SERVICE_ASSERTION
@@ -459,9 +457,9 @@ class BookingControllerTest {
     @MethodSource("provideGetBookingsTestCases")
     void getBookings(
             String name,
-            List<LocalDate> dates,
-            List<ObjectId> serviceIds,
-            List<ObjectId> userIds,
+            String dates,
+            String serviceIds,
+            String userIds,
             List<ServiceBooking> serviceBookings,
             MockMvcExpectationAssertion<List<ServiceBooking>> mockMvcExpectationAssertion,
             MockServiceAssertion<GetBookingsQuery> mockServiceAssertion
@@ -486,15 +484,21 @@ class BookingControllerTest {
             LocalDate.of(2024, 12, 13)
     );
 
+    private static final String COMMON_DATES_STR = toStringParam(COMMON_DATES);
+
     private static final List<ObjectId> COMMON_SERVICE_IDS = List.of(
             new ObjectId("100000000000000000000000"),
             new ObjectId("100000000000000000000001")
     );
 
+    private static final String COMMON_SERVICE_IDS_STR = toStringParam(COMMON_SERVICE_IDS);
+
     private static final List<ObjectId> COMMON_USER_IDS = List.of(
             new ObjectId("010000000000000000000000"),
             new ObjectId("010000000000000000000001")
     );
+
+    private static final String COMMON_USER_IDS_STR = toStringParam(COMMON_USER_IDS);
 
     private static final List<ServiceBooking> COMMON_SERVICE_BOOKINGS = List.of(
             new ServiceBooking(
@@ -572,42 +576,32 @@ class BookingControllerTest {
     };
 
     private static GetBookingsQuery getGetBookingQuery(
-            List<LocalDate> dates,
-            List<ObjectId> serviceIds,
-            List<ObjectId> userIds
+            String datesString,
+            String serviceIdsString,
+            String userIdsString
     ) {
-        if (dates == null) {
-            dates = List.of();
-        }
-        if (serviceIds == null) {
-            serviceIds = List.of();
-        }
-        if (userIds == null) {
-            userIds = List.of();
-        }
-
+        List<LocalDate> dates = toLocalDate(datesString);
+        List<ObjectId> serviceIds = toObjectId(serviceIdsString);
+        List<ObjectId> userIds = toObjectId(userIdsString);
         return new GetBookingsQuery(dates, serviceIds, userIds);
     }
 
     private MockHttpServletRequestBuilder createGetBookingsRequest(
-            List<LocalDate> dates,
-            List<ObjectId> serviceIds,
-            List<ObjectId> userIds
+            String dates,
+            String serviceIds,
+            String userIds
     ) {
         MockHttpServletRequestBuilder request = get("/booking/all")
                 .contentType(MediaType.APPLICATION_JSON);
 
         if (dates != null) {
-            String datesParam = toStringParam(dates);
-            request.param("dates", datesParam);
+            request.param("dates", dates);
         }
         if (serviceIds != null) {
-            String serviceIdsParam = toStringParam(serviceIds);
-            request.param("serviceIds", serviceIdsParam);
+            request.param("serviceIds", serviceIds);
         }
         if (userIds != null) {
-            String userIdsParam = toStringParam(userIds);
-            request.param("userIds", userIdsParam);
+            request.param("userIds", userIds);
         }
 
         return request;
@@ -615,6 +609,24 @@ class BookingControllerTest {
 
     private static <T> String toStringParam(List<T> elements) {
         return String.join(",", elements.stream().map(Object::toString).toList());
+    }
+
+    private static List<LocalDate> toLocalDate(String elements) {
+        if (elements == null || elements.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(elements.split(","))
+                .map(el -> LocalDate.parse(el, DateTimeFormatter.ISO_LOCAL_DATE))
+                .toList();
+    }
+
+    private static List<ObjectId> toObjectId(String elements) {
+        if (elements == null || elements.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(elements.split(","))
+                .map(ObjectId::new)
+                .toList();
     }
 
     private interface MockServiceAssertion<T> {
