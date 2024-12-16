@@ -25,9 +25,9 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.aMapWithSize;
@@ -676,27 +676,22 @@ class BookingControllerTest {
     }
 
     private static List<LocalDate> toLocalDate(String elements) {
-        try {
-            if (elements == null || elements.isBlank()) {
-                return List.of();
-            }
-            return Arrays.stream(elements.split(","))
-                    .map(el -> LocalDate.parse(el, DateTimeFormatter.ISO_LOCAL_DATE))
-                    .toList();
-        } catch (DateTimeParseException ex) {
-            return List.of();
-        }
+        return toType(elements, (el) -> LocalDate.parse(el, DateTimeFormatter.ISO_LOCAL_DATE));
     }
 
     private static List<ObjectId> toObjectId(String elements) {
+        return toType(elements, ObjectId::new);
+    }
+
+    private static <T> List<T> toType(String elements, Function<String, T> mapper) {
         try {
             if (elements == null || elements.isBlank()) {
                 return List.of();
             }
             return Arrays.stream(elements.split(","))
-                    .map(ObjectId::new)
+                    .map(mapper)
                     .toList();
-        } catch (IllegalArgumentException ex) {
+        } catch (Exception ex) {
             return List.of();
         }
     }
