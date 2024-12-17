@@ -10,19 +10,21 @@ import java.time.LocalDate;
 @ValidStartEnd
 public record CreateBookingRequest(
 
-        @NotNull
+        @NotNull(message = "Date cannot be null")
         LocalDate date,
 
-        @NotNull
+        @NotNull(message = "Service Id cannot be null")
         ObjectId serviceId,
 
-        @NotNull
+        @NotNull(message = "User Id cannot be null")
         ObjectId userId,
 
+        @NotNull(message = "Start cannot be null")
         @Min(value = 0, message = "Start must be 0 or greater")
-        int start,
+        Integer start,
 
+        @NotNull(message = "End cannot be null")
         @Min(value = 0, message = "End must be 0 or greater")
-        int end
+        Integer end
 ) {
 }

@@ -138,7 +138,7 @@ class BookingControllerTest {
                                     "about:blank",
                                     "Bad Request",
                                     400,
-                                    "JSON parse error: Cannot deserialize value of type `int` from String \"invalid\": not a valid `int` value",
+                                    "JSON parse error: Cannot deserialize value of type `java.lang.Integer` from String \"invalid\": not a valid `java.lang.Integer` value",
                                     "/booking/create"
                             );
                         }
@@ -162,7 +162,7 @@ class BookingControllerTest {
                                     "about:blank",
                                     "Bad Request",
                                     400,
-                                    "JSON parse error: Cannot deserialize value of type `int` from String \"invalid\": not a valid `int` value",
+                                    "JSON parse error: Cannot deserialize value of type `java.lang.Integer` from String \"invalid\": not a valid `java.lang.Integer` value",
                                     "/booking/create"
                             );
                         }
@@ -238,6 +238,30 @@ class BookingControllerTest {
                                     "/booking/create"
                             );
                         }
+                ),
+                Arguments.of(
+                        "Required fields are null.",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        (MockServiceSetUp<CommandRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<CommandRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Date cannot be null, End cannot be null, Service Id cannot be null, Start cannot be null, User Id cannot be null",
+                                    "/booking/create"
+                            );
+                        }
                 )
         );
     }
@@ -291,7 +315,7 @@ class BookingControllerTest {
     private static Stream<Arguments> provideDeleteBookingTestCases() {
         return Stream.of(
                 Arguments.of(
-                        "Successful booking deletion",
+                        "OK response.",
                         COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         COMMON_SERVICE_IDS.get(0).toHexString(),
                         COMMON_BOOKING_IDS.get(0).toHexString(),
@@ -320,7 +344,7 @@ class BookingControllerTest {
                                 resultActions.andExpect(status().isOk())
                 ),
                 Arguments.of(
-                        "Incorrect date string format",
+                        "Incorrect date string format.",
                         "2024-12-32",
                         COMMON_SERVICE_IDS.get(0).toHexString(),
                         COMMON_BOOKING_IDS.get(0).toHexString(),
@@ -338,6 +362,29 @@ class BookingControllerTest {
                                     "Bad Request",
                                     400,
                                     "JSON parse error: Cannot deserialize value of type `java.time.LocalDate` from String \"2024-12-32\": Failed to deserialize java.time.LocalDate: (java.time.format.DateTimeParseException) Text '2024-12-32' could not be parsed: Invalid value for DayOfMonth (valid values 1 - 28/31): 32",
+                                    "/booking/delete"
+                            );
+                        }
+                ),
+                Arguments.of(
+                        "Required fields are null.",
+                        null,
+                        null,
+                        null,
+                        null,
+                        (MockServiceSetUp<CommandRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<CommandRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Booking Id cannot be null, Date cannot be null, Service Id cannot be null, User Id cannot be null",
                                     "/booking/delete"
                             );
                         }

@@ -8,7 +8,7 @@ public class StartEndValidator implements ConstraintValidator<ValidStartEnd, Cre
 
     @Override
     public boolean isValid(CreateBookingRequest request, ConstraintValidatorContext context) {
-        if (request == null) {
+        if (request == null || request.start() == null || request.end() == null) {
             return true; // Let @NotNull handle null checks
         }
         return request.start() < request.end();

@@ -7,16 +7,16 @@ import java.time.LocalDate;
 
 public record DeleteBookingRequest(
 
-        @NotNull
+        @NotNull(message = "Date cannot be null")
         LocalDate date,
 
-        @NotNull
+        @NotNull(message = "Service Id cannot be null")
         ObjectId serviceId,
 
-        @NotNull
+        @NotNull(message = "Booking Id cannot be null")
         ObjectId bookingId,
 
-        @NotNull
+        @NotNull(message = "User Id cannot be null")
         ObjectId userId
 ) {
 }
