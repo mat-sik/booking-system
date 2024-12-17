@@ -43,6 +43,16 @@ public class ControllerAdvice {
         });
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail onIllegalArgumentException(IllegalArgumentException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ProblemDetail onIllegalStateException(IllegalStateException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail onMethodArgumentNotValidExceptionHandler(MethodArgumentNotValidException ex) {
         String errorMessage = extractErrorMessages(ex);

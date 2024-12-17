@@ -134,8 +134,73 @@ class BookingControllerTest {
                             then(service).shouldHaveNoMoreInteractions();
                         },
                         COMMON_MOCK_MVC_GET_BOOKINGS_EXPECTATION_ASSERTION
+                ),
+                Arguments.of(
+                        "Incorrect date string format.",
+                        toStringParam(COMMON_DATES) + ",foo",
+                        null,
+                        null,
+                        (MockServiceSetUp<QueryRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Parse attempt failed for value [2024-12-12,2024-12-13,foo]",
+                                    "/booking/all"
+                            );
+                        }
+                ),
+                Arguments.of(
+                        "Incorrect hex string for serviceId.",
+                        null,
+                        toStringParam(COMMON_SERVICE_IDS) + ",foo",
+                        null,
+                        (MockServiceSetUp<QueryRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Invalid ObjectId: 010000000000000000000000,010000000000000000000001,foo",
+                                    "/booking/all"
+                            );
+                        }
+                ),
+                Arguments.of(
+                        "Incorrect hex string for userId.",
+                        null,
+                        null,
+                        toStringParam(COMMON_USER_IDS) + ",foo",
+                        (MockServiceSetUp<QueryRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Invalid ObjectId: 110000000000000000000000,110000000000000000000001,foo",
+                                    "/booking/all"
+                            );
+                        }
                 )
-
         );
     }
 
@@ -289,6 +354,24 @@ class BookingControllerTest {
             }
         }
     };
+
+    private static void assertProblemDetailExpectations(
+            ResultActions resultActions,
+            String type,
+            String title,
+            int status,
+            String detail,
+            String instance
+    ) throws Exception {
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$", aMapWithSize(6)))
+                .andExpect(jsonPath("$.type").value(type))
+                .andExpect(jsonPath("$.title").value(title))
+                .andExpect(jsonPath("$.status").value(status))
+                .andExpect(jsonPath("$.detail").value(detail))
+                .andExpect(jsonPath("$.instance").value(instance))
+                .andExpect(jsonPath("$.properties").isEmpty());
+    }
 
     private static <T> String toStringParam(List<T> elements) {
         return String.join(",", elements.stream().map(Object::toString).toList());
