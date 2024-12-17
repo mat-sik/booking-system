@@ -7,9 +7,11 @@ import com.github.matsik.booking.controller.request.DeleteBookingRequest;
 import com.github.matsik.query.response.ServiceBookingResponse;
 import com.github.matsik.query.response.TimeRangeResponse;
 import com.github.matsik.query.response.UserBookingResponse;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/booking")
 @RequiredArgsConstructor
+@Validated
 public class BookingController {
 
     private final QueryRemoteService queryService;
@@ -42,7 +45,7 @@ public class BookingController {
     public ResponseEntity<List<TimeRangeResponse>> getAvailableTimeRanges(
             @RequestParam("date") LocalDate date,
             @RequestParam("serviceId") ObjectId serviceId,
-            @RequestParam("serviceDuration") int serviceDuration
+            @RequestParam("serviceDuration") @Positive int serviceDuration
     ) {
         List<TimeRangeResponse> responses = queryService.getAvailableTimeRanges(date, serviceId, serviceDuration);
         return ResponseEntity.ok(responses);

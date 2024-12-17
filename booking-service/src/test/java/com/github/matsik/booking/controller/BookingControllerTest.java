@@ -5,6 +5,7 @@ import com.github.matsik.booking.client.query.QueryRemoteService;
 import com.github.matsik.booking.config.jackson.JacksonConfiguration;
 import com.github.matsik.mongo.model.Booking;
 import com.github.matsik.query.response.ServiceBookingResponse;
+import com.github.matsik.query.response.TimeRangeResponse;
 import com.github.matsik.query.response.UserBookingResponse;
 import feign.FeignException;
 import feign.Request;
@@ -61,8 +62,161 @@ class BookingControllerTest {
     void deleteBooking() {
     }
 
-    @Test
-    void getAvailableTimeRanges() {
+    private static Stream<Arguments> provideGetAvailableTimeRangesTestCases() {
+        return Stream.of(
+                Arguments.of(
+                        "OK response.",
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).date(),
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).serviceId().toHexString(),
+                        String.valueOf(75),
+                        (MockServiceSetUp<QueryRemoteService>) (service, args) -> {
+                            LocalDate date = LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE);
+                            ObjectId serviceId = new ObjectId((String) args[1]);
+                            int serviceDuration = Integer.parseInt((String) args[2]);
+
+                            when(service.getAvailableTimeRanges(date, serviceId, serviceDuration))
+                                    .thenReturn(COMMON_TIME_RANGE_RESPONSES);
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, args) -> {
+                            LocalDate date = LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE);
+                            ObjectId serviceId = new ObjectId((String) args[1]);
+                            int serviceDuration = Integer.parseInt((String) args[2]);
+
+                            then(service).should().getAvailableTimeRanges(date, serviceId, serviceDuration);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions
+                                    .andExpect(status().isOk())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                    .andExpect(jsonPath("$").isArray())
+                                    .andExpect(jsonPath("$.length()").value(COMMON_TIME_RANGE_RESPONSES.size()));
+
+                            for (int i = 0; i < COMMON_TIME_RANGE_RESPONSES.size(); i++) {
+                                resultActions
+                                        .andExpect(jsonPath("$[%d].start", i).value(COMMON_TIME_RANGE_RESPONSES.get(i).start()))
+                                        .andExpect(jsonPath("$[%d].end", i).value(COMMON_TIME_RANGE_RESPONSES.get(i).end()))
+                                        .andExpect(jsonPath(String.format("$[%d]", i), aMapWithSize(2)));
+                            }
+                        }
+                ),
+                Arguments.of(
+                        "Invalid service duration number format.",
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).date(),
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).serviceId().toHexString(),
+                        "invalid format",
+                        (MockServiceSetUp<QueryRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "For input string: \"invalidformat\"",
+                                    "/booking/available"
+                            );
+                        }
+                ),
+                Arguments.of(
+                        "Constraint violation of service duration.",
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).date(),
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).serviceId().toHexString(),
+                        String.valueOf(-1),
+                        (MockServiceSetUp<QueryRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "getAvailableTimeRanges.serviceDuration: must be greater than 0",
+                                    "/booking/available"
+                            );
+                        }
+                ),
+                Arguments.of(
+                        "Incorrect hex string for serviceId",
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).date(),
+                        "Incorrect hex string",
+                        String.valueOf(75),
+                        (MockServiceSetUp<QueryRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Invalid ObjectId: Incorrect hex string",
+                                    "/booking/available"
+                            );
+                        }
+                ),
+                Arguments.of(
+                        "Incorrect date string format.",
+                        "22004-10-33",
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).serviceId().toHexString(),
+                        String.valueOf(75),
+                        (MockServiceSetUp<QueryRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions
+                                    .andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Parse attempt failed for value [22004-10-33]",
+                                    "/booking/available"
+                            );
+                        }
+                )
+        );
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("provideGetAvailableTimeRangesTestCases")
+    void getAvailableTimeRanges(
+            String name,
+            String date,
+            String serviceId,
+            String serviceDuration,
+            MockServiceSetUp<QueryRemoteService> mockServiceSetUp,
+            MockServiceAssertion<QueryRemoteService> mockServiceAssertion,
+            MockMvcExpectationAssertion mockMvcExpectationAssertion
+    ) throws Exception {
+        // given
+        mockServiceSetUp.setUp(queryService, date, serviceId, serviceDuration);
+
+        // when
+        ResultActions resultActions = mockMvc.perform(get("/booking/available")
+                .param("date", date)
+                .param("serviceId", serviceId)
+                .param("serviceDuration", serviceDuration)
+                .contentType(MediaType.APPLICATION_JSON));
+
+        // then
+        mockMvcExpectationAssertion.assertExpectations(resultActions);
+
+        mockServiceAssertion.assertMock(queryService, date, serviceId, serviceDuration);
     }
 
     private static Stream<Arguments> provideGetUserBookingTestCases() {
@@ -427,6 +581,11 @@ class BookingControllerTest {
 
         return request;
     }
+
+    private static final List<TimeRangeResponse> COMMON_TIME_RANGE_RESPONSES = List.of(
+            new TimeRangeResponse(900, 990),
+            new TimeRangeResponse(990, 1080)
+    );
 
     private static final List<ObjectId> COMMON_SERVICE_BOOKING_IDS = List.of(
             new ObjectId("000000000000000000000000"),
