@@ -538,3 +538,11 @@ All required services can be started seamlessly using Docker Compose.
     - These JAR files are essential for successfully building the Docker images.
 
 For help with prerequisites, refer to [this](#prerequisites).
+
+## Testing
+
+I have thoroughly tested the repositories using *Testcontainers* to ensure proper database interaction. Additionally, I
+have fully tested the controllers by utilizing Spring's mock HTTP capabilities. I also tested the functionality for
+returning non-occupied time ranges.
+
+All tests are parameterized to maximize the ease of writing new test cases and reduce code duplication.
