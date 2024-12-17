@@ -65,7 +65,7 @@ class BookingControllerTest {
     private static Stream<Arguments> provideCreateBookingTestCases() {
         return Stream.of(
                 Arguments.of(
-                        "Successful booking creation",
+                        "OK response.",
                         COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         COMMON_SERVICE_IDS.get(0).toHexString(),
                         COMMON_USER_IDS.get(0).toHexString(),
@@ -96,7 +96,7 @@ class BookingControllerTest {
                                 resultActions.andExpect(status().isOk())
                 ),
                 Arguments.of(
-                        "Incorrect date string format",
+                        "Incorrect date string format.",
                         "2024-12-32",
                         COMMON_SERVICE_IDS.get(0).toHexString(),
                         COMMON_USER_IDS.get(0).toHexString(),
@@ -120,7 +120,7 @@ class BookingControllerTest {
                         }
                 ),
                 Arguments.of(
-                        "Incorrect start string format",
+                        "Incorrect start string format.",
                         COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         COMMON_SERVICE_IDS.get(0).toHexString(),
                         COMMON_USER_IDS.get(0).toHexString(),
@@ -144,7 +144,7 @@ class BookingControllerTest {
                         }
                 ),
                 Arguments.of(
-                        "Incorrect end string format",
+                        "Incorrect end string format.",
                         COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         COMMON_SERVICE_IDS.get(0).toHexString(),
                         COMMON_USER_IDS.get(0).toHexString(),
@@ -168,7 +168,7 @@ class BookingControllerTest {
                         }
                 ),
                 Arguments.of(
-                        "Incorrect start string format, should be positive or zero",
+                        "Incorrect start string format, should be positive or zero.",
                         COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         COMMON_SERVICE_IDS.get(0).toHexString(),
                         COMMON_USER_IDS.get(0).toHexString(),
@@ -192,7 +192,7 @@ class BookingControllerTest {
                         }
                 ),
                 Arguments.of(
-                        "Incorrect end string format, should be positive or zero",
+                        "Incorrect end string format, end should be greater than 0 and start.",
                         COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         COMMON_SERVICE_IDS.get(0).toHexString(),
                         COMMON_USER_IDS.get(0).toHexString(),
@@ -216,7 +216,7 @@ class BookingControllerTest {
                         }
                 ),
                 Arguments.of(
-                        "Incorrect start and end string format, should be positive or zero",
+                        "Incorrect start and end string format, should be positive or zero and should not be the same.",
                         COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         COMMON_SERVICE_IDS.get(0).toHexString(),
                         COMMON_USER_IDS.get(0).toHexString(),
