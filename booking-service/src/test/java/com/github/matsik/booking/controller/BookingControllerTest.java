@@ -1,8 +1,11 @@
 package com.github.matsik.booking.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.matsik.booking.client.command.CommandRemoteService;
 import com.github.matsik.booking.client.query.QueryRemoteService;
 import com.github.matsik.booking.config.jackson.JacksonConfiguration;
+import com.github.matsik.booking.controller.request.CreateBookingRequest;
+import com.github.matsik.booking.controller.request.DeleteBookingRequest;
 import com.github.matsik.mongo.model.Booking;
 import com.github.matsik.query.response.ServiceBookingResponse;
 import com.github.matsik.query.response.TimeRangeResponse;
@@ -10,7 +13,6 @@ import com.github.matsik.query.response.UserBookingResponse;
 import feign.FeignException;
 import feign.Request;
 import org.bson.types.ObjectId;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -28,14 +30,18 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -50,16 +56,215 @@ class BookingControllerTest {
     @MockitoBean
     private QueryRemoteService queryService;
 
-
     @MockitoBean
     private CommandRemoteService commandService;
 
-    @Test
-    void createBooking() {
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private static Stream<Arguments> provideCreateBookingTestCases() {
+        return Stream.of(
+                Arguments.of(
+                        "Successful booking creation",
+                        COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        COMMON_SERVICE_IDS.get(0).toHexString(),
+                        COMMON_USER_IDS.get(0).toHexString(),
+                        "900",
+                        "990",
+                        (MockServiceSetUp<CommandRemoteService>) (service, args) -> {
+                            CreateBookingRequest request = new CreateBookingRequest(
+                                    LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE),
+                                    new ObjectId((String) args[1]),
+                                    new ObjectId((String) args[2]),
+                                    Integer.parseInt((String) args[3]),
+                                    Integer.parseInt((String) args[4])
+                            );
+                            doNothing().when(service).createBooking(request);
+                        },
+                        (MockServiceAssertion<CommandRemoteService>) (service, args) -> {
+                            CreateBookingRequest request = new CreateBookingRequest(
+                                    LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE),
+                                    new ObjectId((String) args[1]),
+                                    new ObjectId((String) args[2]),
+                                    Integer.parseInt((String) args[3]),
+                                    Integer.parseInt((String) args[4])
+                            );
+                            then(service).should().createBooking(request);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        (MockMvcExpectationAssertion) (resultActions) ->
+                                resultActions.andExpect(status().isOk())
+                ),
+                Arguments.of(
+                        "Incorrect date string format",
+                        "2024-12-32",
+                        COMMON_SERVICE_IDS.get(0).toHexString(),
+                        COMMON_USER_IDS.get(0).toHexString(),
+                        "900",
+                        "990",
+                        (MockServiceSetUp<CommandRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<CommandRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "JSON parse error: Cannot deserialize value of type `java.time.LocalDate` from String \"2024-12-32\": Failed to deserialize java.time.LocalDate: (java.time.format.DateTimeParseException) Text '2024-12-32' could not be parsed: Invalid value for DayOfMonth (valid values 1 - 28/31): 32",
+                                    "/booking/create"
+                            );
+                        }
+                )
+        );
     }
 
-    @Test
-    void deleteBooking() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("provideCreateBookingTestCases")
+    void createBooking(
+            String name,
+            String date,
+            String serviceId,
+            String userId,
+            String start,
+            String end,
+            MockServiceSetUp<CommandRemoteService> mockServiceSetUp,
+            MockServiceAssertion<CommandRemoteService> mockServiceAssertion,
+            MockMvcExpectationAssertion mockMvcExpectationAssertion
+    ) throws Exception {
+        // given
+        mockServiceSetUp.setUp(commandService, date, serviceId, userId, start, end);
+
+        // when
+        Map<String, Object> request = createBookingRequest(date, serviceId, userId, start, end);
+
+        ResultActions resultActions = mockMvc.perform(
+                post("/booking/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+        );
+
+        // then
+        mockMvcExpectationAssertion.assertExpectations(resultActions);
+        mockServiceAssertion.assertMock(commandService, date, serviceId, userId, start, end);
+    }
+
+    public static Map<String, Object> createBookingRequest(
+            String date,
+            String serviceId,
+            String userId,
+            String start,
+            String end
+    ) {
+        Map<String, Object> request = new HashMap<>();
+        request.put("date", date);
+        request.put("serviceId", serviceId);
+        request.put("userId", userId);
+        request.put("start", start);
+        request.put("end", end);
+        return request;
+    }
+
+    private static Stream<Arguments> provideDeleteBookingTestCases() {
+        return Stream.of(
+                Arguments.of(
+                        "Successful booking deletion",
+                        COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        COMMON_SERVICE_IDS.get(0).toHexString(),
+                        COMMON_BOOKING_IDS.get(0).toHexString(),
+                        COMMON_USER_IDS.get(0).toHexString(),
+                        (MockServiceSetUp<CommandRemoteService>) (service, args) -> {
+                            DeleteBookingRequest request = new DeleteBookingRequest(
+                                    LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE),
+                                    new ObjectId((String) args[1]),
+                                    new ObjectId((String) args[2]),
+                                    new ObjectId((String) args[3])
+                            );
+
+                            doNothing().when(service).deleteBooking(request);
+                        },
+                        (MockServiceAssertion<CommandRemoteService>) (service, args) -> {
+                            DeleteBookingRequest request = new DeleteBookingRequest(
+                                    LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE),
+                                    new ObjectId((String) args[1]),
+                                    new ObjectId((String) args[2]),
+                                    new ObjectId((String) args[3])
+                            );
+                            then(service).should().deleteBooking(request);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        (MockMvcExpectationAssertion) (resultActions) ->
+                                resultActions.andExpect(status().isOk())
+                ),
+                Arguments.of(
+                        "Incorrect date string format",
+                        "2024-12-32",
+                        COMMON_SERVICE_IDS.get(0).toHexString(),
+                        COMMON_BOOKING_IDS.get(0).toHexString(),
+                        COMMON_USER_IDS.get(0).toHexString(),
+                        (MockServiceSetUp<CommandRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<CommandRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "JSON parse error: Cannot deserialize value of type `java.time.LocalDate` from String \"2024-12-32\": Failed to deserialize java.time.LocalDate: (java.time.format.DateTimeParseException) Text '2024-12-32' could not be parsed: Invalid value for DayOfMonth (valid values 1 - 28/31): 32",
+                                    "/booking/delete"
+                            );
+                        }
+                )
+        );
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("provideDeleteBookingTestCases")
+    void deleteBooking(
+            String name,
+            String date,
+            String serviceId,
+            String bookingId,
+            String userId,
+            MockServiceSetUp<CommandRemoteService> mockServiceSetUp,
+            MockServiceAssertion<CommandRemoteService> mockServiceAssertion,
+            MockMvcExpectationAssertion mockMvcExpectationAssertion
+    ) throws Exception {
+        // given
+        mockServiceSetUp.setUp(commandService, date, serviceId, bookingId, userId);
+
+        // when
+        Map<String, Object> request = deleteBookingRequest(date, serviceId, bookingId, userId);
+        ResultActions resultActions = mockMvc.perform(
+                post("/booking/delete")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+        );
+
+        // then
+        mockMvcExpectationAssertion.assertExpectations(resultActions);
+        mockServiceAssertion.assertMock(commandService, date, serviceId, bookingId, userId);
+    }
+
+    public static Map<String, Object> deleteBookingRequest(
+            String date,
+            String serviceId,
+            String bookingId,
+            String userId
+    ) {
+        Map<String, Object> request = new HashMap<>();
+        request.put("date", date);
+        request.put("serviceId", serviceId);
+        request.put("bookingId", bookingId);
+        request.put("userId", userId);
+        return request;
     }
 
     private static Stream<Arguments> provideGetAvailableTimeRangesTestCases() {
