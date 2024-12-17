@@ -83,9 +83,9 @@ class BookingControllerTest {
                         COMMON_SERVICE_BOOKINGS.get(0).date(),
                         COMMON_SERVICE_BOOKINGS.get(0).serviceId().toHexString(),
                         "invalid format",
-                        (MockServiceSetUp<GetAvailableTimeRangesQuery>) (service, query) -> {
+                        (MockServiceSetUp<GetAvailableTimeRangesQuery>) (_, _) -> {
                         },
-                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, _) ->
                                 then(service).shouldHaveNoInteractions(),
                         (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
@@ -105,9 +105,9 @@ class BookingControllerTest {
                         COMMON_SERVICE_BOOKINGS.get(0).date(),
                         COMMON_SERVICE_BOOKINGS.get(0).serviceId().toHexString(),
                         String.valueOf(-1),
-                        (MockServiceSetUp<GetAvailableTimeRangesQuery>) (service, query) -> {
+                        (MockServiceSetUp<GetAvailableTimeRangesQuery>) (_, _) -> {
                         },
-                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, _) ->
                                 then(service).shouldHaveNoInteractions(),
                         (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
@@ -127,9 +127,9 @@ class BookingControllerTest {
                         COMMON_SERVICE_BOOKINGS.get(0).date(),
                         "Incorrect hex string",
                         String.valueOf(75),
-                        (MockServiceSetUp<GetAvailableTimeRangesQuery>) (service, query) -> {
+                        (MockServiceSetUp<GetAvailableTimeRangesQuery>) (_, _) -> {
                         },
-                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, _) ->
                                 then(service).shouldHaveNoInteractions(),
                         (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
@@ -149,9 +149,9 @@ class BookingControllerTest {
                         "22004-10-33",
                         COMMON_SERVICE_BOOKINGS.get(0).serviceId().toHexString(),
                         String.valueOf(75),
-                        (MockServiceSetUp<GetAvailableTimeRangesQuery>) (service, query) -> {
+                        (MockServiceSetUp<GetAvailableTimeRangesQuery>) (_, _) -> {
                         },
-                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, query) ->
+                        (MockServiceAssertion<GetAvailableTimeRangesQuery>) (service, _) ->
                                 then(service).shouldHaveNoInteractions(),
                         (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions
@@ -246,9 +246,9 @@ class BookingControllerTest {
                         "22004-10-33",
                         COMMON_SERVICE_BOOKINGS.get(0).serviceId().toHexString(),
                         COMMON_SERVICE_BOOKINGS.get(0).bookings().get(0).id().toHexString(),
-                        (MockServiceSetUp<GetBookingQuery>) (service, query) -> {
+                        (MockServiceSetUp<GetBookingQuery>) (_, _) -> {
                         },
-                        (MockServiceAssertion<GetBookingQuery>) (service, query) ->
+                        (MockServiceAssertion<GetBookingQuery>) (service, _) ->
                                 then(service).shouldHaveNoInteractions(),
                         (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
@@ -268,9 +268,9 @@ class BookingControllerTest {
                         COMMON_SERVICE_BOOKINGS.get(0).date(),
                         "foo",
                         COMMON_SERVICE_BOOKINGS.get(0).bookings().get(0).id().toHexString(),
-                        (MockServiceSetUp<GetBookingQuery>) (service, query) -> {
+                        (MockServiceSetUp<GetBookingQuery>) (_, _) -> {
                         },
-                        (MockServiceAssertion<GetBookingQuery>) (service, query) ->
+                        (MockServiceAssertion<GetBookingQuery>) (service, _) ->
                                 then(service).shouldHaveNoInteractions(),
                         (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
@@ -290,9 +290,9 @@ class BookingControllerTest {
                         COMMON_SERVICE_BOOKINGS.get(0).date(),
                         COMMON_SERVICE_BOOKINGS.get(0).serviceId().toHexString(),
                         "bar",
-                        (MockServiceSetUp<GetBookingQuery>) (service, query) -> {
+                        (MockServiceSetUp<GetBookingQuery>) (_, _) -> {
                         },
-                        (MockServiceAssertion<GetBookingQuery>) (service, query) ->
+                        (MockServiceAssertion<GetBookingQuery>) (service, _) ->
                                 then(service).shouldHaveNoInteractions(),
                         (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
@@ -428,9 +428,9 @@ class BookingControllerTest {
                         toStringParam(COMMON_DATES) + ",foo",
                         null,
                         null,
-                        (MockServiceSetUp<GetBookingsQuery>) (service, query) -> {
+                        (MockServiceSetUp<GetBookingsQuery>) (_, _) -> {
                         },
-                        (MockServiceAssertion<GetBookingsQuery>) (service, query) ->
+                        (MockServiceAssertion<GetBookingsQuery>) (service, _) ->
                                 then(service).shouldHaveNoInteractions(),
                         (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
@@ -448,11 +448,11 @@ class BookingControllerTest {
                 Arguments.of(
                         "Incorrect hex string for serviceId.",
                         null,
-                        COMMON_SERVICE_IDS + ",foo",
+                        toStringParam(COMMON_SERVICE_IDS) + ",foo",
                         null,
-                        (MockServiceSetUp<GetBookingsQuery>) (service, query) -> {
+                        (MockServiceSetUp<GetBookingsQuery>) (_, _) -> {
                         },
-                        (MockServiceAssertion<GetBookingsQuery>) (service, query) ->
+                        (MockServiceAssertion<GetBookingsQuery>) (service, _) ->
                                 then(service).shouldHaveNoInteractions(),
                         (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
@@ -462,7 +462,7 @@ class BookingControllerTest {
                                     "about:blank",
                                     "Bad Request",
                                     400,
-                                    "Invalid ObjectId: [010000000000000000000000, 010000000000000000000001],foo",
+                                    "Invalid ObjectId: 010000000000000000000000,010000000000000000000001,foo",
                                     "/booking/all"
                             );
                         }
@@ -471,10 +471,10 @@ class BookingControllerTest {
                         "Incorrect hex string for userId.",
                         null,
                         null,
-                        COMMON_USER_IDS + ",foo",
-                        (MockServiceSetUp<GetBookingsQuery>) (service, query) -> {
+                        toStringParam(COMMON_USER_IDS) + ",foo",
+                        (MockServiceSetUp<GetBookingsQuery>) (_, _) -> {
                         },
-                        (MockServiceAssertion<GetBookingsQuery>) (service, query) ->
+                        (MockServiceAssertion<GetBookingsQuery>) (service, _) ->
                                 then(service).shouldHaveNoInteractions(),
                         (MockMvcExpectationAssertion) (resultActions) -> {
                             resultActions.andExpect(status().isBadRequest())
@@ -484,7 +484,7 @@ class BookingControllerTest {
                                     "about:blank",
                                     "Bad Request",
                                     400,
-                                    "Invalid ObjectId: [110000000000000000000000, 110000000000000000000001],foo",
+                                    "Invalid ObjectId: 110000000000000000000000,110000000000000000000001,foo",
                                     "/booking/all"
                             );
                         }
