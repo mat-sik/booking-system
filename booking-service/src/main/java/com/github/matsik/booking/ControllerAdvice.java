@@ -10,14 +10,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.time.DateTimeException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
