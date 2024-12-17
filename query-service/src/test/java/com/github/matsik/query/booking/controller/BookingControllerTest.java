@@ -638,7 +638,7 @@ class BookingControllerTest {
             LocalDate.of(2024, 12, 13)
     );
 
-    private static final List<Booking> COMMONG_BOOKINGS = List.of(
+    private static final List<Booking> COMMON_BOOKINGS = List.of(
             new Booking(
                     COMMON_BOOKING_IDS.get(0),
                     COMMON_USER_IDS.get(0),
@@ -667,9 +667,9 @@ class BookingControllerTest {
     );
 
     private static final UserBooking COMMON_USER_BOOKING = new UserBooking(
-            COMMONG_BOOKINGS.get(0).id(),
-            COMMONG_BOOKINGS.get(0).start(),
-            COMMONG_BOOKINGS.get(0).end()
+            COMMON_BOOKINGS.get(0).id(),
+            COMMON_BOOKINGS.get(0).start(),
+            COMMON_BOOKINGS.get(0).end()
     );
 
     private static final List<ServiceBooking> COMMON_SERVICE_BOOKINGS = List.of(
@@ -678,8 +678,8 @@ class BookingControllerTest {
                     COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
                     COMMON_SERVICE_IDS.get(0),
                     List.of(
-                            COMMONG_BOOKINGS.get(0),
-                            COMMONG_BOOKINGS.get(1)
+                            COMMON_BOOKINGS.get(0),
+                            COMMON_BOOKINGS.get(1)
                     )
             ),
             new ServiceBooking(
@@ -687,8 +687,8 @@ class BookingControllerTest {
                     COMMON_DATES.get(1).format(DateTimeFormatter.ISO_LOCAL_DATE),
                     COMMON_SERVICE_IDS.get(1),
                     List.of(
-                            COMMONG_BOOKINGS.get(2),
-                            COMMONG_BOOKINGS.get(3)
+                            COMMON_BOOKINGS.get(2),
+                            COMMON_BOOKINGS.get(3)
                     )
             )
     );
