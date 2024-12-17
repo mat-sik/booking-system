@@ -5,6 +5,9 @@ import com.github.matsik.booking.client.query.QueryRemoteService;
 import com.github.matsik.booking.config.jackson.JacksonConfiguration;
 import com.github.matsik.mongo.model.Booking;
 import com.github.matsik.query.response.ServiceBookingResponse;
+import com.github.matsik.query.response.UserBookingResponse;
+import feign.FeignException;
+import feign.Request;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,9 +22,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -60,8 +65,182 @@ class BookingControllerTest {
     void getAvailableTimeRanges() {
     }
 
-    @Test
-    void getUserBooking() {
+    private static Stream<Arguments> provideGetUserBookingTestCases() {
+        return Stream.of(
+                Arguments.of(
+                        "Ok response.",
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).date(),
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).serviceId().toHexString(),
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).bookings().get(0).id().toHexString(),
+                        (MockServiceSetUp<QueryRemoteService>) (service, args) -> {
+                            LocalDate date = LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE);
+                            ObjectId serviceId = new ObjectId((String) args[1]);
+                            ObjectId userId = new ObjectId((String) args[2]);
+
+                            when(service.getUserBooking(date, serviceId, userId)).thenReturn(COMMON_USER_BOOKING_RESPONSE);
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, args) -> {
+                            LocalDate date = LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE);
+                            ObjectId serviceId = new ObjectId((String) args[1]);
+                            ObjectId userId = new ObjectId((String) args[2]);
+
+                            then(service).should().getUserBooking(date, serviceId, userId);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        (MockMvcExpectationAssertion) (resultActions) ->
+                                resultActions
+                                        .andExpect(status().isOk())
+                                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                        .andExpect(jsonPath("$", aMapWithSize(3)))
+                                        .andExpect(jsonPath("$.userId").value(COMMON_USER_BOOKING_RESPONSE.userId().toHexString()))
+                                        .andExpect(jsonPath("$.start").value(String.valueOf(COMMON_USER_BOOKING_RESPONSE.start())))
+                                        .andExpect(jsonPath("$.end").value(String.valueOf(COMMON_USER_BOOKING_RESPONSE.end())))
+                ),
+                Arguments.of(
+                        "Incorrect date string format.",
+                        "22004-10-33",
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).serviceId().toHexString(),
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).bookings().get(0).id().toHexString(),
+                        (MockServiceSetUp<QueryRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Parse attempt failed for value [22004-10-33]",
+                                    "/booking"
+                            );
+                        }
+                ),
+                Arguments.of(
+                        "Incorrect hex string for serviceId.",
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).date(),
+                        "foo",
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).bookings().get(0).id().toHexString(),
+                        (MockServiceSetUp<QueryRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Invalid ObjectId: foo",
+                                    "/booking"
+                            );
+                        }
+                ),
+                Arguments.of(
+                        "Incorrect hex string for bookingId.",
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).date(),
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).serviceId().toHexString(),
+                        "bar",
+                        (MockServiceSetUp<QueryRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Invalid ObjectId: bar",
+                                    "/booking"
+                            );
+                        }
+                ),
+                Arguments.of(
+                        "User Booking not found.",
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).date(),
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(0).serviceId().toHexString(),
+                        COMMON_SERVICE_BOOKING_RESPONSES.get(1).bookings().get(0).id().toHexString(),
+                        (MockServiceSetUp<QueryRemoteService>) (service, args) -> {
+                            LocalDate date = LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE);
+                            ObjectId serviceId = new ObjectId((String) args[1]);
+                            ObjectId userId = new ObjectId((String) args[2]);
+
+                            String body = """
+                                    {
+                                       "type": "about:blank",
+                                       "title": "Not Found",
+                                       "status": 404,
+                                       "detail": "UserBooking(date: 2024-12-12, serviceId: 010000000000000000000000, bookingId: 100000000000000000000002) was not found.",
+                                       "instance": "/booking",
+                                       "properties": null
+                                    }""";
+
+                            when(service.getUserBooking(date, serviceId, userId))
+                                    .thenThrow(
+                                            new FeignException.NotFound(
+                                                    "",
+                                                    Request.create(Request.HttpMethod.GET, "/booking", Collections.emptyMap(), null, StandardCharsets.UTF_8, null),
+                                                    body.getBytes(StandardCharsets.UTF_8),
+                                                    Collections.emptyMap()
+                                            )
+                                    );
+                        },
+                        (MockServiceAssertion<QueryRemoteService>) (service, args) -> {
+                            LocalDate date = LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE);
+                            ObjectId serviceId = new ObjectId((String) args[1]);
+                            ObjectId userId = new ObjectId((String) args[2]);
+
+                            then(service).should().getUserBooking(date, serviceId, userId);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isNotFound())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Not Found",
+                                    404,
+                                    "UserBooking(date: 2024-12-12, serviceId: 010000000000000000000000, bookingId: 100000000000000000000002) was not found.",
+                                    "/booking"
+                            );
+                        }
+                )
+        );
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("provideGetUserBookingTestCases")
+    void getUserBooking(
+            String name,
+            String date,
+            String serviceId,
+            String bookingId,
+            MockServiceSetUp<QueryRemoteService> mockServiceSetUp,
+            MockServiceAssertion<QueryRemoteService> mockServiceAssertion,
+            MockMvcExpectationAssertion mockMvcExpectationAssertion
+    ) throws Exception {
+        // given
+        mockServiceSetUp.setUp(queryService, date, serviceId, bookingId);
+
+        // when
+        ResultActions resultActions = mockMvc.perform(get("/booking")
+                .param("date", date)
+                .param("serviceId", serviceId)
+                .param("bookingId", bookingId)
+                .contentType(MediaType.APPLICATION_JSON));
+
+        // then
+        mockMvcExpectationAssertion.assertExpectations(resultActions);
+
+        mockServiceAssertion.assertMock(queryService, date, serviceId, bookingId);
     }
 
     private static Stream<Arguments> provideGetBookingsTestCases() {
@@ -276,7 +455,7 @@ class BookingControllerTest {
             LocalDate.of(2024, 12, 13)
     );
 
-    private static final List<Booking> COMMONG_BOOKINGS = List.of(
+    private static final List<Booking> COMMON_BOOKINGS = List.of(
             new Booking(
                     COMMON_BOOKING_IDS.get(0),
                     COMMON_USER_IDS.get(0),
@@ -304,14 +483,20 @@ class BookingControllerTest {
             )
     );
 
+    private static final UserBookingResponse COMMON_USER_BOOKING_RESPONSE = new UserBookingResponse(
+            COMMON_BOOKINGS.get(0).id(),
+            COMMON_BOOKINGS.get(0).start(),
+            COMMON_BOOKINGS.get(0).end()
+    );
+
     private static final List<ServiceBookingResponse> COMMON_SERVICE_BOOKING_RESPONSES = List.of(
             new ServiceBookingResponse(
                     COMMON_SERVICE_BOOKING_IDS.get(0),
                     COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
                     COMMON_SERVICE_IDS.get(0),
                     List.of(
-                            COMMONG_BOOKINGS.get(0),
-                            COMMONG_BOOKINGS.get(1)
+                            COMMON_BOOKINGS.get(0),
+                            COMMON_BOOKINGS.get(1)
                     )
             ),
             new ServiceBookingResponse(
@@ -319,8 +504,8 @@ class BookingControllerTest {
                     COMMON_DATES.get(1).format(DateTimeFormatter.ISO_LOCAL_DATE),
                     COMMON_SERVICE_IDS.get(1),
                     List.of(
-                            COMMONG_BOOKINGS.get(2),
-                            COMMONG_BOOKINGS.get(3)
+                            COMMON_BOOKINGS.get(2),
+                            COMMON_BOOKINGS.get(3)
                     )
             )
     );
