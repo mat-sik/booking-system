@@ -7,6 +7,7 @@ import com.github.matsik.booking.controller.request.DeleteBookingRequest;
 import com.github.matsik.query.response.ServiceBookingResponse;
 import com.github.matsik.query.response.TimeRangeResponse;
 import com.github.matsik.query.response.UserBookingResponse;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
@@ -32,12 +33,12 @@ public class BookingController {
     private final CommandRemoteService commandService;
 
     @PostMapping("/create")
-    public void createBooking(@RequestBody CreateBookingRequest request) {
+    public void createBooking(@RequestBody @Valid CreateBookingRequest request) {
         commandService.createBooking(request);
     }
 
     @PostMapping("/delete")
-    public void deleteBooking(@RequestBody DeleteBookingRequest request) {
+    public void deleteBooking(@RequestBody @Valid DeleteBookingRequest request) {
         commandService.deleteBooking(request);
     }
 

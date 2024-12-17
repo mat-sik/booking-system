@@ -1,8 +1,22 @@
 package com.github.matsik.booking.controller.request;
 
+import jakarta.validation.constraints.NotNull;
 import org.bson.types.ObjectId;
 
 import java.time.LocalDate;
 
-public record DeleteBookingRequest(LocalDate date, ObjectId serviceId, ObjectId bookingId, ObjectId userId) {
+public record DeleteBookingRequest(
+
+        @NotNull
+        LocalDate date,
+
+        @NotNull
+        ObjectId serviceId,
+
+        @NotNull
+        ObjectId bookingId,
+
+        @NotNull
+        ObjectId userId
+) {
 }

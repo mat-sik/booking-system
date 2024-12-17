@@ -2,6 +2,7 @@ package com.github.matsik.booking;
 
 import feign.FeignException;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
@@ -68,10 +69,11 @@ public class ControllerAdvice {
 
     private static String extractErrorMessages(MethodArgumentNotValidException ex) {
         List<String> errorMessages = ex.getBindingResult()
-                .getFieldErrors()
+                .getAllErrors()
                 .stream()
-                .map(FieldError::getDefaultMessage)
-                .collect(Collectors.toList());
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .sorted() // to get deterministic order of error messages
+                .toList();
         return String.join(", ", errorMessages);
     }
 
@@ -85,6 +87,7 @@ public class ControllerAdvice {
         return ex.getConstraintViolations()
                 .stream()
                 .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                .sorted() // to get deterministic order of error messages
                 .collect(Collectors.joining(", "));
     }
 

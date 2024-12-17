@@ -118,6 +118,126 @@ class BookingControllerTest {
                                     "/booking/create"
                             );
                         }
+                ),
+                Arguments.of(
+                        "Incorrect start string format",
+                        COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        COMMON_SERVICE_IDS.get(0).toHexString(),
+                        COMMON_USER_IDS.get(0).toHexString(),
+                        "invalid",
+                        "990",
+                        (MockServiceSetUp<CommandRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<CommandRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "JSON parse error: Cannot deserialize value of type `int` from String \"invalid\": not a valid `int` value",
+                                    "/booking/create"
+                            );
+                        }
+                ),
+                Arguments.of(
+                        "Incorrect end string format",
+                        COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        COMMON_SERVICE_IDS.get(0).toHexString(),
+                        COMMON_USER_IDS.get(0).toHexString(),
+                        "900",
+                        "invalid",
+                        (MockServiceSetUp<CommandRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<CommandRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "JSON parse error: Cannot deserialize value of type `int` from String \"invalid\": not a valid `int` value",
+                                    "/booking/create"
+                            );
+                        }
+                ),
+                Arguments.of(
+                        "Incorrect start string format, should be positive or zero",
+                        COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        COMMON_SERVICE_IDS.get(0).toHexString(),
+                        COMMON_USER_IDS.get(0).toHexString(),
+                        "-1",
+                        "990",
+                        (MockServiceSetUp<CommandRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<CommandRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "Start must be 0 or greater",
+                                    "/booking/create"
+                            );
+                        }
+                ),
+                Arguments.of(
+                        "Incorrect end string format, should be positive or zero",
+                        COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        COMMON_SERVICE_IDS.get(0).toHexString(),
+                        COMMON_USER_IDS.get(0).toHexString(),
+                        "990",
+                        "-1",
+                        (MockServiceSetUp<CommandRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<CommandRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "End must be 0 or greater, Start must be less than End",
+                                    "/booking/create"
+                            );
+                        }
+                ),
+                Arguments.of(
+                        "Incorrect start and end string format, should be positive or zero",
+                        COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        COMMON_SERVICE_IDS.get(0).toHexString(),
+                        COMMON_USER_IDS.get(0).toHexString(),
+                        "-1",
+                        "-1",
+                        (MockServiceSetUp<CommandRemoteService>) (_, _) -> {
+                        },
+                        (MockServiceAssertion<CommandRemoteService>) (service, _) ->
+                                then(service).shouldHaveNoInteractions(),
+                        (MockMvcExpectationAssertion) (resultActions) -> {
+                            resultActions.andExpect(status().isBadRequest())
+                                    .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                            assertProblemDetailExpectations(
+                                    resultActions,
+                                    "about:blank",
+                                    "Bad Request",
+                                    400,
+                                    "End must be 0 or greater, Start must be 0 or greater, Start must be less than End",
+                                    "/booking/create"
+                            );
+                        }
                 )
         );
     }
