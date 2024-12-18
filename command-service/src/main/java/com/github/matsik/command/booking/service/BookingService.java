@@ -23,73 +23,74 @@ public class BookingService {
 
     public void deleteBooking(DeleteBookingCommand command) {
         UpdateResult result = repository.deleteBooking(command);
-        logDeleteBooking(command, result);
+        if (isProfileActive(LOGGING_PROFILE_NAME)) {
+            logDeleteBooking(command, result);
+        }
     }
 
     private void logDeleteBooking(DeleteBookingCommand command, UpdateResult result) {
-        if (isProfileActive(LOGGING_PROFILE_NAME)) {
-            String message;
-            String date = command.serviceBookingIdentifier().date();
-            String serviceId = command.serviceBookingIdentifier().serviceId().toString();
-            String bookingId = command.bookingId().toString();
+        String message = getDeleteBookingLogMessage(command, result);
+        log.info(String.format("%s Result: Matched count: %d, Deleted count: %d",
+                message, result.getMatchedCount(), result.getModifiedCount()));
+    }
 
-            if (result.getMatchedCount() == 1) {
-                if (result.getModifiedCount() != 1) {
-                    message = String.format(
-                            "Delete failed: day: %s, service: %s, booking ID: %s. Reason: No booking with the specified ID found.",
-                            date, serviceId, bookingId);
-                } else {
-                    message = String.format(
-                            "Successfully deleted booking: day: %s, service: %s, booking ID: %s",
-                            date, serviceId, bookingId);
-                }
+    private static String getDeleteBookingLogMessage(DeleteBookingCommand command, UpdateResult result) {
+        String date = command.serviceBookingIdentifier().date();
+        String serviceId = command.serviceBookingIdentifier().serviceId().toString();
+        String bookingId = command.bookingId().toString();
+
+        String message;
+        if (result.getMatchedCount() == 1) {
+            if (result.getModifiedCount() != 1) {
+                message = String.format(
+                        "Delete failed: day: %s, service: %s, booking ID: %s. Reason: No booking with the specified ID found.",
+                        date, serviceId, bookingId);
             } else {
                 message = String.format(
-                        "Delete failed: day: %s, service: %s, booking ID: %s. Reason: No matching booking found.",
+                        "Successfully deleted booking: day: %s, service: %s, booking ID: %s",
                         date, serviceId, bookingId);
             }
-
-            // Log the message along with the result details
-            log.info(String.format("%s Result: Matched count: %d, Deleted count: %d",
-                    message, result.getMatchedCount(), result.getModifiedCount()));
+        } else {
+            message = String.format(
+                    "Delete failed: day: %s, service: %s, booking ID: %s. Reason: No matching booking found.",
+                    date, serviceId, bookingId);
         }
+
+        return message;
     }
 
     public void createBooking(CreateBookingCommand command) {
         UpdateResult result = repository.createBooking(command);
-        logCreateBooking(command, result);
+        if (isProfileActive(LOGGING_PROFILE_NAME)) {
+            logCreateBooking(command, result);
+        }
     }
 
     private void logCreateBooking(CreateBookingCommand command, UpdateResult result) {
-        if (isProfileActive(LOGGING_PROFILE_NAME)) {
-            String message;
-            String date = command.serviceBookingIdentifier().date();
-            String serviceId = command.serviceBookingIdentifier().serviceId().toString();
-            int start = command.start();
-            int end = command.end();
-            String userId = command.userId().toString();
+        String message = getCreateBookingLogMessage(command, result);
+        log.info(String.format("%s Result: Matched count: %d, Modified count: %d",
+                message, result.getMatchedCount(), result.getModifiedCount()));
+    }
 
-            if (result.getMatchedCount() == 1) {
-                if (result.getModifiedCount() != 1) {
-                    message = String.format(
-                            "Booking failed despite matching: day: %s, service: %s, time-range: (%d - %d), user: %s. Result: Modified count is not 1",
-                            date, serviceId, start, end, userId);
-                    log.severe(message);
-                    return;
-                }
-                message = String.format(
-                        "Successfully booked: day: %s, service: %s, time-range: (%d - %d), user: %s",
-                        date, serviceId, start, end, userId);
-            } else {
-                message = String.format(
-                        "Booking failed: day: %s, service: %s, time-range: (%d - %d), user: %s. Reason: Time range is already taken.",
-                        date, serviceId, start, end, userId);
-            }
+    private static String getCreateBookingLogMessage(CreateBookingCommand command, UpdateResult result) {
+        String date = command.serviceBookingIdentifier().date();
+        String serviceId = command.serviceBookingIdentifier().serviceId().toString();
+        int start = command.start();
+        int end = command.end();
+        String userId = command.userId().toString();
 
-            // Log the message along with the result details
-            log.info(String.format("%s Result: Matched count: %d, Modified count: %d",
-                    message, result.getMatchedCount(), result.getModifiedCount()));
+        String message;
+        if (result.getMatchedCount() == 1) {
+            message = String.format(
+                    "Successfully booked: day: %s, service: %s, time-range: (%d - %d), user: %s",
+                    date, serviceId, start, end, userId);
+        } else {
+            message = String.format(
+                    "Booking failed: day: %s, service: %s, time-range: (%d - %d), user: %s. Reason: Time range is already taken.",
+                    date, serviceId, start, end, userId);
         }
+
+        return message;
     }
 
     private boolean isProfileActive(String profile) {
