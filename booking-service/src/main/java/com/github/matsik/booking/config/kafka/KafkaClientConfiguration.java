@@ -24,7 +24,7 @@ public class KafkaClientConfiguration {
     @Bean
     public KafkaAdmin admin(KafkaClientProperties kafkaClientProperties) {
         Map<String, Object> configs = Map.of(
-                AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClientProperties.hosts()
+                AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClientProperties.bootstrapServers()
         );
         return new KafkaAdmin(configs);
     }
@@ -43,7 +43,7 @@ public class KafkaClientConfiguration {
             ObjectMapper objectMapper
     ) {
         Map<String, Object> props = Map.of(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClientProperties.hosts()
+                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClientProperties.bootstrapServers()
         );
 
         JsonSerializer<CommandValue> jsonSerializer = new JsonSerializer<>(objectMapper);

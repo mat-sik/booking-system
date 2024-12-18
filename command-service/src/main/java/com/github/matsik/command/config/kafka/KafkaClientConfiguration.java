@@ -26,7 +26,7 @@ public class KafkaClientConfiguration {
     @Bean
     public KafkaAdmin admin(KafkaClientProperties kafkaClientProperties) {
         Map<String, Object> configs = Map.of(
-                AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClientProperties.hosts()
+                AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClientProperties.bootstrapServers()
         );
         return new KafkaAdmin(configs);
     }
@@ -62,7 +62,7 @@ public class KafkaClientConfiguration {
 
     private Map<String, Object> consumerConfig(KafkaClientProperties kafkaClientProperties) {
         return Map.of(
-                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClientProperties.hosts(),
+                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClientProperties.bootstrapServers(),
                 ConsumerConfig.GROUP_ID_CONFIG, kafkaClientProperties.groupId(),
                 ConsumerConfig.CLIENT_ID_CONFIG, kafkaClientProperties.clientId(),
                 ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false,
