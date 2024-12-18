@@ -466,7 +466,7 @@ BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_GROUP_ID=command-consumers
 
 BOOKING_SYSTEM_KAFKA_BOOKING_SERVICE_CLIENT_ID=command-consumer
 
-BOOKING_SYSTEM_QUERY_SERVICE_HOST=booking-system-query-service
+BOOKING_SYSTEM_QUERY_SERVICE_URL=http://booking-system-query-service:8080
 ```
 
 **Notes**:
@@ -492,14 +492,12 @@ BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_GROUP_ID=command-consumers
 
 BOOKING_SYSTEM_KAFKA_BOOKING_SERVICE_CLIENT_ID=command-consumer
 
-BOOKING_SYSTEM_QUERY_SERVICE_HOST=localhost
+BOOKING_SYSTEM_QUERY_SERVICE_URL=http://localhost:8080
 ```
 
 **Notes**:
 
 - When running the apps on your host, you need to pass the `.env` file by configuring the IntelliJ run configuration.
-- Ensure that the `booking-service` port is set to **8081** to avoid conflicts with other services. The default port
-  **8080** is hardcoded in `booking-service` as the port for `query-service`.
 
 ### Building **Docker** images
 
