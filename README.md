@@ -9,6 +9,13 @@ follows the **CQRS** (Command Query Responsibility Segregation) and **Data Sourc
 pattern and its associated log are used to control concurrent bookings for the same date and time by multiple users,
 ensuring data consistency and preventing conflicts.
 
+When designing the application, I assumed that the booking system would be a part of a larger application. As a result,
+the user is responsible for directly providing the client IDs. This design assumes that the client is trustworthy and
+will provide accurate information.
+
+Currently, the user IDs are assumed to be 24-byte hexadecimal strings, similar to MongoDB’s ObjectId. However, this can
+be easily changed (with some manual effort) if necessary.
+
 ## How to Try Out the App
 
 To quickly get started with the app, follow the steps below:
