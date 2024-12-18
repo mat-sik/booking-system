@@ -544,3 +544,12 @@ have fully tested the controllers by utilizing Spring's mock HTTP capabilities. 
 returning non-occupied time ranges.
 
 All tests are parameterized to maximize the ease of writing new test cases and reduce code duplication.
+
+### Note about **Testcontainers** and **Colima**
+
+When using **Colima** on a **MacOS** system, **Testcontainers** requires the local **Docker** environment to be properly configured. To enable this, you need to set the following environment variables in your shell:
+
+```shell
+export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+export DOCKER_HOST="unix://${HOME}/.colima/docker.sock"
+```
