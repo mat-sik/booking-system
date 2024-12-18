@@ -39,24 +39,19 @@ public class BookingService {
         String serviceId = command.serviceBookingIdentifier().serviceId().toString();
         String bookingId = command.bookingId().toString();
 
-        String message;
         if (result.getMatchedCount() == 1) {
             if (result.getModifiedCount() != 1) {
-                message = String.format(
+                return String.format(
                         "Delete failed: day: %s, service: %s, booking ID: %s. Reason: No booking with the specified ID found.",
                         date, serviceId, bookingId);
-            } else {
-                message = String.format(
-                        "Successfully deleted booking: day: %s, service: %s, booking ID: %s",
-                        date, serviceId, bookingId);
             }
-        } else {
-            message = String.format(
-                    "Delete failed: day: %s, service: %s, booking ID: %s. Reason: No matching booking found.",
+            return String.format(
+                    "Successfully deleted booking: day: %s, service: %s, booking ID: %s",
                     date, serviceId, bookingId);
         }
-
-        return message;
+        return String.format(
+                "Delete failed: day: %s, service: %s, booking ID: %s. Reason: No matching booking found.",
+                date, serviceId, bookingId);
     }
 
     public void createBooking(CreateBookingCommand command) {
@@ -79,18 +74,14 @@ public class BookingService {
         int end = command.end();
         String userId = command.userId().toString();
 
-        String message;
         if (result.getMatchedCount() == 1) {
-            message = String.format(
+            return String.format(
                     "Successfully booked: day: %s, service: %s, time-range: (%d - %d), user: %s",
                     date, serviceId, start, end, userId);
-        } else {
-            message = String.format(
-                    "Booking failed: day: %s, service: %s, time-range: (%d - %d), user: %s. Reason: Time range is already taken.",
-                    date, serviceId, start, end, userId);
         }
-
-        return message;
+        return String.format(
+                "Booking failed: day: %s, service: %s, time-range: (%d - %d), user: %s. Reason: Time range is already taken.",
+                date, serviceId, start, end, userId);
     }
 
     private boolean isProfileActive(String profile) {
