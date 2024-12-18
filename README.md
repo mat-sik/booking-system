@@ -547,7 +547,8 @@ All tests are parameterized to maximize the ease of writing new test cases and r
 
 ### Note about **Testcontainers** and **Colima**
 
-When using **Colima** on a **MacOS** system, **Testcontainers** requires the local **Docker** environment to be properly configured. To enable this, you need to set the following environment variables in your shell:
+When using **Colima** on a **MacOS** system, **Testcontainers** requires the local **Docker** environment to be properly
+discovered. To enable this, you need to set the following environment variables in your shell:
 
 ```shell
 export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
