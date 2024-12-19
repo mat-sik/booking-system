@@ -5,7 +5,7 @@ choose a service, specify a desired date, and book a time slot for a specified d
 10.10.2024 from 13:00 for 1 hour).
 
 This project is composed of multiple microservices that work together to implement a booking system. It
-follows the **CQRS** (Command Query Responsibility Segregation) and **Event Sourcing** patterns. The **Event Sourcing**
+leverages the **CQRS** (Command Query Responsibility Segregation) and **Event Sourcing** patterns. The **Event Sourcing**
 pattern and its associated log are used to control concurrent bookings for the same date and time by multiple users,
 ensuring data consistency and preventing conflicts.
 
