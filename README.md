@@ -5,7 +5,7 @@ choose a service, specify a desired date, and book a time slot for a specified d
 10.10.2024 from 13:00 for 1 hour).
 
 This project is composed of multiple microservices that work together to implement a booking system. It
-follows the **CQRS** (Command Query Responsibility Segregation) and **Event Sta Sourcing** patterns. The **Event Sourcing**
+follows the **CQRS** (Command Query Responsibility Segregation) and **Event Sourcing** patterns. The **Event Sourcing**
 pattern and its associated log are used to control concurrent bookings for the same date and time by multiple users,
 ensuring data consistency and preventing conflicts.
 
@@ -51,8 +51,8 @@ view of available and booked time slots. This view might be stale the moment it 
 
 ## Command Service
 
-The **Command Service** consumes records from **Kafka** Topic Partitions, with each partition acting as a **Event
-Sourcing**
+The **Command Service** consumes records from **Kafka** Topic Partitions, with each partition acting as a 
+**Event Sourcing**
 log, serving as the authoritative source of truth for the application. This log preserves the chronological order of
 booking commands, which is essential for ensuring fairness and consistency. By maintaining this order, it prevents race
 conditions and conflicts between concurrent booking requests.
