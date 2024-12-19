@@ -2,6 +2,7 @@ package com.github.matsik.booking.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.matsik.booking.client.command.CommandRemoteService;
+import com.github.matsik.booking.client.command.exception.BookingCommandDeliveryException;
 import com.github.matsik.booking.client.query.QueryRemoteService;
 import com.github.matsik.booking.config.jackson.JacksonConfiguration;
 import com.github.matsik.booking.controller.request.CreateBookingRequest;
@@ -39,6 +40,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -262,6 +264,44 @@ class BookingControllerTest {
                                     "/booking/create"
                             );
                         }
+                ),
+                Arguments.of(
+                        "Internal Server Error, failed ot send message to Kafka.",
+                        COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        COMMON_SERVICE_IDS.get(0).toHexString(),
+                        COMMON_USER_IDS.get(0).toHexString(),
+                        "900",
+                        "990",
+                        (MockServiceSetUp<CommandRemoteService>) (service, args) -> {
+                            CreateBookingRequest request = new CreateBookingRequest(
+                                    LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE),
+                                    new ObjectId((String) args[1]),
+                                    new ObjectId((String) args[2]),
+                                    Integer.parseInt((String) args[3]),
+                                    Integer.parseInt((String) args[4])
+                            );
+                            doThrow(new BookingCommandDeliveryException(null)).when(service).createBooking(request);
+                        },
+                        (MockServiceAssertion<CommandRemoteService>) (service, args) -> {
+                            CreateBookingRequest request = new CreateBookingRequest(
+                                    LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE),
+                                    new ObjectId((String) args[1]),
+                                    new ObjectId((String) args[2]),
+                                    Integer.parseInt((String) args[3]),
+                                    Integer.parseInt((String) args[4])
+                            );
+                            then(service).should().createBooking(request);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        (MockMvcExpectationAssertion) (resultActions) ->
+                                assertProblemDetailExpectations(
+                                        resultActions,
+                                        "about:blank",
+                                        "Internal Server Error",
+                                        500,
+                                        "Failed to deliver the booking command to Kafka",
+                                        "/booking/create"
+                                )
                 )
         );
     }
@@ -388,6 +428,41 @@ class BookingControllerTest {
                                     "/booking/delete"
                             );
                         }
+                ),
+                Arguments.of(
+                        "Internal Server Error, failed ot send message to Kafka.",
+                        COMMON_DATES.get(0).format(DateTimeFormatter.ISO_LOCAL_DATE),
+                        COMMON_SERVICE_IDS.get(0).toHexString(),
+                        COMMON_BOOKING_IDS.get(0).toHexString(),
+                        COMMON_USER_IDS.get(0).toHexString(),
+                        (MockServiceSetUp<CommandRemoteService>) (service, args) -> {
+                            DeleteBookingRequest request = new DeleteBookingRequest(
+                                    LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE),
+                                    new ObjectId((String) args[1]),
+                                    new ObjectId((String) args[2]),
+                                    new ObjectId((String) args[3])
+                            );
+                            doThrow(new BookingCommandDeliveryException(null)).when(service).deleteBooking(request);
+                        },
+                        (MockServiceAssertion<CommandRemoteService>) (service, args) -> {
+                            DeleteBookingRequest request = new DeleteBookingRequest(
+                                    LocalDate.parse((String) args[0], DateTimeFormatter.ISO_LOCAL_DATE),
+                                    new ObjectId((String) args[1]),
+                                    new ObjectId((String) args[2]),
+                                    new ObjectId((String) args[3])
+                            );
+                            then(service).should().deleteBooking(request);
+                            then(service).shouldHaveNoMoreInteractions();
+                        },
+                        (MockMvcExpectationAssertion) (resultActions) ->
+                                assertProblemDetailExpectations(
+                                        resultActions,
+                                        "about:blank",
+                                        "Internal Server Error",
+                                        500,
+                                        "Failed to deliver the booking command to Kafka",
+                                        "/booking/delete"
+                                )
                 )
         );
     }

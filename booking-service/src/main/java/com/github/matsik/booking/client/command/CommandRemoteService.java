@@ -22,6 +22,10 @@ public class CommandRemoteService {
     private final QueryRemoteService queryService;
 
     public void createBooking(@RequestBody CreateBookingRequest request) {
+        if (request.start() >= request.end()) {
+            throw new IllegalArgumentException("Booking start value should be lower than the end value.");
+        }
+
         LocalDate key = request.date();
 
         CreateBookingCommandValue value = new CreateBookingCommandValue(

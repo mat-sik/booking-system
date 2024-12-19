@@ -1,5 +1,6 @@
 package com.github.matsik.booking;
 
+import com.github.matsik.booking.client.command.exception.BookingCommandDeliveryException;
 import feign.FeignException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -42,6 +43,11 @@ public class ControllerAdvice {
 
             return new ResponseEntity<>(messageBytes, statusCode);
         });
+    }
+
+    @ExceptionHandler(BookingCommandDeliveryException.class)
+    public ProblemDetail onBookingCommandDeliveryException(BookingCommandDeliveryException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
