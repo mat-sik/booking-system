@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 public class LocalDateDeserializer implements Deserializer<LocalDate> {
     @Override
-    public LocalDate deserialize(String s, byte[] bytes) {
-        return LocalDate.parse(new String(bytes, StandardCharsets.UTF_8), LocalDateSerializer.FORMATTER);
+    public LocalDate deserialize(String topic, byte[] localDateBytes) {
+        return LocalDate.parse(new String(localDateBytes, StandardCharsets.UTF_8), LocalDateSerializer.FORMATTER);
     }
 }
