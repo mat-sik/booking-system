@@ -5,6 +5,7 @@ import com.github.matsik.booking.controller.request.CreateBookingRequest;
 import com.github.matsik.booking.controller.request.DeleteBookingRequest;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
+import com.github.matsik.mongo.model.ServiceBookingIdentifier;
 import com.github.matsik.query.response.UserBookingResponse;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
@@ -26,10 +27,9 @@ public class CommandRemoteService {
             throw new IllegalArgumentException("Booking start value should be lower than the end value.");
         }
 
-        LocalDate key = request.date();
+        ServiceBookingIdentifier key = ServiceBookingIdentifier.Factory.create(request.date(), request.serviceId());
 
         CreateBookingCommandValue value = new CreateBookingCommandValue(
-                request.serviceId(),
                 request.userId(),
                 request.start(),
                 request.end()
@@ -51,9 +51,11 @@ public class CommandRemoteService {
             return;
         }
 
-        DeleteBookingCommandValue value = new DeleteBookingCommandValue(serviceId, bookingId);
+        ServiceBookingIdentifier key = ServiceBookingIdentifier.Factory.create(localDate, serviceId);
 
-        client.sendDeleteBookingCommand(localDate, value);
+        DeleteBookingCommandValue value = new DeleteBookingCommandValue(bookingId);
+
+        client.sendDeleteBookingCommand(key, value);
     }
 
 }

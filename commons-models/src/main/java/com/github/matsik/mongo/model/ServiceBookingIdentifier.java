@@ -23,11 +23,21 @@ public class ServiceBookingIdentifier {
         this.serviceId = serviceId;
     }
 
+    private ServiceBookingIdentifier(String date, ObjectId serviceId) {
+        this.date = date;
+        this.serviceId = serviceId;
+    }
+
     public static class Factory {
         public static ServiceBookingIdentifier create(String date, String serviceId) {
-            LocalDate localDate = LocalDate.parse(date, FORMATTER);
+            LocalDate _ = LocalDate.parse(date, FORMATTER);
             ObjectId serviceIdMapped = new ObjectId(serviceId);
-            return new ServiceBookingIdentifier(localDate, serviceIdMapped);
+            return new ServiceBookingIdentifier(date, serviceIdMapped);
+        }
+
+        public static ServiceBookingIdentifier create(String date, ObjectId serviceId) {
+            LocalDate _ = LocalDate.parse(date, FORMATTER);
+            return new ServiceBookingIdentifier(date, serviceId);
         }
 
         public static ServiceBookingIdentifier create(LocalDate date, ObjectId serviceId) {

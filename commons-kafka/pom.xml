@@ -37,6 +37,12 @@
             <version>${org.apache.kafka.version}</version>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.matsik</groupId>
+            <artifactId>commons-models</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

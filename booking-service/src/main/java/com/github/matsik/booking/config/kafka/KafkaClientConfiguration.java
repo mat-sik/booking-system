@@ -1,8 +1,9 @@
 package com.github.matsik.booking.config.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.matsik.kafka.mapping.LocalDateSerializer;
+import com.github.matsik.kafka.mapping.ServiceBookingIdentifierSerializer;
 import com.github.matsik.kafka.task.CommandValue;
+import com.github.matsik.mongo.model.ServiceBookingIdentifier;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -15,7 +16,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
-import java.time.LocalDate;
 import java.util.Map;
 
 @Configuration
@@ -38,7 +38,7 @@ public class KafkaClientConfiguration {
     }
 
     @Bean
-    public ProducerFactory<LocalDate, CommandValue> producerFactory(
+    public ProducerFactory<ServiceBookingIdentifier, CommandValue> producerFactory(
             KafkaClientProperties kafkaClientProperties,
             ObjectMapper objectMapper
     ) {
@@ -50,13 +50,13 @@ public class KafkaClientConfiguration {
 
         return new DefaultKafkaProducerFactory<>(
                 props,
-                new LocalDateSerializer(),
+                new ServiceBookingIdentifierSerializer(),
                 jsonSerializer
         );
     }
 
     @Bean
-    public KafkaTemplate<LocalDate, CommandValue> kafkaTemplate(ProducerFactory<LocalDate, CommandValue> producerFactory) {
+    public KafkaTemplate<ServiceBookingIdentifier, CommandValue> kafkaTemplate(ProducerFactory<ServiceBookingIdentifier, CommandValue> producerFactory) {
         return new KafkaTemplate<>(producerFactory);
     }
 

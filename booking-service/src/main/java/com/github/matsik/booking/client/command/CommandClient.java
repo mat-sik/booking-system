@@ -4,12 +4,12 @@ import com.github.matsik.booking.client.command.exception.BookingCommandDelivery
 import com.github.matsik.kafka.task.CommandValue;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
+import com.github.matsik.mongo.model.ServiceBookingIdentifier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -23,17 +23,17 @@ public class CommandClient {
     private static final int TIMEOUT = 10;
     private static final TimeUnit TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
 
-    private final KafkaTemplate<LocalDate, CommandValue> template;
+    private final KafkaTemplate<ServiceBookingIdentifier, CommandValue> template;
 
-    public void sendCreateBookingCommand(LocalDate key, CreateBookingCommandValue value) {
+    public void sendCreateBookingCommand(ServiceBookingIdentifier key, CreateBookingCommandValue value) {
         send(key, value);
     }
 
-    public void sendDeleteBookingCommand(LocalDate key, DeleteBookingCommandValue value) {
+    public void sendDeleteBookingCommand(ServiceBookingIdentifier key, DeleteBookingCommandValue value) {
         send(key, value);
     }
 
-    private void send(LocalDate key, CommandValue value) {
+    private void send(ServiceBookingIdentifier key, CommandValue value) {
         try {
             template.send(TOPIC_NAME, key, value).get(TIMEOUT, TIMEOUT_TIME_UNIT);
         } catch (ExecutionException ex) {
