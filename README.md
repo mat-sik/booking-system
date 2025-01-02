@@ -5,7 +5,8 @@ choose a service, specify a desired date, and book a time slot for a specified d
 10.10.2024 from 13:00 for 1 hour).
 
 This project is composed of multiple microservices that work together to implement a booking system. It
-leverages the **CQRS** (Command Query Responsibility Segregation) and **Event Sourcing** patterns. The **Event Sourcing**
+leverages the **CQRS** (Command Query Responsibility Segregation) and **Event Sourcing** patterns. The
+**Event Sourcing**
 pattern and its associated log are used to control concurrent bookings for the same date and time by multiple users,
 ensuring data consistency and preventing conflicts.
 
@@ -51,7 +52,7 @@ view of available and booked time slots. This view might be stale the moment it 
 
 ## Command Service
 
-The **Command Service** consumes records from **Kafka** Topic Partitions, with each partition acting as a 
+The **Command Service** consumes records from **Kafka** Topic Partitions, with each partition acting as a
 **Event Sourcing**
 log, serving as the authoritative source of truth for the application. This log preserves the chronological order of
 booking commands, which is essential for ensuring fairness and consistency. By maintaining this order, it prevents race
@@ -62,9 +63,15 @@ queryable data view for interested parties.
 
 ### Topic Partitioning
 
-The partition key is based on the **ISO-8601** date format, ensuring that all bookings for a specific date are routed to
-the same partition. This approach preserves the chronological order of bookings for that date, enabling the system to
-accurately determine which user booked first.
+The partition key is constructed using the date in **ISO-8601** format and the service ID, represented as a
+**MongoDB ObjectId**. By concatenating these two fields, the system ensures that bookings for the same service and date
+are routed to the same partition. This approach maintains the chronological order of bookings for a specific service on
+a given date, allowing the system to reliably determine which user successfully booked the service first.
+
+This partition key also enables seamless scaling of processing. The processing speed is primarily influenced by the
+number of bookings for a specific date and service. Since only the first records are relevant (for example, in the case
+of 1,000,000 requests and only 1,000 time slots, we only care about processing the 1,000), performance should remain
+strong even under the worst-case scenario.
 
 ## Query Service
 
@@ -499,12 +506,14 @@ BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_GROUP_ID=command-consumers
 
 BOOKING_SYSTEM_KAFKA_BOOKING_SERVICE_CLIENT_ID=command-consumer
 
-BOOKING_SYSTEM_QUERY_SERVICE_URL=http://localhost:8080
+BOOKING_SYSTEM_QUERY_SERVICE_URL=http://localhost:8081
 ```
 
 **Notes**:
 
 - When running the apps on your host, you need to pass the `.env` file by configuring the IntelliJ run configuration.
+- In the IntelliJ run configuration, set the query service's port to a value other than 8080 to avoid conflicts with the
+  booking service. For example, use `--server.port=8081`.
 
 ### Building **Docker** images
 

@@ -6,6 +6,7 @@ import com.github.matsik.command.booking.service.BookingService;
 import com.github.matsik.kafka.task.CommandValue;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
+import com.github.matsik.mongo.model.ServiceBookingIdentifier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -13,7 +14,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Component
@@ -24,13 +24,13 @@ public class BookingCommandListener {
     private final BookingService service;
 
     @KafkaListener(topics = "bookings", groupId = "${kafka.groupId}", containerFactory = "kafkaListenerContainerFactory")
-    public void listen(List<ConsumerRecord<LocalDate, CommandValue>> records, Acknowledgment ack) {
+    public void listen(List<ConsumerRecord<ServiceBookingIdentifier, CommandValue>> records, Acknowledgment ack) {
         records.forEach(this::processRecord);
         ack.acknowledge();
     }
 
-    private void processRecord(ConsumerRecord<LocalDate, CommandValue> record) {
-        LocalDate key = record.key();
+    private void processRecord(ConsumerRecord<ServiceBookingIdentifier, CommandValue> record) {
+        ServiceBookingIdentifier key = record.key();
         CommandValue value = record.value();
 
         if (value instanceof CreateBookingCommandValue createBookingCommandValue) {
