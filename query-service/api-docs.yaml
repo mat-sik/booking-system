@@ -216,6 +216,7 @@ components:
     ObjectId:
       type: string
       pattern: "^[a-fA-F0-9]{24}$" # MongoDB ObjectId format
+      example: "000000000000000000000000"
 
     TimeRangeResponse:
       type: object
