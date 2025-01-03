@@ -238,7 +238,7 @@ components:
         end:
           type: integer
       example:
-        userId: "5f8d0d55b4e1c1a6b4f7d4f8"
+        userId: "110000000000000000000000"
         start: 540
         end: 600
 
