@@ -24,7 +24,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/ObjectId'
-          example: "5f8d0d55b4e1c1a6b4f7d4f7"
+          example: "010000000000000000000000"
         - name: serviceDuration
           in: query
           description: The duration of the service in minutes.
@@ -89,14 +89,14 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/ObjectId'
-          example: "5f8d0d55b4e1c1a6b4f7d4f7"
+          example: "010000000000000000000000"
         - name: bookingId
           in: query
           description: The ID of the booking.
           required: true
           schema:
             $ref: '#/components/schemas/ObjectId'
-          example: "5f8d0d55b4e1c1a6b4f7d4f9"
+          example: "100000000000000000000000"
       responses:
         '200':
           description: User booking information.
@@ -105,7 +105,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserBookingResponse'
               example:
-                userId: "5f8d0d55b4e1c1a6b4f7d4f8"
+                userId: "110000000000000000000000"
                 start: 540
                 end: 600
         '400':
@@ -129,7 +129,7 @@ paths:
                 type: "https://example.com/not-found"
                 title: "Not Found"
                 status: 404
-                detail: "Booking with ID 5f8d0d55b4e1c1a6b4f7d4f9 not found."
+                detail: "Booking with ID 100000000000000000000000 not found."
         '500':
           description: Internal server error due to an unexpected condition.
           content:
@@ -160,7 +160,7 @@ paths:
           required: false
           schema:
             type: string
-            example: "5f8d0d55b4e1c1a6b4f7d4f7,5f8d0d55b4e1c1a6b4f7d4f8"
+            example: "010000000000000000000000,010000000000000000000001"
             default: ""
         - name: userIds
           in: query
@@ -168,7 +168,7 @@ paths:
           required: false
           schema:
             type: string
-            example: "5f8d0d55b4e1c1a6b4f7d4f9,5f8d0d55b4e1c1a6b4f7d4fa"
+            example: "110000000000000000000000,110000000000000000000001"
             default: ""
       responses:
         '200':
@@ -180,12 +180,12 @@ paths:
                 items:
                   $ref: '#/components/schemas/ServiceBookingResponse'
               example:
-                - id: "5f8d0d55b4e1c1a6b4f7d4fa"
+                - id: "000000000000000000000000"
                   date: "2024-12-01"
-                  serviceId: "5f8d0d55b4e1c1a6b4f7d4f7"
+                  serviceId: "010000000000000000000000"
                   bookings:
-                    - id: "5f8d0d55b4e1c1a6b4f7d4fb"
-                      userId: "5f8d0d55b4e1c1a6b4f7d4f9"
+                    - id: "100000000000000000000000"
+                      userId: "110000000000000000000000"
                       start: 540
                       end: 600
         '400':
@@ -257,12 +257,12 @@ components:
           items:
             $ref: '#/components/schemas/Booking'
       example:
-        id: "5f8d0d55b4e1c1a6b4f7d4fa"
+        id: "000000000000000000000000"
         date: "2024-12-01"
-        serviceId: "5f8d0d55b4e1c1a6b4f7d4f7"
+        serviceId: "010000000000000000000000"
         bookings:
-          - id: "5f8d0d55b4e1c1a6b4f7d4fb"
-            userId: "5f8d0d55b4e1c1a6b4f7d4f9"
+          - id: "100000000000000000000000"
+            userId: "110000000000000000000000"
             start: 540
             end: 600
 
@@ -278,8 +278,8 @@ components:
         end:
           type: integer
       example:
-        id: "5f8d0d55b4e1c1a6b4f7d4fb"
-        userId: "5f8d0d55b4e1c1a6b4f7d4f9"
+        id: "100000000000000000000000"
+        userId: "110000000000000000000000"
         start: 540
         end: 600
 
