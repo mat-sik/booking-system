@@ -1,42 +1,37 @@
-# syntax=docker/dockerfile:1.12.0
-
-FROM amazoncorretto:23 AS build-stage
-
-# Install gzip
-RUN yum install -y gzip && yum install -y tar
+FROM amazoncorretto:24 AS build-stage
 
 WORKDIR /app
 
-# copy build files
-COPY query-service/mvnw .
-COPY query-service/pom.xml .
-COPY query-service/.mvn .mvn
-COPY query-service/src src
-COPY commons-models/target/commons-models-1.0-SNAPSHOT.jar commons-models.jar
-COPY commons-json/target/commons-json-1.0-SNAPSHOT.jar commons-json.jar
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
 
-# Install local dependencies manually
+COPY commons-models/pom.xml commons-models/
+COPY commons-json/pom.xml commons-json/
+COPY commons-kafka/pom.xml commons-kafka/
+COPY command-service/pom.xml command-service/
+COPY query-service/pom.xml query-service/
+COPY booking-service/pom.xml booking-service/
+
 RUN --mount=type=cache,target=/root/.m2 \
-    ./mvnw install:install-file -Dfile=./commons-models.jar \
-        -DgroupId=com.github.matsik \
-        -DartifactId=commons-models \
-        -Dversion=1.0-SNAPSHOT \
-        -Dpackaging=jar && \
-    ./mvnw install:install-file -Dfile=./commons-json.jar \
-        -DgroupId=com.github.matsik \
-        -DartifactId=commons-json \
-        -Dversion=1.0-SNAPSHOT \
-        -Dpackaging=jar && \
-    ./mvnw install -DskipTests
+    ./mvnw -B dependency:go-offline -DskipTests
 
-# extract files from jar file
-RUN java -Djarmode=layertools -jar target/*.jar extract
+COPY commons-models ./commons-models
+COPY commons-json ./commons-json
+COPY commons-kafka ./commons-kafka
+COPY command-service ./command-service
+COPY query-service ./query-service
+COPY booking-service ./booking-service
 
-# move to release stage
-FROM amazoncorretto:23-alpine AS release-stage
+RUN --mount=type=cache,target=/root/.m2 \
+    ./mvnw clean package -DskipTests -pl query-service -am
+
+RUN java -Djarmode=layertools -jar query-service/target/*.jar extract
+
+FROM amazoncorretto:24-alpine AS release-stage
 
 WORKDIR /app
-# copy files from build-stage
+
 COPY --from=build-stage /app/dependencies .
 COPY --from=build-stage /app/snapshot-dependencies .
 COPY --from=build-stage /app/spring-boot-loader .

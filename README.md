@@ -534,7 +534,7 @@ docker build -f ./booking-service/Dockerfile . -t booking-service
 #### Command Service
 
 ```shell
-docker build -f ./command-service/Dockerfile . -t command -service
+docker build -f ./command-service/Dockerfile . -t command-service
 ```
 
 Once the common modules are installed and available, you can use standard Docker Compose commands to manage the
