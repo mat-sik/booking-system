@@ -13,16 +13,16 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>23</java.version>
-        <com.fasterxml.jackson.core.version>2.18.2</com.fasterxml.jackson.core.version>
-        <org.mongodb.bson.version>5.2.1</org.mongodb.bson.version>
+        <java.version>24</java.version>
+        <jackson-databind.version>2.20.0</jackson-databind.version>
+        <org.mongodb.bson.version>5.6.0</org.mongodb.bson.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${com.fasterxml.jackson.core.version}</version>
+            <version>${jackson-databind.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
@@ -43,7 +43,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>3.14.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>

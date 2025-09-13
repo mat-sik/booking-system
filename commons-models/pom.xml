@@ -13,9 +13,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>23</java.version>
-        <org.projectlombok.version>1.18.36</org.projectlombok.version>
-        <org.mongodb.bson.version>5.2.1</org.mongodb.bson.version>
+        <java.version>24</java.version>
+        <org.projectlombok.version>1.18.40</org.projectlombok.version>
+        <org.mongodb.bson.version>5.6.0</org.mongodb.bson.version>
     </properties>
 
     <dependencies>
@@ -37,7 +37,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>3.14.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
