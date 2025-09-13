@@ -3,45 +3,33 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.matsik</groupId>
+    <parent>
+        <groupId>com.github.matsik</groupId>
+        <artifactId>booking-system</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
     <artifactId>commons-kafka</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
     <name>commons-kafka</name>
-    <!-- FIXME change it to the project's website -->
-    <url>http://www.example.com</url>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>24</java.version>
-        <jackson-annotations.version>2.20</jackson-annotations.version>
-        <org.mongodb.bson.version>5.6.0</org.mongodb.bson.version>
-        <org.apache.kafka.version>4.1.0</org.apache.kafka.version>
-    </properties>
 
     <dependencies>
         <dependency>
+            <groupId>com.github.matsik</groupId>
+            <artifactId>commons-models</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${jackson-annotations.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>bson</artifactId>
-            <version>${org.mongodb.bson.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>${org.apache.kafka.version}</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.matsik</groupId>
-            <artifactId>commons-models</artifactId>
-            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -50,11 +38,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.0</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
             </plugin>
         </plugins>
     </build>
