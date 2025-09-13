@@ -22,7 +22,7 @@ public class CommandRemoteService {
     private final CommandClient client;
     private final QueryRemoteService queryService;
 
-    public void createBooking(@RequestBody CreateBookingRequest request) {
+    public void createBooking(CreateBookingRequest request) {
         if (request.start() >= request.end()) {
             throw new IllegalArgumentException("Booking start value should be lower than the end value.");
         }
@@ -38,7 +38,7 @@ public class CommandRemoteService {
         client.sendCreateBookingCommand(key, value);
     }
 
-    public void deleteBooking(@RequestBody DeleteBookingRequest request) {
+    public void deleteBooking(DeleteBookingRequest request) {
         LocalDate localDate = request.date();
         ObjectId serviceId = request.serviceId();
         ObjectId bookingId = request.bookingId();

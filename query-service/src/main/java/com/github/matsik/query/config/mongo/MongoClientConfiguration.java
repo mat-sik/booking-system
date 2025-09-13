@@ -48,8 +48,7 @@ public class MongoClientConfiguration {
 
     @Bean
     public MongoTemplate mongoTemplate(MongoDatabaseFactory factory) {
-        MongoTemplate mongoTemplate = new MongoTemplate(factory);
-        return mongoTemplate;
+        return new MongoTemplate(factory);
     }
 
 }

@@ -41,13 +41,13 @@ public class BookingController {
         List<TimeRange> availableTimeRanges = service.getAvailableTimeRanges(query);
 
         List<TimeRangeResponse> response = availableTimeRanges.stream()
-                .map(model -> mapToResponse(model))
+                .map(this::mapToResponse)
                 .toList();
 
         return ResponseEntity.ok(response);
     }
 
-    private static TimeRangeResponse mapToResponse(TimeRange model) {
+    private TimeRangeResponse mapToResponse(TimeRange model) {
         return new TimeRangeResponse(
                 model.start(),
                 model.end()
@@ -68,7 +68,7 @@ public class BookingController {
         return ResponseEntity.ok(response);
     }
 
-    private static UserBookingResponse mapToResponse(UserBooking model) {
+    private UserBookingResponse mapToResponse(UserBooking model) {
         return new UserBookingResponse(
                 model.userId(),
                 model.start(),
@@ -86,7 +86,7 @@ public class BookingController {
         List<ServiceBooking> serviceBookings = service.getBookings(query);
 
         List<ServiceBookingResponse> response = serviceBookings.stream()
-                .map(model -> mapToResponse(model))
+                .map(this::mapToResponse)
                 .toList();
 
         return ResponseEntity.ok(response);
