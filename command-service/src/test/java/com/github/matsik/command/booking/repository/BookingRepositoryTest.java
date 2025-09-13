@@ -38,7 +38,7 @@ class BookingRepositoryTest {
         MONGO_CLIENT = MongoClients.create(MONGO_DB_CONTAINER.getReplicaSetUrl());
         MONGO_TEMPLATE = new MongoTemplate(MONGO_CLIENT, "test");
 
-        REPOSITORY = new BookingRepository(MONGO_TEMPLATE);
+        REPOSITORY = new BookingRepositoryMongo(MONGO_TEMPLATE);
     }
 
     @AfterAll
