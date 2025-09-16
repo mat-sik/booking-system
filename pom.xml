@@ -21,7 +21,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>24</java.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
-        <org.projectlombok.version>1.18.40</org.projectlombok.version>
         <org.mongodb.bson.version>5.6.0</org.mongodb.bson.version>
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
     </properties>
@@ -66,11 +65,6 @@
                 <artifactId>bson</artifactId>
                 <version>${org.mongodb.bson.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${org.projectlombok.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -88,7 +82,6 @@
                             <path>
                                 <groupId>org.projectlombok</groupId>
                                 <artifactId>lombok</artifactId>
-                                <version>${org.projectlombok.version}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
