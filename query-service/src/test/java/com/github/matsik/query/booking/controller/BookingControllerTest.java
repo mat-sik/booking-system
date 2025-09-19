@@ -1,6 +1,6 @@
 package com.github.matsik.query.booking.controller;
 
-import com.github.matsik.mongo.model.Booking;
+import com.github.matsik.cassandra.model.Booking;
 import com.github.matsik.query.booking.model.ServiceBooking;
 import com.github.matsik.query.booking.model.UserBooking;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;

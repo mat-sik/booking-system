@@ -1,14 +1,14 @@
 package com.github.matsik.query.response;
 
-import com.github.matsik.mongo.model.Booking;
-import org.bson.types.ObjectId;
+import com.github.matsik.cassandra.model.Booking;
 
 import java.util.List;
+import java.util.UUID;
 
 public record ServiceBookingResponse(
-        ObjectId id,
+        UUID id,
         String date,
-        ObjectId serviceId,
+        UUID serviceId,
         List<Booking> bookings
 ) {
 }

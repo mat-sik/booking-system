@@ -1,12 +1,13 @@
 package com.github.matsik.command.booking.command;
 
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
-import org.bson.types.ObjectId;
+import com.github.matsik.cassandra.model.BookingPartitionKey;
 
-public record DeleteBookingCommand(ServiceBookingIdentifier serviceBookingIdentifier, ObjectId bookingId) {
+import java.util.UUID;
+
+public record DeleteBookingCommand(BookingPartitionKey bookingPartitionKey, UUID bookingId) {
     public static class Factory {
-        public static DeleteBookingCommand create(ServiceBookingIdentifier identifier, DeleteBookingCommandValue value) {
+        public static DeleteBookingCommand create(BookingPartitionKey identifier, DeleteBookingCommandValue value) {
             return new DeleteBookingCommand(identifier, value.bookingId());
         }
     }

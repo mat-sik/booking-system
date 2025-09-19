@@ -5,12 +5,11 @@ import com.github.matsik.booking.controller.request.CreateBookingRequest;
 import com.github.matsik.booking.controller.request.DeleteBookingRequest;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.cassandra.model.BookingPartitionKey;
 import com.github.matsik.query.response.UserBookingResponse;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -27,7 +26,7 @@ public class CommandRemoteService {
             throw new IllegalArgumentException("Booking start value should be lower than the end value.");
         }
 
-        ServiceBookingIdentifier key = ServiceBookingIdentifier.Factory.create(request.date(), request.serviceId());
+        BookingPartitionKey key = BookingPartitionKey.Factory.create(request.date(), request.serviceId());
 
         CreateBookingCommandValue value = new CreateBookingCommandValue(
                 request.userId(),
@@ -51,7 +50,7 @@ public class CommandRemoteService {
             return;
         }
 
-        ServiceBookingIdentifier key = ServiceBookingIdentifier.Factory.create(localDate, serviceId);
+        BookingPartitionKey key = BookingPartitionKey.Factory.create(localDate, serviceId);
 
         DeleteBookingCommandValue value = new DeleteBookingCommandValue(bookingId);
 

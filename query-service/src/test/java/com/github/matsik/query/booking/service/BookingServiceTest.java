@@ -1,6 +1,6 @@
 package com.github.matsik.query.booking.service;
 
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.cassandra.model.BookingPartitionKey;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetBookingTimeRangesQuery;
 import com.github.matsik.query.booking.repository.BookingRepository;
@@ -119,7 +119,7 @@ class BookingServiceTest {
             List<TimeRange> unavailableTimeRanges,
             List<TimeRange> expected
     ) {
-        ServiceBookingIdentifier identifier = getDefaultIdentifier();
+        BookingPartitionKey identifier = getDefaultIdentifier();
         GetBookingTimeRangesQuery getBookingTimeRangesQuery = new GetBookingTimeRangesQuery(identifier);
         GetAvailableTimeRangesQuery getAvailableTimeRangesQuery = new GetAvailableTimeRangesQuery(getBookingTimeRangesQuery, serviceDuration);
 
@@ -132,9 +132,9 @@ class BookingServiceTest {
         );
     }
 
-    private static ServiceBookingIdentifier getDefaultIdentifier() {
+    private static BookingPartitionKey getDefaultIdentifier() {
         LocalDate date = LocalDate.of(2024, 12, 3);
         ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
-        return ServiceBookingIdentifier.Factory.create(date, serviceId);
+        return BookingPartitionKey.Factory.create(date, serviceId);
     }
 }

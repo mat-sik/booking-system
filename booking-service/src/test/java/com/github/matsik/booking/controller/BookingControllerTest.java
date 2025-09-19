@@ -7,7 +7,7 @@ import com.github.matsik.booking.client.query.QueryRemoteService;
 import com.github.matsik.booking.config.jackson.JacksonConfiguration;
 import com.github.matsik.booking.controller.request.CreateBookingRequest;
 import com.github.matsik.booking.controller.request.DeleteBookingRequest;
-import com.github.matsik.mongo.model.Booking;
+import com.github.matsik.cassandra.model.Booking;
 import com.github.matsik.query.response.ServiceBookingResponse;
 import com.github.matsik.query.response.TimeRangeResponse;
 import com.github.matsik.query.response.UserBookingResponse;

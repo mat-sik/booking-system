@@ -1,6 +1,6 @@
 package com.github.matsik.kafka.task;
 
-import org.bson.types.ObjectId;
+import java.util.UUID;
 
-public record CreateBookingCommandValue(ObjectId userId, int start, int end) implements CommandValue {
+public record CreateBookingCommandValue(UUID userId, int start, int end) implements CommandValue {
 }

@@ -21,7 +21,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>24</java.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
-        <org.mongodb.bson.version>5.6.0</org.mongodb.bson.version>
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
     </properties>
 
@@ -58,12 +57,6 @@
                 <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.mongodb</groupId>
-                <artifactId>bson</artifactId>
-                <version>${org.mongodb.bson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
