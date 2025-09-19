@@ -1,6 +1,6 @@
 package com.github.matsik.query.booking.repository;
 
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.cassandra.model.BookingPartitionKey;
 import com.github.matsik.query.booking.model.ServiceBooking;
 import com.github.matsik.query.booking.model.UserBooking;
 import com.github.matsik.query.booking.query.GetBookingQuery;
@@ -28,7 +28,7 @@ public class BookingRepositoryMongo implements BookingRepository {
 
     @Override
     public Optional<UserBooking> getUserBooking(GetBookingQuery query) {
-        AggregationOperation matchByDateAndServiceId = getMatchOperation(query.serviceBookingIdentifier());
+        AggregationOperation matchByDateAndServiceId = getMatchOperation(query.bookingPartitionKey());
 
         AggregationOperation unwindBookings = Aggregation.unwind("bookings");
 
@@ -59,7 +59,7 @@ public class BookingRepositoryMongo implements BookingRepository {
 
     @Override
     public List<TimeRange> getBookingTimeRanges(GetBookingTimeRangesQuery query) {
-        AggregationOperation matchByDateServiceId = getMatchOperation(query.serviceBookingIdentifier());
+        AggregationOperation matchByDateServiceId = getMatchOperation(query.bookingPartitionKey());
 
         AggregationOperation unwindBookings = Aggregation.unwind("$bookings");
 
@@ -78,7 +78,7 @@ public class BookingRepositoryMongo implements BookingRepository {
                 .getMappedResults();
     }
 
-    private static AggregationOperation getMatchOperation(ServiceBookingIdentifier identifier) {
+    private static AggregationOperation getMatchOperation(BookingPartitionKey identifier) {
         return Aggregation.match(Criteria.where("date").is(identifier.date())
                 .and("serviceId").is(identifier.serviceId()));
     }

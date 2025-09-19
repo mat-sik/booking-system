@@ -1,8 +1,8 @@
 package com.github.matsik.command.config.kafka;
 
-import com.github.matsik.kafka.mapping.ServiceBookingIdentifierDeserializer;
+import com.github.matsik.kafka.mapping.BookingPartitionKeyDeserializer;
 import com.github.matsik.kafka.task.CommandValue;
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.cassandra.model.BookingPartitionKey;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -40,10 +40,10 @@ public class KafkaClientConfiguration {
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<ServiceBookingIdentifier, CommandValue>> kafkaListenerContainerFactory(
-            ConsumerFactory<ServiceBookingIdentifier, CommandValue> localDateCommandValueConsumerFactory
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<BookingPartitionKey, CommandValue>> kafkaListenerContainerFactory(
+            ConsumerFactory<BookingPartitionKey, CommandValue> localDateCommandValueConsumerFactory
     ) {
-        ConcurrentKafkaListenerContainerFactory<ServiceBookingIdentifier, CommandValue> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        ConcurrentKafkaListenerContainerFactory<BookingPartitionKey, CommandValue> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(localDateCommandValueConsumerFactory);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.setBatchListener(true);
@@ -52,12 +52,12 @@ public class KafkaClientConfiguration {
     }
 
     @Bean
-    public ConsumerFactory<ServiceBookingIdentifier, CommandValue> localDateCommandValueConsumerFactory(
+    public ConsumerFactory<BookingPartitionKey, CommandValue> localDateCommandValueConsumerFactory(
             KafkaClientProperties kafkaClientProperties,
             JsonDeserializer<CommandValue> commandValueJsonDeserializer
     ) {
         Map<String, Object> consumerConfig = consumerConfig(kafkaClientProperties);
-        return new DefaultKafkaConsumerFactory<>(consumerConfig, new ServiceBookingIdentifierDeserializer(), commandValueJsonDeserializer);
+        return new DefaultKafkaConsumerFactory<>(consumerConfig, new BookingPartitionKeyDeserializer(), commandValueJsonDeserializer);
     }
 
     private Map<String, Object> consumerConfig(KafkaClientProperties kafkaClientProperties) {

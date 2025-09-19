@@ -1,14 +1,14 @@
 package com.github.matsik.query.booking.query;
 
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.cassandra.model.BookingPartitionKey;
 import org.bson.types.ObjectId;
 
 import java.time.LocalDate;
 
-public record GetBookingQuery(ServiceBookingIdentifier serviceBookingIdentifier, ObjectId bookingId) {
+public record GetBookingQuery(BookingPartitionKey bookingPartitionKey, ObjectId bookingId) {
     public static class Factory {
         public static GetBookingQuery create(LocalDate date, ObjectId serviceId, ObjectId bookingId) {
-            ServiceBookingIdentifier identifier = ServiceBookingIdentifier.Factory.create(date, serviceId);
+            BookingPartitionKey identifier = BookingPartitionKey.Factory.create(date, serviceId);
             return new GetBookingQuery(identifier, bookingId);
         }
     }

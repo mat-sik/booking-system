@@ -1,9 +1,9 @@
 package com.github.matsik.booking.config.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.matsik.kafka.mapping.ServiceBookingIdentifierSerializer;
+import com.github.matsik.kafka.mapping.BookingPartitionKeySerializer;
 import com.github.matsik.kafka.task.CommandValue;
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.cassandra.model.BookingPartitionKey;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -38,7 +38,7 @@ public class KafkaClientConfiguration {
     }
 
     @Bean
-    public ProducerFactory<ServiceBookingIdentifier, CommandValue> producerFactory(
+    public ProducerFactory<BookingPartitionKey, CommandValue> producerFactory(
             KafkaClientProperties kafkaClientProperties,
             ObjectMapper objectMapper
     ) {
@@ -50,13 +50,13 @@ public class KafkaClientConfiguration {
 
         return new DefaultKafkaProducerFactory<>(
                 props,
-                new ServiceBookingIdentifierSerializer(),
+                new BookingPartitionKeySerializer(),
                 jsonSerializer
         );
     }
 
     @Bean
-    public KafkaTemplate<ServiceBookingIdentifier, CommandValue> kafkaTemplate(ProducerFactory<ServiceBookingIdentifier, CommandValue> producerFactory) {
+    public KafkaTemplate<BookingPartitionKey, CommandValue> kafkaTemplate(ProducerFactory<BookingPartitionKey, CommandValue> producerFactory) {
         return new KafkaTemplate<>(producerFactory);
     }
 

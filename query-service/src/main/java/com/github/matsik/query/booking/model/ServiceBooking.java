@@ -1,6 +1,6 @@
 package com.github.matsik.query.booking.model;
 
-import com.github.matsik.mongo.model.Booking;
+import com.github.matsik.cassandra.model.Booking;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;

@@ -1,11 +1,22 @@
 package com.github.matsik.command.booking.repository;
 
-import com.github.matsik.command.booking.command.CreateBookingCommand;
-import com.github.matsik.command.booking.command.DeleteBookingCommand;
-import com.mongodb.client.result.UpdateResult;
+import com.github.matsik.cassandra.model.Booking;
+import com.github.matsik.cassandra.model.BookingKey;
+import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.Query;
 
-public interface BookingRepository {
-    UpdateResult deleteBooking(DeleteBookingCommand command);
+import java.time.LocalDate;
+import java.util.UUID;
 
-    UpdateResult createBooking(CreateBookingCommand command);
+public interface BookingRepository extends CassandraRepository<Booking, BookingKey> {
+
+    @Query("""
+        SELECT COUNT(*)
+        FROM bookings
+        WHERE service_id = :serviceId
+          AND date = :date
+          AND start < :newEnd
+          AND end > :newStart
+        """)
+    int findOverlappingBookingCount(UUID serviceId, LocalDate date, int newStart, int newEnd);
 }

@@ -1,9 +1,9 @@
 package com.github.matsik.query.response;
 
-import org.bson.types.ObjectId;
+import java.util.UUID;
 
 public record UserBookingResponse(
-        ObjectId userId,
+        UUID userId,
         int start,
         int end
 ) {

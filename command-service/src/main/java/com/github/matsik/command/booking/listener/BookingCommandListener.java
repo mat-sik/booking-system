@@ -6,7 +6,7 @@ import com.github.matsik.command.booking.service.BookingService;
 import com.github.matsik.kafka.task.CommandValue;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.cassandra.model.BookingPartitionKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -24,13 +24,13 @@ public class BookingCommandListener {
     private final BookingService service;
 
     @KafkaListener(topics = "bookings", groupId = "${kafka.groupId}", containerFactory = "kafkaListenerContainerFactory")
-    public void listen(List<ConsumerRecord<ServiceBookingIdentifier, CommandValue>> records, Acknowledgment ack) {
+    public void listen(List<ConsumerRecord<BookingPartitionKey, CommandValue>> records, Acknowledgment ack) {
         records.forEach(this::processRecord);
         ack.acknowledge();
     }
 
-    private void processRecord(ConsumerRecord<ServiceBookingIdentifier, CommandValue> record) {
-        ServiceBookingIdentifier key = record.key();
+    private void processRecord(ConsumerRecord<BookingPartitionKey, CommandValue> record) {
+        BookingPartitionKey key = record.key();
         CommandValue value = record.value();
 
         if (value instanceof CreateBookingCommandValue createBookingCommandValue) {

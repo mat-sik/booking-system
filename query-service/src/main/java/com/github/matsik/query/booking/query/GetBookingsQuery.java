@@ -1,6 +1,6 @@
 package com.github.matsik.query.booking.query;
 
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.cassandra.model.BookingPartitionKey;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -20,7 +20,7 @@ public class GetBookingsQuery {
 
     public GetBookingsQuery(List<LocalDate> dates, List<ObjectId> serviceIds, List<ObjectId> userIds) {
         this.dates = dates.stream()
-                .map(date -> date.format(ServiceBookingIdentifier.FORMATTER))
+                .map(date -> date.format(BookingPartitionKey.FORMATTER))
                 .toList();
 
         this.serviceIds = serviceIds;

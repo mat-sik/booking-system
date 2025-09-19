@@ -1,7 +1,7 @@
 package com.github.matsik.query.booking.repository;
 
-import com.github.matsik.mongo.model.Booking;
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.cassandra.model.Booking;
+import com.github.matsik.cassandra.model.BookingPartitionKey;
 import com.github.matsik.query.booking.model.ServiceBooking;
 import com.github.matsik.query.booking.model.UserBooking;
 import com.github.matsik.query.booking.query.GetBookingQuery;
@@ -168,7 +168,7 @@ class BookingRepositoryTest {
         LocalDate localDate = LocalDate.parse(serviceBooking.date(), DateTimeFormatter.ISO_LOCAL_DATE);
         ObjectId serviceId = serviceBooking.serviceId();
 
-        ServiceBookingIdentifier identifier = ServiceBookingIdentifier.Factory.create(localDate, serviceId);
+        BookingPartitionKey identifier = BookingPartitionKey.Factory.create(localDate, serviceId);
 
         ObjectId bookingId = booking.id();
         return new GetBookingQuery(identifier, bookingId);
@@ -178,7 +178,7 @@ class BookingRepositoryTest {
         LocalDate localDate = LocalDate.of(2000, 1, 1);
         ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
         ObjectId bookingId = new ObjectId("bbbbbbbbbbbbbbbbbbbbbbbb");
-        ServiceBookingIdentifier identifier = ServiceBookingIdentifier.Factory.create(localDate, serviceId);
+        BookingPartitionKey identifier = BookingPartitionKey.Factory.create(localDate, serviceId);
         return new GetBookingQuery(identifier, bookingId);
     }
 
@@ -348,7 +348,7 @@ class BookingRepositoryTest {
 
     private static GetBookingTimeRangesQuery getGetBookingTimeRangesQuery(String date, ObjectId serviceId) {
         LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE);
-        ServiceBookingIdentifier identifier = ServiceBookingIdentifier.Factory.create(localDate, serviceId);
+        BookingPartitionKey identifier = BookingPartitionKey.Factory.create(localDate, serviceId);
         return new GetBookingTimeRangesQuery(identifier);
     }
 

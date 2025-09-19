@@ -1,6 +1,6 @@
 package com.github.matsik.query.booking.query;
 
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.cassandra.model.BookingPartitionKey;
 
-public record GetBookingTimeRangesQuery(ServiceBookingIdentifier serviceBookingIdentifier) {
+public record GetBookingTimeRangesQuery(BookingPartitionKey bookingPartitionKey) {
 }
