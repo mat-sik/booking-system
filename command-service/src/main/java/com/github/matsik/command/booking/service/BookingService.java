@@ -1,7 +1,6 @@
 package com.github.matsik.command.booking.service;
 
 import com.github.matsik.cassandra.model.Booking;
-import com.github.matsik.cassandra.model.BookingKey;
 import com.github.matsik.cassandra.model.BookingPartitionKey;
 import com.github.matsik.command.booking.command.CreateBookingCommand;
 import com.github.matsik.command.booking.command.DeleteBookingCommand;
@@ -20,26 +19,36 @@ public class BookingService {
     public void deleteBooking(DeleteBookingCommand command) {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
 
-        BookingKey key = new BookingKey(bookingPartitionKey.serviceId(), bookingPartitionKey.date(), command.bookingId());
-        bookingRepository.deleteById(key);
+        bookingRepository.deleteByPrimaryKey(
+                bookingPartitionKey.serviceId(),
+                bookingPartitionKey.date(),
+                command.bookingId()
+        );
     }
 
     public void createBooking(CreateBookingCommand command) {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
 
-        int overlappingBookingCount = findOverlappingBookings(bookingPartitionKey, command.start(), command.end());
+        long overlappingBookingCount = findOverlappingBookings(bookingPartitionKey, command.start(), command.end());
         if (overlappingBookingCount > 0) {
             return;
         }
 
         UUID bookingId = UUID.randomUUID();
-        BookingKey key = new BookingKey(bookingPartitionKey.serviceId(), bookingPartitionKey.date(), bookingId);
 
-        Booking booking = new Booking(key, command.userId(), command.start(), command.end());
+        Booking booking = Booking.builder()
+                .serviceId(bookingPartitionKey.serviceId())
+                .date(bookingPartitionKey.date())
+                .bookingId(bookingId)
+                .start(command.start())
+                .end(command.end())
+                .userId(command.userId())
+                .build();
+
         bookingRepository.save(booking);
     }
 
-    private int findOverlappingBookings(BookingPartitionKey bookingPartitionKey, int start, int end) {
+    private long findOverlappingBookings(BookingPartitionKey bookingPartitionKey, int start, int end) {
         return bookingRepository.findOverlappingBookingCount(
                 bookingPartitionKey.serviceId(),
                 bookingPartitionKey.date(),

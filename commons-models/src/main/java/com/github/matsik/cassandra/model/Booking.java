@@ -1,24 +1,32 @@
 package com.github.matsik.cassandra.model;
 
-import org.springframework.data.cassandra.core.mapping.Column;
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.Table;
+import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import lombok.Builder;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
-@Table(keyspace = "booking_system", value = "bookings")
+@Entity(defaultKeyspace = "booking_system")
+@CqlName("bookings")
+@Builder
 public record Booking(
 
-        @PrimaryKey
-        BookingKey key,
+        @PartitionKey
+        UUID serviceId,
 
-        @Column("user_id")
+        @PartitionKey(1)
+        LocalDate date,
+
+        @ClusteringColumn(2)
+        UUID bookingId,
+
         UUID userId,
 
-        @Column("start")
         int start,
 
-        @Column("end")
         int end
 ) {
 }

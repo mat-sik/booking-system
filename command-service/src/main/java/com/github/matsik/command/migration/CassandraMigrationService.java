@@ -1,14 +1,13 @@
 package com.github.matsik.command.migration;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.github.matsik.command.config.cassandra.CassandraClientProperties;
+import com.github.matsik.command.config.cassandra.client.CassandraClientProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -54,8 +53,8 @@ public class CassandraMigrationService {
 
     private CqlSession createSystemSession() {
         return CqlSession.builder()
-                .addContactPoints(contactPoints(cassandraClientProperties.contactPoints()))
-                .withLocalDatacenter(cassandraClientProperties.datacenter())
+                .addContactPoints(cassandraClientProperties.contactPointsParsed())
+                .withLocalDatacenter(cassandraClientProperties.localDatacenter())
                 .build();
     }
 
@@ -69,17 +68,6 @@ public class CassandraMigrationService {
 
     private boolean isMigrationTableInitializationScript(String fileName) {
         return Objects.equals(fileName, migrationFiles.getFirst());
-    }
-
-    private List<InetSocketAddress> contactPoints(String contactPoints) {
-        return Arrays.stream(contactPoints.split(","))
-                .map(contactPoint -> {
-                    String[] hostPort = contactPoint.split(":");
-                    String host = hostPort[0];
-                    int port = Integer.parseInt(hostPort[1]);
-                    return new InetSocketAddress(host, port);
-                })
-                .toList();
     }
 
     private void execMigration(CqlSession session, String fileName) throws IOException {
