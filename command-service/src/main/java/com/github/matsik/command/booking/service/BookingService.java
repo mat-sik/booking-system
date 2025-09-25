@@ -8,6 +8,7 @@ import com.github.matsik.command.booking.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -26,12 +27,12 @@ public class BookingService {
         );
     }
 
-    public void createBooking(CreateBookingCommand command) {
+    public Optional<Booking> createBooking(CreateBookingCommand command) {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
 
         long overlappingBookingCount = findOverlappingBookings(bookingPartitionKey, command.start(), command.end());
         if (overlappingBookingCount > 0) {
-            return;
+            return Optional.empty();
         }
 
         UUID bookingId = UUID.randomUUID();
@@ -46,6 +47,8 @@ public class BookingService {
                 .build();
 
         bookingRepository.save(booking);
+
+        return Optional.of(booking);
     }
 
     private long findOverlappingBookings(BookingPartitionKey bookingPartitionKey, int start, int end) {

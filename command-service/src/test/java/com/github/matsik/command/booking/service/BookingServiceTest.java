@@ -13,6 +13,7 @@ import com.github.matsik.command.config.cassandra.client.CassandraClientConfigur
 import com.github.matsik.command.config.cassandra.client.CassandraClientProperties;
 import com.github.matsik.command.config.cassandra.mapper.booking.BookingMapperConfiguration;
 import com.github.matsik.command.migration.CassandraMigrationService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -28,10 +29,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = {
         BookingServiceTest.TestCassandraConfig.class,
@@ -67,10 +70,16 @@ class BookingServiceTest {
     public static class TestCassandraConfig {
     }
 
+    @AfterEach
+    void tearDown() {
+        clearBookingsTable();
+    }
+
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideCreateBookingTestCases")
     void createBooking(
             String name,
+            boolean created,
             List<Booking> preTestState,
             CreateBookingCommand command
     ) {
@@ -78,55 +87,86 @@ class BookingServiceTest {
         preTestState.forEach(bookingRepository::save);
 
         // when
-        bookingService.createBooking(command);
+        Optional<Booking> booking = bookingService.createBooking(command);
 
         // then
-        Booking persistedBooking = findConflictingBookings(command.start(), command.end());
-        assertEquals(persistedBooking.userId(), command.userId());
+        if (created) {
+            assertTrue(booking.isPresent());
+            assertEquals(command.start(), booking.get().start());
+            assertEquals(command.end(), booking.get().end());
+            assertEquals(command.userId(), booking.get().userId());
+
+            Optional<Booking> persistedBooking = findBooking(command.bookingPartitionKey(), booking.get().bookingId());
+
+            assertTrue(persistedBooking.isPresent());
+            assertEquals(command.start(), persistedBooking.get().start());
+            assertEquals(command.end(), persistedBooking.get().end());
+            assertEquals(command.userId(), persistedBooking.get().userId());
+        } else {
+            assertTrue(booking.isEmpty());
+        }
     }
 
     private static Stream<Arguments> provideCreateBookingTestCases() {
         return Stream.of(
                 Arguments.of(
-                        "Create a new booking",
+                        "Should create a booking in the available time range",
+                        true,
                         List.of(
                                 conflictingBooking(0, 10),
                                 conflictingBooking(20, 30),
                                 nonConflictingBooking(0, 30)
                         ),
-                        new CreateBookingCommand(
-                                BookingPartitionKey.Factory.create(numberToLocalDate(1), numberToUUID(1)),
-                                numberToUUID(1),
-                                10,
-                                20
-                        )
+                        conflictingCreateBookingCommand(10, 20)
+                ),
+                Arguments.of(
+                        "Should fail to create a booking in the occupied time range",
+                        false,
+                        List.of(
+                                conflictingBooking(0, 30)
+                        ),
+                        conflictingCreateBookingCommand(10, 20)
+                ),
+                Arguments.of(
+                        "Should create a booking in the available time range, because of a different date",
+                        true,
+                        List.of(
+                                conflictingBooking(0, 30)
+                        ),
+                        nonConflictingOnDateCreateBookingCommand(10, 20)
+                ),
+                Arguments.of(
+                        "Should create a booking in the available time range, because of a different service",
+                        true,
+                        List.of(
+                                conflictingBooking(0, 30)
+                        ),
+                        nonConflictingOnServiceCreateBookingCommand(10, 20)
                 )
         );
     }
 
-    public Booking findConflictingBookings(int start, int end) {
-        List<Booking> bookings = findBookingsByStartTimeRange(numberToUUID(1), numberToLocalDate(1), start, end);
+    public Optional<Booking> findBooking(BookingPartitionKey key, UUID bookingId) {
+        List<Booking> bookings = findBookingsByStartTimeRange(key.serviceId(), key.date(), bookingId);
         if (bookings.size() > 1) {
             throw new IllegalStateException("Multiple bookings found");
         }
-        return bookings.getFirst();
+        return bookings.size() == 1 ? Optional.of(bookings.getFirst()) : Optional.empty();
     }
 
     private List<Booking> findBookingsByStartTimeRange(
             UUID serviceId,
             LocalDate date,
-            int startTimeFrom,
-            int startTimeTo
+            UUID bookingId
     ) {
         String query = """
-                SELECT service_id, date, end, start, booking_id, user_id
+                SELECT service_id, date, booking_id, user_id, start, end
                 FROM booking_system.bookings
-                WHERE service_id = ? AND date = ? AND start = ? AND end = ?
-                ALLOW FILTERING
+                WHERE service_id = ? AND date = ? AND booking_id = ?
                 """;
 
         PreparedStatement prepared = cqlSession.prepare(query);
-        BoundStatement bound = prepared.bind(serviceId, date, startTimeFrom, startTimeTo);
+        BoundStatement bound = prepared.bind(serviceId, date, bookingId);
 
         ResultSet resultSet = cqlSession.execute(bound);
 
@@ -134,14 +174,44 @@ class BookingServiceTest {
                 Booking.builder()
                         .serviceId(row.getUuid("service_id"))
                         .date(row.getLocalDate("date"))
-                        .end(row.getInt("end"))
-                        .start(row.getInt("start"))
                         .bookingId(row.getUuid("booking_id"))
                         .userId(row.getUuid("user_id"))
+                        .start(row.getInt("start"))
+                        .end(row.getInt("end"))
                         .build()
         ).all();
     }
 
+    private void clearBookingsTable() {
+        cqlSession.execute("TRUNCATE booking_system.bookings");
+    }
+
+    private static CreateBookingCommand conflictingCreateBookingCommand(int start, int end) {
+        return CreateBookingCommand.builder()
+                .bookingPartitionKey(BookingPartitionKey.Factory.create(numberToLocalDate(1), numberToUUID(1)))
+                .userId(numberToUUID(1))
+                .start(start)
+                .end(end)
+                .build();
+    }
+
+    private static CreateBookingCommand nonConflictingOnDateCreateBookingCommand(int start, int end) {
+        return CreateBookingCommand.builder()
+                .bookingPartitionKey(BookingPartitionKey.Factory.create(numberToLocalDate(3), numberToUUID(1)))
+                .userId(numberToUUID(1))
+                .start(start)
+                .end(end)
+                .build();
+    }
+
+    private static CreateBookingCommand nonConflictingOnServiceCreateBookingCommand(int start, int end) {
+        return CreateBookingCommand.builder()
+                .bookingPartitionKey(BookingPartitionKey.Factory.create(numberToLocalDate(1), numberToUUID(2)))
+                .userId(numberToUUID(1))
+                .start(start)
+                .end(end)
+                .build();
+    }
 
     private static Booking conflictingBooking(int start, int end) {
         return newBooking(
@@ -174,13 +244,11 @@ class BookingServiceTest {
     @MethodSource("provideDeleteBookingTestCases")
     void deleteBooking(
             String name,
-            Runnable createPreExistingBookings,
-            DeleteBookingCommand command,
-            boolean isSuccessful,
-            boolean matchedButNoBooking
+            List<Booking> preTestState,
+            DeleteBookingCommand command
     ) {
         // given
-        createPreExistingBookings.run();
+        preTestState.forEach(bookingRepository::save);
 
         // when
         bookingService.deleteBooking(command);
