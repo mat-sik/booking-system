@@ -1,6 +1,11 @@
 package com.github.matsik.command.booking.service;
 
-import com.github.matsik.cassandra.model.Booking;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
+import com.github.matsik.cassandra.model.BookingByServiceAndDate;
+import com.github.matsik.cassandra.model.BookingByUser;
 import com.github.matsik.cassandra.model.BookingPartitionKey;
 import com.github.matsik.command.booking.command.CreateBookingCommand;
 import com.github.matsik.command.booking.command.DeleteBookingCommand;
@@ -15,19 +20,34 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BookingService {
 
+    private final CqlSession session;
     private final BookingRepository bookingRepository;
 
     public void deleteBooking(DeleteBookingCommand command) {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
 
-        bookingRepository.deleteByPrimaryKey(
+        BoundStatement deleteBookingByServiceAndDate = bookingRepository.deleteByPrimaryKey(
                 bookingPartitionKey.serviceId(),
                 bookingPartitionKey.date(),
                 command.bookingId()
         );
+
+        BoundStatement deleteBookingByUser = bookingRepository.deleteByPrimaryKey(
+                command.userId(),
+                bookingPartitionKey.serviceId(),
+                bookingPartitionKey.date(),
+                command.bookingId()
+        );
+
+        BatchStatement batchStatement = BatchStatement.builder(DefaultBatchType.LOGGED)
+                .addStatement(deleteBookingByServiceAndDate)
+                .addStatement(deleteBookingByUser)
+                .build();
+
+        session.execute(batchStatement);
     }
 
-    public Optional<Booking> createBooking(CreateBookingCommand command) {
+    public Optional<UUID> createBooking(CreateBookingCommand command) {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
 
         long overlappingBookingCount = findOverlappingBookings(bookingPartitionKey, command.start(), command.end());
@@ -37,7 +57,7 @@ public class BookingService {
 
         UUID bookingId = UUID.randomUUID();
 
-        Booking booking = Booking.builder()
+        BookingByServiceAndDate bookingByServiceAndDate = BookingByServiceAndDate.builder()
                 .serviceId(bookingPartitionKey.serviceId())
                 .date(bookingPartitionKey.date())
                 .bookingId(bookingId)
@@ -46,9 +66,27 @@ public class BookingService {
                 .userId(command.userId())
                 .build();
 
-        bookingRepository.save(booking);
+        BoundStatement createBookingByServiceAndDate = bookingRepository.save(bookingByServiceAndDate);
 
-        return Optional.of(booking);
+        BookingByUser bookingByUser = BookingByUser.builder()
+                .userId(command.userId())
+                .serviceId(bookingPartitionKey.serviceId())
+                .date(bookingPartitionKey.date())
+                .bookingId(bookingId)
+                .start(command.start())
+                .end(command.end())
+                .build();
+
+        BoundStatement createBookingByUser = bookingRepository.save(bookingByUser);
+
+        BatchStatement batchStatement = BatchStatement.builder(DefaultBatchType.LOGGED)
+                .addStatement(createBookingByServiceAndDate)
+                .addStatement(createBookingByUser)
+                .build();
+
+        session.execute(batchStatement);
+
+        return Optional.of(bookingId);
     }
 
     private long findOverlappingBookings(BookingPartitionKey bookingPartitionKey, int start, int end) {

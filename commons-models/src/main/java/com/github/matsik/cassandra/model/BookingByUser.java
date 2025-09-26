@@ -10,20 +10,21 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity(defaultKeyspace = "booking_system")
-@CqlName("bookings")
+@CqlName("bookings_by_user")
 @Builder
-public record Booking(
+public record BookingByUser(
 
         @PartitionKey
+        UUID userId,
+
+        @ClusteringColumn(1)
         UUID serviceId,
 
-        @PartitionKey(1)
+        @ClusteringColumn(2)
         LocalDate date,
 
-        @ClusteringColumn(2)
+        @ClusteringColumn(3)
         UUID bookingId,
-
-        UUID userId,
 
         int start,
 

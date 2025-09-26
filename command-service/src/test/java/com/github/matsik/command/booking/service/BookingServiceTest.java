@@ -1,15 +1,17 @@
 package com.github.matsik.command.booking.service;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
-import com.github.matsik.cassandra.model.Booking;
+import com.github.matsik.cassandra.model.BookingByServiceAndDate;
+import com.github.matsik.cassandra.model.BookingByUser;
 import com.github.matsik.cassandra.model.BookingPartitionKey;
 import com.github.matsik.command.booking.command.CreateBookingCommand;
 import com.github.matsik.command.booking.command.DeleteBookingCommand;
-import com.github.matsik.command.booking.repository.BookingRepository;
 import com.github.matsik.command.config.cassandra.client.CassandraClientConfiguration;
 import com.github.matsik.command.config.cassandra.client.CassandraClientProperties;
 import com.github.matsik.command.config.cassandra.mapper.booking.BookingMapperConfiguration;
@@ -55,9 +57,6 @@ class BookingServiceTest {
     private BookingService bookingService;
 
     @Autowired
-    private BookingRepository bookingRepository;
-
-    @Autowired
     private CqlSession cqlSession;
 
     @DynamicPropertySource
@@ -86,26 +85,29 @@ class BookingServiceTest {
             CreateBookingCommand command
     ) {
         // given
-        preTestState.forEach(bookingRepository::save);
+        preTestState.forEach(this::persistBooking);
 
         // when
-        Optional<Booking> booking = bookingService.createBooking(command);
+        Optional<UUID> bookingId = bookingService.createBooking(command);
 
         // then
         if (shouldCreate) {
-            assertTrue(booking.isPresent());
-            assertEquals(command.start(), booking.get().start());
-            assertEquals(command.end(), booking.get().end());
-            assertEquals(command.userId(), booking.get().userId());
+            assertTrue(bookingId.isPresent());
+            Optional<BookingByServiceAndDate> persistedBookingByServiceAndDate = findBookingByServiceAndDate(command.bookingPartitionKey(), bookingId.get());
 
-            Optional<Booking> persistedBooking = findBookingByBookingId(command.bookingPartitionKey(), booking.get().bookingId());
+            assertTrue(persistedBookingByServiceAndDate.isPresent());
+            assertEquals(command.userId(), persistedBookingByServiceAndDate.get().userId());
+            assertEquals(command.start(), persistedBookingByServiceAndDate.get().start());
+            assertEquals(command.end(), persistedBookingByServiceAndDate.get().end());
 
-            assertTrue(persistedBooking.isPresent());
-            assertEquals(command.start(), persistedBooking.get().start());
-            assertEquals(command.end(), persistedBooking.get().end());
-            assertEquals(command.userId(), persistedBooking.get().userId());
+            Optional<BookingByUser> persistedBookingByUser = findBookingByUser(command.userId(), command.bookingPartitionKey(), bookingId.get());
+
+            assertTrue(persistedBookingByUser.isPresent());
+            assertEquals(command.userId(), persistedBookingByUser.get().userId());
+            assertEquals(command.start(), persistedBookingByUser.get().start());
+            assertEquals(command.end(), persistedBookingByUser.get().end());
         } else {
-            assertTrue(booking.isEmpty());
+            assertTrue(bookingId.isEmpty());
         }
     }
 
@@ -148,10 +150,10 @@ class BookingServiceTest {
         );
     }
 
-    private Optional<Booking> findBookingByBookingId(BookingPartitionKey key, UUID bookingId) {
+    private Optional<BookingByServiceAndDate> findBookingByServiceAndDate(BookingPartitionKey key, UUID bookingId) {
         String query = """
                 SELECT service_id, date, booking_id, user_id, start, end
-                FROM booking_system.bookings
+                FROM booking_system.bookings_by_service_and_date
                 WHERE service_id = ? AND date = ? AND booking_id = ?
                 """;
 
@@ -160,11 +162,27 @@ class BookingServiceTest {
 
         ResultSet resultSet = cqlSession.execute(bound);
 
-        return Optional.ofNullable(resultSet.map(this::mapFrom).one());
+        return Optional.ofNullable(resultSet.map(this::bookingByServiceAndDate).one());
+    }
+
+    private Optional<BookingByUser> findBookingByUser(UUID userId, BookingPartitionKey key, UUID bookingId) {
+        String query = """
+                SELECT service_id, date, booking_id, user_id, start, end
+                FROM booking_system.bookings_by_user
+                WHERE user_id = ? AND service_id = ? AND date = ? AND booking_id = ?
+                """;
+
+        PreparedStatement prepared = cqlSession.prepare(query);
+        BoundStatement bound = prepared.bind(userId, key.serviceId(), key.date(), bookingId);
+
+        ResultSet resultSet = cqlSession.execute(bound);
+
+        return Optional.ofNullable(resultSet.map(this::bookingByUser).one());
     }
 
     private void clearBookingsTable() {
-        cqlSession.execute("TRUNCATE booking_system.bookings");
+        cqlSession.execute("TRUNCATE booking_system.bookings_by_service_and_date");
+        cqlSession.execute("TRUNCATE booking_system.bookings_by_user");
     }
 
     private static CreateBookingCommand conflictingCreateBookingCommand(int start, int end) {
@@ -211,19 +229,19 @@ class BookingServiceTest {
             Function<UUID, DeleteBookingCommand> commandFunc
     ) {
         // given
-        preTestState.forEach(bookingRepository::save);
+        preTestState.forEach(this::persistBooking);
         Booking toDeleteBooking = preTestState.getFirst();
 
-        UUID bookingId = shouldDelete ? UUID.randomUUID() : toDeleteBooking.bookingId();
+        UUID bookingId = shouldDelete ? UUID.randomUUID() : toDeleteBooking.bookingByServiceAndDate.bookingId();
         DeleteBookingCommand command = commandFunc.apply(bookingId);
 
-        int start = shouldDelete ? -1 : toDeleteBooking.start();
-        int end = shouldDelete ? -1 : toDeleteBooking.end();
+        int start = shouldDelete ? -1 : toDeleteBooking.bookingByServiceAndDate.start();
+        int end = shouldDelete ? -1 : toDeleteBooking.bookingByServiceAndDate.end();
         // when
         bookingService.deleteBooking(command);
 
         // then
-        Optional<Booking> persistedBooking = findBookingByTimeRange(command.bookingPartitionKey(), start, end);
+        Optional<BookingByServiceAndDate> persistedBooking = findBookingByTimeRange(command.bookingPartitionKey(), start, end);
         if (shouldDelete) {
             assertTrue(persistedBooking.isEmpty());
         } else {
@@ -242,7 +260,8 @@ class BookingServiceTest {
                         ),
                         (Function<UUID, DeleteBookingCommand>) (bookingId) -> new DeleteBookingCommand(
                                 conflictingPartitionKey(),
-                                bookingId
+                                bookingId,
+                                userId()
                         )
                 ),
                 Arguments.of(
@@ -253,16 +272,17 @@ class BookingServiceTest {
                         ),
                         (Function<UUID, DeleteBookingCommand>) (_) -> new DeleteBookingCommand(
                                 conflictingPartitionKey(),
-                                nonExistingBookingId()
+                                nonExistingBookingId(),
+                                userId()
                         )
                 )
         );
     }
 
-    private Optional<Booking> findBookingByTimeRange(BookingPartitionKey key, int start, int end) {
+    private Optional<BookingByServiceAndDate> findBookingByTimeRange(BookingPartitionKey key, int start, int end) {
         String query = """
                 SELECT service_id, date, booking_id, user_id, start, end
-                FROM booking_system.bookings
+                FROM booking_system.bookings_by_service_and_date
                 WHERE service_id = ? AND date = ? AND start = ? AND end = ?
                 ALLOW FILTERING
                 """;
@@ -272,7 +292,7 @@ class BookingServiceTest {
 
         ResultSet resultSet = cqlSession.execute(bound);
 
-        List<Booking> bookings = resultSet.map(this::mapFrom).all();
+        List<BookingByServiceAndDate> bookings = resultSet.map(this::bookingByServiceAndDate).all();
 
         if (bookings.size() > 1) {
             throw new IllegalStateException("Multiple bookings found, incorrect test definition");
@@ -280,8 +300,19 @@ class BookingServiceTest {
         return bookings.isEmpty() ? Optional.empty() : Optional.of(bookings.getFirst());
     }
 
-    private Booking mapFrom(Row row) {
-        return Booking.builder()
+    private BookingByServiceAndDate bookingByServiceAndDate(Row row) {
+        return BookingByServiceAndDate.builder()
+                .serviceId(row.getUuid("service_id"))
+                .date(row.getLocalDate("date"))
+                .bookingId(row.getUuid("booking_id"))
+                .userId(row.getUuid("user_id"))
+                .start(row.getInt("start"))
+                .end(row.getInt("end"))
+                .build();
+    }
+
+    private BookingByUser bookingByUser(Row row) {
+        return BookingByUser.builder()
                 .serviceId(row.getUuid("service_id"))
                 .date(row.getLocalDate("date"))
                 .bookingId(row.getUuid("booking_id"))
@@ -299,6 +330,7 @@ class BookingServiceTest {
         BookingPartitionKey key = conflictingPartitionKey();
         return newBooking(
                 key.serviceId(),
+                UUID.randomUUID(),
                 key.date(),
                 start,
                 end
@@ -313,6 +345,7 @@ class BookingServiceTest {
         BookingPartitionKey key = nonConflictingPartitionKey();
         return newBooking(
                 key.serviceId(),
+                UUID.randomUUID(),
                 key.date(),
                 start,
                 end
@@ -323,15 +356,70 @@ class BookingServiceTest {
         return BookingPartitionKey.Factory.create(numberToLocalDate(1), numberToUUID(2));
     }
 
-    private static Booking newBooking(UUID serviceId, LocalDate date, int start, int end) {
-        return Booking.builder()
+    private static Booking newBooking(UUID serviceId, UUID bookingId, LocalDate date, int start, int end) {
+        BookingByServiceAndDate bookingByServiceAndDate = BookingByServiceAndDate.builder()
                 .serviceId(serviceId)
                 .date(date)
-                .bookingId(UUID.randomUUID())
+                .bookingId(bookingId)
                 .userId(userId())
                 .start(start)
                 .end(end)
                 .build();
+
+        BookingByUser bookingByUser = BookingByUser.builder()
+                .userId(userId())
+                .serviceId(serviceId)
+                .date(date)
+                .bookingId(bookingId)
+                .start(start)
+                .end(end)
+                .build();
+
+        return new Booking(
+                bookingByServiceAndDate,
+                bookingByUser
+        );
+    }
+
+    private void persistBooking(Booking booking) {
+        BookingByServiceAndDate bookingByServiceAndDate = booking.bookingByServiceAndDate();
+
+        BoundStatement insertBookingServiceAndDate = cqlSession.prepare(
+                "INSERT INTO booking_system.bookings_by_service_and_date " +
+                        "(service_id, date, booking_id, user_id, start, end) " +
+                        "VALUES (?, ?, ?, ?, ?, ?)"
+        ).bind(
+                bookingByServiceAndDate.serviceId(),
+                bookingByServiceAndDate.date(),
+                bookingByServiceAndDate.bookingId(),
+                bookingByServiceAndDate.userId(),
+                bookingByServiceAndDate.start(),
+                bookingByServiceAndDate.end()
+        );
+
+        BookingByUser insertBookingByUser = booking.bookingByUser();
+        BoundStatement insertUser = cqlSession.prepare(
+                "INSERT INTO booking_system.bookings_by_user " +
+                        "(user_id, service_id, date, booking_id, start, end) " +
+                        "VALUES (?, ?, ?, ?, ?, ?)"
+        ).bind(
+                insertBookingByUser.userId(),
+                insertBookingByUser.serviceId(),
+                insertBookingByUser.date(),
+                insertBookingByUser.bookingId(),
+                insertBookingByUser.start(),
+                insertBookingByUser.end()
+        );
+
+        BatchStatement batch = BatchStatement.builder(BatchType.LOGGED)
+                .addStatement(insertBookingServiceAndDate)
+                .addStatement(insertUser)
+                .build();
+
+        cqlSession.execute(batch);
+    }
+
+    private record Booking(BookingByServiceAndDate bookingByServiceAndDate, BookingByUser bookingByUser) {
     }
 
     private static UUID userId() {

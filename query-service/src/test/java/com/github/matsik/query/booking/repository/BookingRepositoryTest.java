@@ -1,6 +1,6 @@
 package com.github.matsik.query.booking.repository;
 
-import com.github.matsik.cassandra.model.Booking;
+import com.github.matsik.cassandra.model.BookingByServiceAndDate;
 import com.github.matsik.cassandra.model.BookingPartitionKey;
 import com.github.matsik.query.booking.model.ServiceBooking;
 import com.github.matsik.query.booking.model.UserBooking;
@@ -50,19 +50,19 @@ class BookingRepositoryTest {
                         LocalDate.of(2024, 12, 12).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         new ObjectId("100000000000000000000000"),
                         List.of(
-                                new Booking(
+                                new BookingByServiceAndDate(
                                         new ObjectId("110000000000000000000000"),
                                         new ObjectId("010000000000000000000000"),
                                         0,
                                         300
                                 ),
-                                new Booking(
+                                new BookingByServiceAndDate(
                                         new ObjectId("110000000000000000000001"),
                                         new ObjectId("010000000000000000000000"),
                                         300,
                                         600
                                 ),
-                                new Booking(
+                                new BookingByServiceAndDate(
                                         new ObjectId("110000000000000000000002"),
                                         new ObjectId("010000000000000000000001"),
                                         600,
@@ -75,13 +75,13 @@ class BookingRepositoryTest {
                         LocalDate.of(2024, 12, 13).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         new ObjectId("100000000000000000000000"),
                         List.of(
-                                new Booking(
+                                new BookingByServiceAndDate(
                                         new ObjectId("110000000000000000000004"),
                                         new ObjectId("010000000000000000000000"),
                                         330,
                                         630
                                 ),
-                                new Booking(
+                                new BookingByServiceAndDate(
                                         new ObjectId("110000000000000000000005"),
                                         new ObjectId("010000000000000000000001"),
                                         630,
@@ -94,7 +94,7 @@ class BookingRepositoryTest {
                         LocalDate.of(2024, 12, 13).format(DateTimeFormatter.ISO_LOCAL_DATE),
                         new ObjectId("100000000000000000000001"),
                         List.of(
-                                new Booking(
+                                new BookingByServiceAndDate(
                                         new ObjectId("110000000000000000000006"),
                                         new ObjectId("010000000000000000000000"),
                                         330,
@@ -157,13 +157,13 @@ class BookingRepositoryTest {
 
     private static UserBooking getExpected(int serviceBookingIdx, int bookingIdx) {
         ServiceBooking serviceBooking = SERVICE_BOOKINGS.get(serviceBookingIdx);
-        Booking booking = serviceBooking.bookings().get(bookingIdx);
+        BookingByServiceAndDate booking = serviceBooking.bookings().get(bookingIdx);
         return new UserBooking(booking.userId(), booking.start(), booking.end());
     }
 
     private static GetBookingQuery getGetBookingQuery(int serviceBookingIdx, int bookingIdx) {
         ServiceBooking serviceBooking = SERVICE_BOOKINGS.get(serviceBookingIdx);
-        Booking booking = serviceBooking.bookings().get(bookingIdx);
+        BookingByServiceAndDate booking = serviceBooking.bookings().get(bookingIdx);
 
         LocalDate localDate = LocalDate.parse(serviceBooking.date(), DateTimeFormatter.ISO_LOCAL_DATE);
         ObjectId serviceId = serviceBooking.serviceId();
@@ -352,7 +352,7 @@ class BookingRepositoryTest {
         return new GetBookingTimeRangesQuery(identifier);
     }
 
-    private static TimeRange bookingTimeRangeFrom(Booking booking) {
+    private static TimeRange bookingTimeRangeFrom(BookingByServiceAndDate booking) {
         return new TimeRange(
                 booking.start(),
                 booking.end()

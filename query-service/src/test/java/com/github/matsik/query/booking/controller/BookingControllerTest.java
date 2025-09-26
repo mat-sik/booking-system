@@ -1,6 +1,6 @@
 package com.github.matsik.query.booking.controller;
 
-import com.github.matsik.cassandra.model.Booking;
+import com.github.matsik.cassandra.model.BookingByServiceAndDate;
 import com.github.matsik.query.booking.model.ServiceBooking;
 import com.github.matsik.query.booking.model.UserBooking;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
@@ -638,27 +638,27 @@ class BookingControllerTest {
             LocalDate.of(2024, 12, 13)
     );
 
-    private static final List<Booking> COMMON_BOOKINGS = List.of(
-            new Booking(
+    private static final List<BookingByServiceAndDate> COMMON_BOOKINGS = List.of(
+            new BookingByServiceAndDate(
                     COMMON_BOOKING_IDS.get(0),
                     COMMON_USER_IDS.get(0),
                     0,
                     30
             ),
-            new Booking(
+            new BookingByServiceAndDate(
                     COMMON_BOOKING_IDS.get(1),
                     COMMON_USER_IDS.get(1),
                     30,
                     60
             ),
-            new Booking(
+            new BookingByServiceAndDate(
                     COMMON_BOOKING_IDS.get(2),
                     COMMON_USER_IDS.get(0),
                     60,
                     90
             ),
 
-            new Booking(
+            new BookingByServiceAndDate(
                     COMMON_BOOKING_IDS.get(3),
                     COMMON_USER_IDS.get(1),
                     90,
@@ -702,7 +702,7 @@ class BookingControllerTest {
 
         for (int i = 0; i < COMMON_SERVICE_BOOKINGS.size(); i++) {
             ServiceBooking serviceBooking = COMMON_SERVICE_BOOKINGS.get(i);
-            List<Booking> bookings = serviceBooking.bookings();
+            List<BookingByServiceAndDate> bookings = serviceBooking.bookings();
 
             resultActions
                     .andExpect(jsonPath(String.format("$[%d]", i), aMapWithSize(4)))
@@ -712,7 +712,7 @@ class BookingControllerTest {
                     .andExpect(jsonPath("$[%d].bookings", i).isArray());
 
             for (int j = 0; j < bookings.size(); j++) {
-                Booking booking = bookings.get(j);
+                BookingByServiceAndDate booking = bookings.get(j);
                 resultActions
                         .andExpect(jsonPath(String.format("$[%d].bookings[%d]", i, j), aMapWithSize(4)))
                         .andExpect(jsonPath(String.format("$[%d].bookings[%d].id", i, j)).value(booking.id().toHexString()))
