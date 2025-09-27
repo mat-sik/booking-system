@@ -121,7 +121,7 @@ class BookingServiceTest {
                                 conflictingBooking(20, 30),
                                 nonConflictingBooking(0, 30)
                         ),
-                        conflictingCreateBookingCommand(10, 20)
+                        createBookingCommand(conflictingPartitionKey(), 10, 20)
                 ),
                 Arguments.of(
                         "Should fail to create a booking in the occupied time range",
@@ -129,7 +129,7 @@ class BookingServiceTest {
                         List.of(
                                 conflictingBooking(0, 30)
                         ),
-                        conflictingCreateBookingCommand(10, 20)
+                        createBookingCommand(conflictingPartitionKey(), 10, 20)
                 ),
                 Arguments.of(
                         "Should create a booking in the available time range, because of a different date",
@@ -137,7 +137,7 @@ class BookingServiceTest {
                         List.of(
                                 conflictingBooking(0, 30)
                         ),
-                        nonConflictingOnDateCreateBookingCommand(10, 20)
+                        createBookingCommand(nonConflictingOnDatePartitionKey(), 10, 20)
                 ),
                 Arguments.of(
                         "Should create a booking in the available time range, because of a different service",
@@ -145,7 +145,7 @@ class BookingServiceTest {
                         List.of(
                                 conflictingBooking(0, 30)
                         ),
-                        nonConflictingOnServiceCreateBookingCommand(10, 20)
+                        createBookingCommand(nonConflictingOnServicePartitionKey(), 10, 20)
                 )
         );
     }
@@ -185,39 +185,13 @@ class BookingServiceTest {
         cqlSession.execute("TRUNCATE booking_system.bookings_by_user");
     }
 
-    private static CreateBookingCommand conflictingCreateBookingCommand(int start, int end) {
+    private static CreateBookingCommand createBookingCommand(BookingPartitionKey key, int start, int end) {
         return CreateBookingCommand.builder()
-                .bookingPartitionKey(conflictingPartitionKey())
+                .bookingPartitionKey(key)
                 .userId(userId())
                 .start(start)
                 .end(end)
                 .build();
-    }
-
-    private static CreateBookingCommand nonConflictingOnDateCreateBookingCommand(int start, int end) {
-        return CreateBookingCommand.builder()
-                .bookingPartitionKey(nonConflictingOnDatePartitionKey())
-                .userId(userId())
-                .start(start)
-                .end(end)
-                .build();
-    }
-
-    private static BookingPartitionKey nonConflictingOnDatePartitionKey() {
-        return BookingPartitionKey.Factory.create(numberToLocalDate(3), numberToUUID(2));
-    }
-
-    private static CreateBookingCommand nonConflictingOnServiceCreateBookingCommand(int start, int end) {
-        return CreateBookingCommand.builder()
-                .bookingPartitionKey(nonConflictingOnServicePartitionKey())
-                .userId(userId())
-                .start(start)
-                .end(end)
-                .build();
-    }
-
-    private static BookingPartitionKey nonConflictingOnServicePartitionKey() {
-        return nonConflictingPartitionKey();
     }
 
     @ParameterizedTest(name = "{0}")
@@ -232,16 +206,14 @@ class BookingServiceTest {
         preTestState.forEach(this::persistBooking);
         Booking toDeleteBooking = preTestState.getFirst();
 
-        UUID bookingId = shouldDelete ? UUID.randomUUID() : toDeleteBooking.bookingByServiceAndDate.bookingId();
+        UUID bookingId = toDeleteBooking.bookingByServiceAndDate.bookingId();
         DeleteBookingCommand command = commandFunc.apply(bookingId);
 
-        int start = shouldDelete ? -1 : toDeleteBooking.bookingByServiceAndDate.start();
-        int end = shouldDelete ? -1 : toDeleteBooking.bookingByServiceAndDate.end();
         // when
         bookingService.deleteBooking(command);
 
         // then
-        Optional<BookingByServiceAndDate> persistedBooking = findBookingByTimeRange(command.bookingPartitionKey(), start, end);
+        Optional<BookingByServiceAndDate> persistedBooking = findBooking(toDeleteBooking);
         if (shouldDelete) {
             assertTrue(persistedBooking.isEmpty());
         } else {
@@ -258,28 +230,75 @@ class BookingServiceTest {
                                 conflictingBooking(0, 30),
                                 conflictingBooking(0, 60)
                         ),
-                        (Function<UUID, DeleteBookingCommand>) (bookingId) -> new DeleteBookingCommand(
+                        (Function<UUID, DeleteBookingCommand>) (bookingId) -> deleteBookingCommand(
                                 conflictingPartitionKey(),
-                                bookingId,
-                                userId()
+                                bookingId
                         )
                 ),
                 Arguments.of(
-                        "Should do nothing if booking doesn't exist",
+                        "Should do nothing if booking id doesn't match",
                         false,
                         List.of(
                                 conflictingBooking(0, 30)
                         ),
-                        (Function<UUID, DeleteBookingCommand>) (_) -> new DeleteBookingCommand(
+                        (Function<UUID, DeleteBookingCommand>) (_) -> deleteBookingCommand(
                                 conflictingPartitionKey(),
-                                nonExistingBookingId(),
-                                userId()
+                                nonExistingBookingId()
+                        )
+                ),
+                Arguments.of(
+                        "Should do nothing if partition key on service doesn't match",
+                        false,
+                        List.of(
+                                conflictingBooking(0, 30)
+                        ),
+                        (Function<UUID, DeleteBookingCommand>) (bookingId) -> deleteBookingCommand(
+                                nonConflictingOnServicePartitionKey(),
+                                bookingId
+                        )
+                ),
+                Arguments.of(
+                        "Should do nothing if partition key on date doesn't match",
+                        false,
+                        List.of(
+                                conflictingBooking(0, 30)
+                        ),
+                        (Function<UUID, DeleteBookingCommand>) (bookingId) -> deleteBookingCommand(
+                                nonConflictingOnDatePartitionKey(),
+                                bookingId
                         )
                 )
         );
     }
 
-    private Optional<BookingByServiceAndDate> findBookingByTimeRange(BookingPartitionKey key, int start, int end) {
+    private static DeleteBookingCommand deleteBookingCommand(BookingPartitionKey key, UUID bookingId) {
+        return new DeleteBookingCommand(
+                key,
+                bookingId,
+                userId()
+        );
+    }
+
+    private static BookingPartitionKey nonConflictingOnServicePartitionKey() {
+        return BookingPartitionKey.Factory.create(numberToLocalDate(1), numberToUUID(2));
+    }
+
+    private static BookingPartitionKey nonConflictingOnDatePartitionKey() {
+        return BookingPartitionKey.Factory.create(numberToLocalDate(2), numberToUUID(1));
+    }
+
+    private Optional<BookingByServiceAndDate> findBooking(Booking booking) {
+        BookingByServiceAndDate bookingByServiceAndDate = booking.bookingByServiceAndDate;
+
+        UUID serviceId = bookingByServiceAndDate.serviceId();
+        LocalDate date = bookingByServiceAndDate.date();
+        int start = bookingByServiceAndDate.start();
+        int end = bookingByServiceAndDate.end();
+
+        return findBookingByTimeRange(serviceId, date, start, end);
+    }
+
+    private Optional<BookingByServiceAndDate> findBookingByTimeRange(UUID serviceId, LocalDate date, int start, int end) {
         String query = """
                 SELECT service_id, date, booking_id, user_id, start, end
                 FROM booking_system.bookings_by_service_and_date
@@ -288,7 +307,7 @@ class BookingServiceTest {
                 """;
 
         PreparedStatement prepared = cqlSession.prepare(query);
-        BoundStatement bound = prepared.bind(key.serviceId(), key.date(), start, end);
+        BoundStatement bound = prepared.bind(serviceId, date, start, end);
 
         ResultSet resultSet = cqlSession.execute(bound);
 
@@ -353,7 +372,7 @@ class BookingServiceTest {
     }
 
     private static BookingPartitionKey nonConflictingPartitionKey() {
-        return BookingPartitionKey.Factory.create(numberToLocalDate(1), numberToUUID(2));
+        return BookingPartitionKey.Factory.create(numberToLocalDate(3), numberToUUID(3));
     }
 
     private static Booking newBooking(UUID serviceId, UUID bookingId, LocalDate date, int start, int end) {
