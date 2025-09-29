@@ -1,16 +1,15 @@
 package com.github.matsik.query.booking.query;
 
 import com.github.matsik.cassandra.model.BookingPartitionKey;
-import org.bson.types.ObjectId;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
-public record GetAvailableTimeRangesQuery(GetBookingTimeRangesQuery getBookingTimeRangesQuery, int serviceDuration) {
+public record GetAvailableTimeRangesQuery(BookingPartitionKey bookingPartitionKey, int serviceDuration) {
     public static class Factory {
-        public static GetAvailableTimeRangesQuery create(LocalDate date, ObjectId serviceId, int serviceDuration) {
-            BookingPartitionKey identifier = BookingPartitionKey.Factory.create(date, serviceId);
-            GetBookingTimeRangesQuery query = new GetBookingTimeRangesQuery(identifier);
-            return new GetAvailableTimeRangesQuery(query, serviceDuration);
+        public static GetAvailableTimeRangesQuery create(LocalDate date, UUID serviceId, int serviceDuration) {
+            BookingPartitionKey key = BookingPartitionKey.Factory.create(date, serviceId);
+            return new GetAvailableTimeRangesQuery(key, serviceDuration);
         }
     }
 }

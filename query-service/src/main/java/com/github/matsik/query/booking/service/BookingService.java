@@ -1,11 +1,14 @@
 package com.github.matsik.query.booking.service;
 
-import com.github.matsik.query.booking.model.ServiceBooking;
-import com.github.matsik.query.booking.model.UserBooking;
+import com.github.matsik.cassandra.model.BookingPartitionKey;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
-import com.github.matsik.query.booking.query.GetBookingQuery;
-import com.github.matsik.query.booking.query.GetBookingsQuery;
+import com.github.matsik.query.booking.query.GetFirstUserBookingsQuery;
+import com.github.matsik.query.booking.query.GetNextUserBookingsQuery;
+import com.github.matsik.query.booking.query.GetUserBookingQuery;
+import com.github.matsik.query.booking.query.GetUserBookingsQuery;
 import com.github.matsik.query.booking.repository.BookingRepository;
+import com.github.matsik.query.booking.repository.projection.TimeRange;
+import com.github.matsik.query.booking.repository.projection.UserBooking;
 import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +32,8 @@ public class BookingService {
     private final BookingRepository repository;
 
     public List<TimeRange> getAvailableTimeRanges(GetAvailableTimeRangesQuery query) {
-        List<TimeRange> unavailableTimeRanges = repository.getBookingTimeRanges(query.getBookingTimeRangesQuery());
+        BookingPartitionKey key = query.bookingPartitionKey();
+        List<TimeRange> unavailableTimeRanges = repository.getBookedTimeRanges(key.serviceId(), key.date());
 
         int serviceDuration = getSystemServiceDuration(query.serviceDuration());
 
@@ -73,12 +77,35 @@ public class BookingService {
         return start < range.end() && end > range.start();
     }
 
-    public UserBooking getUserBooking(GetBookingQuery query) {
-        return repository.getUserBooking(query).orElseThrow(() -> new UserBookingNotFoundException(query));
+    public TimeRange getUserBookingTimeRange(GetUserBookingQuery query) {
+        BookingPartitionKey key = query.bookingPartitionKey();
+
+        return repository.getUserBookingTimeRange(query.userId(), key.serviceId(), key.date(), query.bookingId())
+                .orElseThrow(() -> new UserBookingNotFoundException(query));
     }
 
-    public List<ServiceBooking> getBookings(GetBookingsQuery query) {
-        return repository.getBookings(query);
+    public List<UserBooking> getUserBookings(GetUserBookingsQuery query) {
+        if (query instanceof GetFirstUserBookingsQuery getFirstUserBookingsQuery) {
+            return getFirstUserBookings(getFirstUserBookingsQuery);
+        } else if (query instanceof GetNextUserBookingsQuery getNextUserBookingsQuery) {
+            return getNextUserBookings(getNextUserBookingsQuery);
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    public List<UserBooking> getFirstUserBookings(GetFirstUserBookingsQuery query) {
+        return repository.getFirstUserBookings(query.userId(), query.limit());
+    }
+
+    public List<UserBooking> getNextUserBookings(GetNextUserBookingsQuery query) {
+        return repository.getNextUserBookings(
+                query.userId(),
+                query.cursorServiceId(),
+                query.cursorDate(),
+                query.cursorBookingId(),
+                query.limit()
+        );
     }
 
 }

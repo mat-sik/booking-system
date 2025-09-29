@@ -1,140 +1,92 @@
 package com.github.matsik.query.booking.service;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.github.matsik.cassandra.model.BookingPartitionKey;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
-import com.github.matsik.query.booking.query.GetBookingTimeRangesQuery;
-import com.github.matsik.query.booking.repository.BookingRepository;
-import org.bson.types.ObjectId;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
+import com.github.matsik.query.config.cassandra.client.CassandraClientConfiguration;
+import com.github.matsik.query.config.cassandra.client.CassandraClientProperties;
+import com.github.matsik.query.config.cassandra.mapper.booking.BookingMapperConfiguration;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.cassandra.CassandraContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Stream;
+import java.util.Arrays;
+import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-
+@SpringBootTest(classes = {
+        BookingServiceTest.TestCassandraConfig.class,
+        CassandraClientConfiguration.class,
+        BookingMapperConfiguration.class,
+        BookingService.class
+})
+@Testcontainers
 class BookingServiceTest {
 
-    private final BookingRepository repository = Mockito.mock(BookingRepository.class);
+    @Container
+    private static final CassandraContainer CASSANDRA_CONTAINER = new CassandraContainer("cassandra:5.0.5");
 
-    private final BookingService service = new BookingService(repository);
-
-    private static Stream<Arguments> provideGetAvailableTimeRangesTestScenarios() {
-        return Stream.of(
-                getGetAvailableTimeRangesArguments(
-                        "Many available time ranges.",
-                        100,
-                        List.of(
-                                new TimeRange(600, 660),
-                                new TimeRange(850, 900)
-                        ),
-                        List.of(
-                                new TimeRange(0, 120),
-                                new TimeRange(120, 240),
-                                new TimeRange(240, 360),
-                                new TimeRange(360, 480),
-                                new TimeRange(480, 600),
-                                new TimeRange(720, 840),
-                                new TimeRange(960, 1080),
-                                new TimeRange(1080, 1200),
-                                new TimeRange(1200, 1320),
-                                new TimeRange(1320, 1440)
-                        )
-                ),
-                getGetAvailableTimeRangesArguments(
-                        "No unavailable time ranges.",
-                        100,
-                        List.of(),
-                        List.of(
-                                new TimeRange(0, 120),
-                                new TimeRange(120, 240),
-                                new TimeRange(240, 360),
-                                new TimeRange(360, 480),
-                                new TimeRange(480, 600),
-                                new TimeRange(600, 720),
-                                new TimeRange(720, 840),
-                                new TimeRange(840, 960),
-                                new TimeRange(960, 1080),
-                                new TimeRange(1080, 1200),
-                                new TimeRange(1200, 1320),
-                                new TimeRange(1320, 1440)
-                        )
-                ),
-                getGetAvailableTimeRangesArguments(
-                        "No available time ranges.",
-                        100,
-                        List.of(
-                                new TimeRange(60, 1400)
-                        ),
-                        List.of()
-                ),
-                getGetAvailableTimeRangesArguments(
-                        "Zero service duration.",
-                        0,
-                        List.of(
-                                new TimeRange(0, 1200),
-                                new TimeRange(1320, 1440)
-                        ),
-                        List.of(
-
-                                new TimeRange(1200, 1230),
-                                new TimeRange(1230, 1260),
-                                new TimeRange(1260, 1290),
-                                new TimeRange(1290, 1320)
-                        )
-                )
-        );
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("cassandra.contactPoints", () -> String.format("%s:%d", CASSANDRA_CONTAINER.getHost(), CASSANDRA_CONTAINER.getFirstMappedPort()));
+        registry.add("cassandra.keyspaceName", () -> "booking_system");
+        registry.add("cassandra.localDatacenter", CASSANDRA_CONTAINER::getLocalDatacenter);
     }
 
-    @ParameterizedTest(name = "{0}")
-    @MethodSource("provideGetAvailableTimeRangesTestScenarios")
-    void getAvailableTimeRanges(
-            String name,
-            GetBookingTimeRangesQuery getBookingTimeRangesQuery,
-            GetAvailableTimeRangesQuery getAvailableTimeRangesQuery,
-            List<TimeRange> unavailableTimeRanges,
-            List<TimeRange> expected
-    ) {
-        // given
-        given(repository.getBookingTimeRanges(getBookingTimeRangesQuery)).willReturn(unavailableTimeRanges);
-
-        // when
-        List<TimeRange> result = service.getAvailableTimeRanges(getAvailableTimeRangesQuery);
-
-        // then
-        then(repository).should().getBookingTimeRanges(getBookingTimeRangesQuery);
-        then(repository).shouldHaveNoMoreInteractions();
-
-        assertThat(result).isEqualTo(expected);
+    @Configuration
+    @EnableConfigurationProperties(CassandraClientProperties.class)
+    public static class TestCassandraConfig {
     }
 
-    private static Arguments getGetAvailableTimeRangesArguments(
-            String name,
-            int serviceDuration,
-            List<TimeRange> unavailableTimeRanges,
-            List<TimeRange> expected
-    ) {
-        BookingPartitionKey identifier = getDefaultIdentifier();
-        GetBookingTimeRangesQuery getBookingTimeRangesQuery = new GetBookingTimeRangesQuery(identifier);
-        GetAvailableTimeRangesQuery getAvailableTimeRangesQuery = new GetAvailableTimeRangesQuery(getBookingTimeRangesQuery, serviceDuration);
+    @Autowired
+    private BookingService service;
 
-        return Arguments.of(
-                name,
-                getBookingTimeRangesQuery,
-                getAvailableTimeRangesQuery,
-                unavailableTimeRanges,
-                expected
-        );
+    @BeforeAll
+    static void setup() throws IOException {
+        execMigration();
     }
 
-    private static BookingPartitionKey getDefaultIdentifier() {
-        LocalDate date = LocalDate.of(2024, 12, 3);
-        ObjectId serviceId = new ObjectId("aaaaaaaaaaaaaaaaaaaaaaaa");
-        return BookingPartitionKey.Factory.create(date, serviceId);
+    @Test
+    void getAvailableTimeRanges() {
+        BookingPartitionKey key = BookingPartitionKey.Factory.create(LocalDate.of(2025, 10, 1), UUID.randomUUID());
+        GetAvailableTimeRangesQuery query = new GetAvailableTimeRangesQuery(key, 30);
+        service.getAvailableTimeRanges(query);
     }
+
+    private static void execMigration() throws IOException {
+        try (CqlSession session = CqlSession.builder()
+                .addContactPoint(new InetSocketAddress(
+                        CASSANDRA_CONTAINER.getHost(),
+                        CASSANDRA_CONTAINER.getFirstMappedPort()
+                ))
+                .withLocalDatacenter(CASSANDRA_CONTAINER.getLocalDatacenter())
+                .build()
+        ) {
+            execMigration(session, "schema.cql");
+        }
+    }
+
+    private static void execMigration(CqlSession session, String fileName) throws IOException {
+        String migrationScriptCql = new String(resourceBytes(fileName), StandardCharsets.UTF_8);
+        String[] statements = migrationScriptCql.split(";");
+        Arrays.stream(statements).forEach(session::execute);
+    }
+
+    private static byte[] resourceBytes(String fileName) throws IOException {
+        ClassPathResource resource = new ClassPathResource(fileName);
+        return resource.getInputStream().readAllBytes();
+    }
+
 }
