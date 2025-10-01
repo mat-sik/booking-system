@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -100,22 +101,11 @@ class BookingServiceTest {
     private static Stream<Arguments> provideGetAvailableTimeRangesTestCases() {
         return Stream.of(
                 Arguments.of(
-                        "Should generate all possible booking dates for empty day",
+                        "Should generate all possible booking dates for an empty day",
                         List.of(
                         ),
-                        getAvailableTimeRangesQuery(120),
-                        List.of(
-                                TimeRange.Factory.create(0, 120),
-                                TimeRange.Factory.create(135, 255),
-                                TimeRange.Factory.create(270, 390),
-                                TimeRange.Factory.create(405, 525),
-                                TimeRange.Factory.create(540, 660),
-                                TimeRange.Factory.create(675, 795),
-                                TimeRange.Factory.create(810, 930),
-                                TimeRange.Factory.create(945, 1065),
-                                TimeRange.Factory.create(1080, 1200),
-                                TimeRange.Factory.create(1215, 1335)
-                        )
+                        getAvailableTimeRangesQuery(60),
+                        timeRangesForEmptyDay(60)
                 ),
                 Arguments.of(
                         "Should find no available time range if all are occupied",
@@ -160,17 +150,28 @@ class BookingServiceTest {
                         List.of(
                                 booking(0, 120),
                                 booking(270, 660),
-                                booking(945, 1200)
+                                booking(775, 1440)
                         ),
                         getAvailableTimeRangesQuery(45),
                         List.of(
-                                TimeRange.Factory.create(135, 255),
-                                TimeRange.Factory.create(675, 795),
-                                TimeRange.Factory.create(810, 930),
-                                TimeRange.Factory.create(1215, 1335)
+                                TimeRange.Factory.create(135, 195),
+                                TimeRange.Factory.create(150, 210),
+                                TimeRange.Factory.create(165, 225),
+                                TimeRange.Factory.create(180, 240),
+                                TimeRange.Factory.create(195, 255),
+                                TimeRange.Factory.create(675, 735),
+                                TimeRange.Factory.create(690, 750)
                         )
                 )
         );
+    }
+
+    private static List<TimeRange> timeRangesForEmptyDay(int serviceDuration) {
+        List<TimeRange> timeRanges = new ArrayList<>();
+        for (int start = 0; start <= 24 * 60 - serviceDuration; start += 15) {
+            timeRanges.add(new TimeRange(start, start + serviceDuration));
+        }
+        return timeRanges;
     }
 
     private static Booking booking(int start, int end) {

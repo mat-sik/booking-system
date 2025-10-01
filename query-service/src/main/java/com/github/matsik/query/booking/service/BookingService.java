@@ -23,10 +23,10 @@ public class BookingService {
     private static final int START = 0;
     private static final int END = 24 * 60;
 
-    // There should be 15 minutes between consecutive services
     private static final int SKIP = 15;
 
-    // Duration of a service should be multiple of this value
+    private static final int OFFSET = 15;
+
     private static final int SERVICE_TIME_SLICE = 30;
 
     private final BookingRepository repository;
@@ -40,41 +40,41 @@ public class BookingService {
         return getAvailableTimeRanges(unavailableTimeRanges, serviceDuration);
     }
 
-    /*
-     * The time complexity of this implementation is O(n*m), where n is the amount of all possible time ranges and m
-     * is the amount of unavailable time ranges.
-     *
-     * I believe that Interval Tree could be used to efficiently check for overlap. When using this data structure, the
-     * time complexity would be of O(min(n,m)*log(max(n,m))) plus time to build the tree, so basically O(nlogn).
-     */
-    private static List<TimeRange> getAvailableTimeRanges(List<TimeRange> unavailableTimeRanges, int serviceDuration) {
-        serviceDuration = Math.max(SKIP, serviceDuration);
-
+    private List<TimeRange> getAvailableTimeRanges(List<TimeRange> unavailableTimeRanges, int serviceDuration) {
         List<TimeRange> availableTimeRanges = new ArrayList<>();
-        for (int start = START; start <= END - SERVICE_TIME_SLICE; start += serviceDuration) {
-            boolean isAvailable = true;
-            int end = start + serviceDuration;
+        for (int start = START; start <= END - serviceDuration; start += SKIP) {
+            TimeRange timeRange = TimeRange.Factory.create(start, start + serviceDuration);
 
-            for (TimeRange range : unavailableTimeRanges) {
-                if (isOverlap(range, start, end)) {
+            boolean isAvailable = true;
+            for (TimeRange unavailableTimeRange : unavailableTimeRanges) {
+                if (isOverlapWithOffsets(timeRange, unavailableTimeRange)) {
                     isAvailable = false;
                     break;
                 }
             }
 
             if (isAvailable) {
-                availableTimeRanges.add(new TimeRange(start, end));
+                availableTimeRanges.add(timeRange);
             }
         }
         return availableTimeRanges;
     }
 
-    private static int getSystemServiceDuration(int rawServiceDuration) {
-        return Math.ceilDiv(rawServiceDuration + SKIP, SERVICE_TIME_SLICE) * SERVICE_TIME_SLICE;
+    private int getSystemServiceDuration(int rawServiceDuration) {
+        return Math.ceilDiv(rawServiceDuration, SERVICE_TIME_SLICE) * SERVICE_TIME_SLICE;
     }
 
-    private static boolean isOverlap(TimeRange range, int start, int end) {
-        return start < range.end() && end > range.start();
+    private boolean isOverlapWithOffsets(TimeRange timeRangeOne, TimeRange timeRangeTwo) {
+        int start = Math.max(START, timeRangeTwo.start() - OFFSET);
+        int end = Math.min(END, timeRangeTwo.end() + OFFSET);
+
+        TimeRange offsetTimeRange = TimeRange.Factory.create(start, end);
+
+        return isOverlap(timeRangeOne, offsetTimeRange);
+    }
+
+    private boolean isOverlap(TimeRange rangeOne, TimeRange rangeTwo) {
+        return rangeTwo.start() < rangeOne.end() && rangeTwo.end() > rangeOne.start();
     }
 
     public TimeRange getUserBookingTimeRange(GetUserBookingQuery query) {
