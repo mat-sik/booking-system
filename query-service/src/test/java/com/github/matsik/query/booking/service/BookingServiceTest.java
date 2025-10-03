@@ -52,6 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
         BookingServiceTest.TestCassandraConfig.class,
         CassandraClientConfiguration.class,
         BookingMapperConfiguration.class,
+        AvailableTimeRangesCalculator.class,
         BookingService.class
 })
 @Testcontainers
