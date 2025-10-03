@@ -8,12 +8,15 @@ import com.github.matsik.cassandra.model.BookingByServiceAndDate;
 import com.github.matsik.cassandra.model.BookingByUser;
 import com.github.matsik.cassandra.model.BookingPartitionKey;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
+import com.github.matsik.query.booking.query.GetUserBookingQuery;
 import com.github.matsik.query.booking.repository.projection.TimeRange;
+import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
 import com.github.matsik.query.config.cassandra.client.CassandraClientConfiguration;
 import com.github.matsik.query.config.cassandra.client.CassandraClientProperties;
 import com.github.matsik.query.config.cassandra.mapper.booking.BookingMapperConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -39,6 +42,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(classes = {
         BookingServiceTest.TestCassandraConfig.class,
@@ -82,7 +86,7 @@ class BookingServiceTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideGetAvailableTimeRangesTestCases")
-    void getAvailableTimeRanges(
+    void getAvailableTimeRangesTest(
             String name,
             List<Booking> preTestState,
             GetAvailableTimeRangesQuery query,
@@ -174,9 +178,47 @@ class BookingServiceTest {
         return timeRanges;
     }
 
+    @Test
+    void shouldReturnUserBookingTimeRange() {
+        // given
+        UUID bookingId = UUID.randomUUID();
+        Stream.of(
+                booking(0, 45),
+                booking(bookingId, 60, 120)
+        ).forEach(this::persistBooking);
+
+        // when
+        GetUserBookingQuery query = new GetUserBookingQuery(aBookingPartitionKey(), userId(), bookingId);
+        TimeRange result = service.getUserBookingTimeRange(query);
+
+        // then
+        TimeRange expected = TimeRange.Factory.create(60, 120);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void shouldThrowUserBookingNotFoundException() {
+        // given
+        Stream.of(
+                booking(numberToUUID(1), 0, 45),
+                booking(numberToUUID(2), 60, 120)
+        ).forEach(this::persistBooking);
+
+        // expect
+        UUID bookingId = numberToUUID(3);
+        GetUserBookingQuery query = new GetUserBookingQuery(aBookingPartitionKey(), userId(), bookingId);
+
+        assertThrows(UserBookingNotFoundException.class, () -> service.getUserBookingTimeRange(query));
+    }
+
     private static Booking booking(int start, int end) {
+        UUID bookingId = UUID.randomUUID();
+        return booking(bookingId, start, end);
+    }
+
+    private static Booking booking(UUID bookingId, int start, int end) {
         BookingPartitionKey key = aBookingPartitionKey();
-        return newBooking(key.serviceId(), key.date(), UUID.randomUUID(), start, end);
+        return newBooking(key.serviceId(), key.date(), bookingId, start, end);
     }
 
     private static GetAvailableTimeRangesQuery getAvailableTimeRangesQuery(int duration) {
