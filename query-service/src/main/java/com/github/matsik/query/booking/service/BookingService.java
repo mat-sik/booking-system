@@ -94,11 +94,11 @@ public class BookingService {
         }
     }
 
-    public List<UserBooking> getFirstUserBookings(GetFirstUserBookingsQuery query) {
+    private List<UserBooking> getFirstUserBookings(GetFirstUserBookingsQuery query) {
         return repository.getFirstUserBookings(query.userId(), query.limit());
     }
 
-    public List<UserBooking> getNextUserBookings(GetNextUserBookingsQuery query) {
+    private List<UserBooking> getNextUserBookings(GetNextUserBookingsQuery query) {
         return repository.getNextUserBookings(
                 query.userId(),
                 query.cursorServiceId(),
