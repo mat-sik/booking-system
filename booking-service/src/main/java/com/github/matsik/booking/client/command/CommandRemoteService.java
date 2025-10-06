@@ -1,25 +1,21 @@
 package com.github.matsik.booking.client.command;
 
-import com.github.matsik.booking.client.query.QueryRemoteService;
 import com.github.matsik.booking.controller.request.CreateBookingRequest;
 import com.github.matsik.booking.controller.request.DeleteBookingRequest;
+import com.github.matsik.cassandra.model.BookingPartitionKey;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
-import com.github.matsik.cassandra.model.BookingPartitionKey;
-import com.github.matsik.query.response.UserBookingResponse;
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class CommandRemoteService {
 
     private final CommandClient client;
-    private final QueryRemoteService queryService;
 
     public void createBooking(CreateBookingRequest request) {
         if (request.start() >= request.end()) {
@@ -39,20 +35,15 @@ public class CommandRemoteService {
 
     public void deleteBooking(DeleteBookingRequest request) {
         LocalDate localDate = request.date();
-        ObjectId serviceId = request.serviceId();
-        ObjectId bookingId = request.bookingId();
-        ObjectId userId = request.userId();
+        UUID serviceId = request.serviceId();
+        UUID bookingId = request.bookingId();
+        UUID userId = request.userId();
 
-        UserBookingResponse userBooking = queryService.getUserBooking(localDate, serviceId, bookingId);
-        ObjectId bookingOwnerId = userBooking.userId();
-
-        if (!Objects.equals(userId, bookingOwnerId)) {
-            return;
-        }
+        // TODO: verify is user is the owner
 
         BookingPartitionKey key = BookingPartitionKey.Factory.create(localDate, serviceId);
 
-        DeleteBookingCommandValue value = new DeleteBookingCommandValue(bookingId);
+        DeleteBookingCommandValue value = new DeleteBookingCommandValue(bookingId, userId);
 
         client.sendDeleteBookingCommand(key, value);
     }
