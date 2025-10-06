@@ -36,6 +36,7 @@ public class CommandClient {
     private void send(BookingPartitionKey key, CommandValue value) {
         try {
             template.send(TOPIC_NAME, key, value).get(TIMEOUT, TIMEOUT_TIME_UNIT);
+            // TODO: Improve this logging when adding open telemetry
         } catch (ExecutionException ex) {
             logAndThrow("Failed to deliver the booking command to Kafka", ex);
         } catch (TimeoutException ex) {
