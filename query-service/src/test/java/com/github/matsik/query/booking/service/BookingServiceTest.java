@@ -7,12 +7,13 @@ import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 import com.github.matsik.cassandra.entity.BookingByUser;
 import com.github.matsik.dto.BookingPartitionKey;
+import com.github.matsik.dto.MinuteOfDay;
+import com.github.matsik.dto.TimeRange;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetFirstUserBookingsQuery;
 import com.github.matsik.query.booking.query.GetNextUserBookingsQuery;
 import com.github.matsik.query.booking.query.GetUserBookingQuery;
 import com.github.matsik.query.booking.query.GetUserBookingsQuery;
-import com.github.matsik.dto.TimeRange;
 import com.github.matsik.query.booking.repository.projection.UserBooking;
 import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
 import com.github.matsik.query.config.cassandra.client.CassandraClientConfiguration;
@@ -151,7 +152,7 @@ class BookingServiceTest {
                         ),
                         getAvailableTimeRangesQuery(100),
                         List.of(
-                                TimeRange.Factory.create(675, 795)
+                                timeRange(675, 795)
                         )
                 ),
                 Arguments.of(
@@ -163,13 +164,13 @@ class BookingServiceTest {
                         ),
                         getAvailableTimeRangesQuery(45),
                         List.of(
-                                TimeRange.Factory.create(135, 195),
-                                TimeRange.Factory.create(150, 210),
-                                TimeRange.Factory.create(165, 225),
-                                TimeRange.Factory.create(180, 240),
-                                TimeRange.Factory.create(195, 255),
-                                TimeRange.Factory.create(675, 735),
-                                TimeRange.Factory.create(690, 750)
+                                timeRange(135, 195),
+                                timeRange(150, 210),
+                                timeRange(165, 225),
+                                timeRange(180, 240),
+                                timeRange(195, 255),
+                                timeRange(675, 735),
+                                timeRange(690, 750)
                         )
                 )
         );
@@ -178,7 +179,7 @@ class BookingServiceTest {
     private static List<TimeRange> timeRangesForEmptyDay(int serviceDuration) {
         List<TimeRange> timeRanges = new ArrayList<>();
         for (int start = 0; start <= 24 * 60 - serviceDuration; start += 15) {
-            timeRanges.add(new TimeRange(start, start + serviceDuration));
+            timeRanges.add(timeRange(start, start + serviceDuration));
         }
         return timeRanges;
     }
@@ -197,8 +198,15 @@ class BookingServiceTest {
         TimeRange result = service.getUserBookingTimeRange(query);
 
         // then
-        TimeRange expected = TimeRange.Factory.create(60, 120);
+        TimeRange expected = timeRange(60, 120);
         assertEquals(expected, result);
+    }
+
+    private static TimeRange timeRange(int start, int end) {
+        return TimeRange.Factory.create(
+                MinuteOfDay.of(start),
+                MinuteOfDay.of(end)
+        );
     }
 
     @Test
@@ -304,8 +312,10 @@ class BookingServiceTest {
                 key.serviceId(),
                 key.date(),
                 bookingId,
-                start,
-                end
+                TimeRange.Factory.create(
+                        MinuteOfDay.of(start),
+                        MinuteOfDay.of(end)
+                )
         );
     }
 

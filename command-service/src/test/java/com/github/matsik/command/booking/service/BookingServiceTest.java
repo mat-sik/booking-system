@@ -9,13 +9,15 @@ import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 import com.github.matsik.cassandra.entity.BookingByUser;
-import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.command.booking.command.CreateBookingCommand;
 import com.github.matsik.command.booking.command.DeleteBookingCommand;
 import com.github.matsik.command.config.cassandra.client.CassandraClientConfiguration;
 import com.github.matsik.command.config.cassandra.client.CassandraClientProperties;
 import com.github.matsik.command.config.cassandra.mapper.booking.BookingMapperConfiguration;
 import com.github.matsik.command.migration.CassandraMigrationService;
+import com.github.matsik.dto.BookingPartitionKey;
+import com.github.matsik.dto.MinuteOfDay;
+import com.github.matsik.dto.TimeRange;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -97,15 +99,15 @@ class BookingServiceTest {
 
             assertTrue(persistedBookingByServiceAndDate.isPresent());
             assertEquals(command.userId(), persistedBookingByServiceAndDate.get().userId());
-            assertEquals(command.start(), persistedBookingByServiceAndDate.get().start());
-            assertEquals(command.end(), persistedBookingByServiceAndDate.get().end());
+            assertEquals(command.timeRange().start().minuteOfDay(), persistedBookingByServiceAndDate.get().start());
+            assertEquals(command.timeRange().end().minuteOfDay(), persistedBookingByServiceAndDate.get().end());
 
             Optional<BookingByUser> persistedBookingByUser = findBookingByUser(command.userId(), command.bookingPartitionKey(), bookingId.get());
 
             assertTrue(persistedBookingByUser.isPresent());
             assertEquals(command.userId(), persistedBookingByUser.get().userId());
-            assertEquals(command.start(), persistedBookingByUser.get().start());
-            assertEquals(command.end(), persistedBookingByUser.get().end());
+            assertEquals(command.timeRange().start().minuteOfDay(), persistedBookingByUser.get().start());
+            assertEquals(command.timeRange().end().minuteOfDay(), persistedBookingByUser.get().end());
         } else {
             assertTrue(bookingId.isEmpty());
         }
@@ -189,8 +191,10 @@ class BookingServiceTest {
         return CreateBookingCommand.builder()
                 .bookingPartitionKey(key)
                 .userId(userId())
-                .start(start)
-                .end(end)
+                .timeRange(TimeRange.Factory.create(
+                        MinuteOfDay.of(start),
+                        MinuteOfDay.of(end)
+                ))
                 .build();
     }
 

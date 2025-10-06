@@ -1,11 +1,11 @@
 package com.github.matsik.query.booking.controller;
 
+import com.github.matsik.dto.TimeRange;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetFirstUserBookingsQuery;
 import com.github.matsik.query.booking.query.GetNextUserBookingsQuery;
 import com.github.matsik.query.booking.query.GetUserBookingQuery;
 import com.github.matsik.query.booking.query.GetUserBookingsQuery;
-import com.github.matsik.dto.TimeRange;
 import com.github.matsik.query.booking.repository.projection.UserBooking;
 import com.github.matsik.query.booking.service.BookingService;
 import com.github.matsik.query.response.TimeRangeResponse;
@@ -63,8 +63,8 @@ public class BookingController {
 
     private TimeRangeResponse mapToResponse(TimeRange model) {
         return new TimeRangeResponse(
-                model.start(),
-                model.end()
+                model.start().minuteOfDay(),
+                model.end().minuteOfDay()
         );
     }
 
@@ -105,8 +105,8 @@ public class BookingController {
                 userBooking.serviceId(),
                 userBooking.date(),
                 userBooking.bookingId(),
-                userBooking.start(),
-                userBooking.end()
+                userBooking.timeRange().start().minuteOfDay(),
+                userBooking.timeRange().end().minuteOfDay()
         );
     }
 }

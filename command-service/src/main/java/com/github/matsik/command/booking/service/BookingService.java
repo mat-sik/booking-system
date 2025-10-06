@@ -10,6 +10,7 @@ import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.command.booking.command.CreateBookingCommand;
 import com.github.matsik.command.booking.command.DeleteBookingCommand;
 import com.github.matsik.command.booking.repository.BookingRepository;
+import com.github.matsik.dto.TimeRange;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -59,8 +60,9 @@ public class BookingService {
 
     public Optional<UUID> createBooking(CreateBookingCommand command) {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
+        TimeRange timeRange = command.timeRange();
 
-        long overlappingBookingCount = findOverlappingBookings(bookingPartitionKey, command.start(), command.end());
+        long overlappingBookingCount = findOverlappingBookings(bookingPartitionKey, timeRange);
         if (overlappingBookingCount > 0) {
             return Optional.empty();
         }
@@ -71,8 +73,8 @@ public class BookingService {
                 .serviceId(bookingPartitionKey.serviceId())
                 .date(bookingPartitionKey.date())
                 .bookingId(bookingId)
-                .start(command.start())
-                .end(command.end())
+                .start(timeRange.start().minuteOfDay())
+                .end(timeRange.end().minuteOfDay())
                 .userId(command.userId())
                 .build();
 
@@ -83,8 +85,8 @@ public class BookingService {
                 .serviceId(bookingPartitionKey.serviceId())
                 .date(bookingPartitionKey.date())
                 .bookingId(bookingId)
-                .start(command.start())
-                .end(command.end())
+                .start(timeRange.start().minuteOfDay())
+                .end(timeRange.end().minuteOfDay())
                 .build();
 
         BoundStatement createBookingByUser = bookingRepository.save(bookingByUser);
@@ -99,12 +101,12 @@ public class BookingService {
         return Optional.of(bookingId);
     }
 
-    private long findOverlappingBookings(BookingPartitionKey bookingPartitionKey, int start, int end) {
+    private long findOverlappingBookings(BookingPartitionKey bookingPartitionKey, TimeRange timeRange) {
         return bookingRepository.findOverlappingBookingCount(
                 bookingPartitionKey.serviceId(),
                 bookingPartitionKey.date(),
-                start,
-                end
+                timeRange.start().minuteOfDay(),
+                timeRange.end().minuteOfDay()
         );
     }
 }

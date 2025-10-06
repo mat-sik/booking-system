@@ -1,5 +1,6 @@
 package com.github.matsik.query.booking.service;
 
+import com.github.matsik.dto.MinuteOfDay;
 import com.github.matsik.dto.TimeRange;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -23,7 +24,9 @@ public class AvailableTimeRangesCalculator {
     public List<TimeRange> getAvailableTimeRanges(List<TimeRange> unavailableTimeRanges, int serviceDuration) {
         List<TimeRange> availableTimeRanges = new ArrayList<>();
         for (int start = START; start <= END - serviceDuration; start += SKIP) {
-            TimeRange timeRange = TimeRange.Factory.create(start, start + serviceDuration);
+            MinuteOfDay startMinuteOfDay = MinuteOfDay.of(start);
+            MinuteOfDay endMinuteOfDay = MinuteOfDay.of(start + serviceDuration);
+            TimeRange timeRange = TimeRange.Factory.create(startMinuteOfDay, endMinuteOfDay);
 
             boolean isAvailable = true;
             for (TimeRange unavailableTimeRange : unavailableTimeRanges) {
@@ -41,16 +44,15 @@ public class AvailableTimeRangesCalculator {
     }
 
     private boolean isOverlapWithOffsets(TimeRange timeRangeOne, TimeRange timeRangeTwo) {
-        int start = Math.max(START, timeRangeTwo.start() - OFFSET);
-        int end = Math.min(END, timeRangeTwo.end() + OFFSET);
+        int start = Math.max(START, timeRangeTwo.start().minuteOfDay() - OFFSET);
+        int end = Math.min(END, timeRangeTwo.end().minuteOfDay() + OFFSET);
 
-        TimeRange offsetTimeRange = TimeRange.Factory.create(start, end);
+        TimeRange offsetTimeRange = TimeRange.Factory.create(
+                MinuteOfDay.of(start),
+                MinuteOfDay.of(end)
+        );
 
-        return isOverlap(timeRangeOne, offsetTimeRange);
-    }
-
-    private boolean isOverlap(TimeRange rangeOne, TimeRange rangeTwo) {
-        return rangeTwo.start() < rangeOne.end() && rangeTwo.end() > rangeOne.start();
+        return timeRangeOne.isOverlap(offsetTimeRange);
     }
 
     public int getSystemServiceDuration(int rawServiceDuration) {

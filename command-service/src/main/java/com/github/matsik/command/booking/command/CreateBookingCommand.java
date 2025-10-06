@@ -1,6 +1,8 @@
 package com.github.matsik.command.booking.command;
 
 import com.github.matsik.dto.BookingPartitionKey;
+import com.github.matsik.dto.MinuteOfDay;
+import com.github.matsik.dto.TimeRange;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import lombok.Builder;
 
@@ -10,17 +12,17 @@ import java.util.UUID;
 public record CreateBookingCommand(
         BookingPartitionKey bookingPartitionKey,
         UUID userId,
-        int start,
-        int end
+        TimeRange timeRange
 ) {
-
     public static class Factory {
         public static CreateBookingCommand create(BookingPartitionKey key, CreateBookingCommandValue value) {
             return CreateBookingCommand.builder()
                     .bookingPartitionKey(key)
                     .userId(value.userId())
-                    .start(value.start())
-                    .end(value.end())
+                    .timeRange(TimeRange.Factory.create(
+                            MinuteOfDay.of(value.start()),
+                            MinuteOfDay.of(value.end())
+                    ))
                     .build();
         }
     }
