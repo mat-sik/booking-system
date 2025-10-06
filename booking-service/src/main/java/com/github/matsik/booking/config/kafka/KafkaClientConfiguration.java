@@ -21,6 +21,8 @@ import java.util.Map;
 @Configuration
 public class KafkaClientConfiguration {
 
+    public static final String BOOKINGS_TOPIC_NAME = "bookings";
+
     @Bean
     public KafkaAdmin admin(KafkaClientProperties kafkaClientProperties) {
         Map<String, Object> configs = Map.of(
@@ -31,7 +33,7 @@ public class KafkaClientConfiguration {
 
     @Bean
     public NewTopic bookingsTopic() {
-        return TopicBuilder.name("bookings")
+        return TopicBuilder.name(BOOKINGS_TOPIC_NAME)
                 .partitions(3)
                 .replicas(1)
                 .build();

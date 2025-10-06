@@ -15,11 +15,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static com.github.matsik.booking.config.kafka.KafkaClientConfiguration.BOOKINGS_TOPIC_NAME;
+
 @Component
 @RequiredArgsConstructor
 @Log
 public class CommandClient {
-    private static final String TOPIC_NAME = "bookings";
     private static final int TIMEOUT = 10;
     private static final TimeUnit TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
 
@@ -35,7 +36,7 @@ public class CommandClient {
 
     private void send(BookingPartitionKey key, CommandValue value) {
         try {
-            template.send(TOPIC_NAME, key, value).get(TIMEOUT, TIMEOUT_TIME_UNIT);
+            template.send(BOOKINGS_TOPIC_NAME, key, value).get(TIMEOUT, TIMEOUT_TIME_UNIT);
             // TODO: Improve this logging when adding open telemetry
         } catch (ExecutionException ex) {
             logAndThrow("Failed to deliver the booking command to Kafka", ex);
