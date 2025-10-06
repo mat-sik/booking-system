@@ -1,4 +1,4 @@
-package com.github.matsik.query.booking.repository.projection;
+package com.github.matsik.dto;
 
 import com.datastax.oss.driver.api.core.cql.Row;
 

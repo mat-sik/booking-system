@@ -1,13 +1,13 @@
 package com.github.matsik.query.booking.service;
 
-import com.github.matsik.cassandra.model.BookingPartitionKey;
+import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetFirstUserBookingsQuery;
 import com.github.matsik.query.booking.query.GetNextUserBookingsQuery;
 import com.github.matsik.query.booking.query.GetUserBookingQuery;
 import com.github.matsik.query.booking.query.GetUserBookingsQuery;
 import com.github.matsik.query.booking.repository.BookingRepository;
-import com.github.matsik.query.booking.repository.projection.TimeRange;
+import com.github.matsik.dto.TimeRange;
 import com.github.matsik.query.booking.repository.projection.UserBooking;
 import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
 import lombok.RequiredArgsConstructor;

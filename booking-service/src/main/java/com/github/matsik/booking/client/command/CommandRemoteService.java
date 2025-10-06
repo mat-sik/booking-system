@@ -2,7 +2,7 @@ package com.github.matsik.booking.client.command;
 
 import com.github.matsik.booking.controller.request.CreateBookingRequest;
 import com.github.matsik.booking.controller.request.DeleteBookingRequest;
-import com.github.matsik.cassandra.model.BookingPartitionKey;
+import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.github.matsik.cassandra.model;
+package com.github.matsik.cassandra.entity;
 
 import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;

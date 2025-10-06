@@ -1,6 +1,6 @@
 package com.github.matsik.kafka.mapping;
 
-import com.github.matsik.cassandra.model.BookingPartitionKey;
+import com.github.matsik.dto.BookingPartitionKey;
 import org.apache.kafka.common.serialization.Deserializer;
 
 import java.nio.ByteBuffer;

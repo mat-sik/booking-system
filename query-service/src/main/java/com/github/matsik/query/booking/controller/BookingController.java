@@ -5,7 +5,7 @@ import com.github.matsik.query.booking.query.GetFirstUserBookingsQuery;
 import com.github.matsik.query.booking.query.GetNextUserBookingsQuery;
 import com.github.matsik.query.booking.query.GetUserBookingQuery;
 import com.github.matsik.query.booking.query.GetUserBookingsQuery;
-import com.github.matsik.query.booking.repository.projection.TimeRange;
+import com.github.matsik.dto.TimeRange;
 import com.github.matsik.query.booking.repository.projection.UserBooking;
 import com.github.matsik.query.booking.service.BookingService;
 import com.github.matsik.query.response.TimeRangeResponse;

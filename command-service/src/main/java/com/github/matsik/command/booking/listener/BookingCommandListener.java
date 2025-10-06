@@ -6,7 +6,7 @@ import com.github.matsik.command.booking.service.BookingService;
 import com.github.matsik.kafka.task.CommandValue;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
-import com.github.matsik.cassandra.model.BookingPartitionKey;
+import com.github.matsik.dto.BookingPartitionKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

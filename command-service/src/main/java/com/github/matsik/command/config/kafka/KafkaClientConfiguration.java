@@ -2,7 +2,7 @@ package com.github.matsik.command.config.kafka;
 
 import com.github.matsik.kafka.mapping.BookingPartitionKeyDeserializer;
 import com.github.matsik.kafka.task.CommandValue;
-import com.github.matsik.cassandra.model.BookingPartitionKey;
+import com.github.matsik.dto.BookingPartitionKey;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

@@ -1,6 +1,6 @@
 package com.github.matsik.query.response;
 
-import com.github.matsik.cassandra.model.BookingByServiceAndDate;
+import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 
 import java.util.List;
 import java.util.UUID;

@@ -5,7 +5,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.mapper.annotations.Dao;
 import com.datastax.oss.driver.api.mapper.annotations.Query;
 import com.datastax.oss.driver.api.mapper.annotations.StatementAttributes;
-import com.github.matsik.query.booking.repository.projection.TimeRange;
+import com.github.matsik.dto.TimeRange;
 import com.github.matsik.query.booking.repository.projection.UserBooking;
 
 import java.time.LocalDate;

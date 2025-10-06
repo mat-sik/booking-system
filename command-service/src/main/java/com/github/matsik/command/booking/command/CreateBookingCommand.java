@@ -1,6 +1,6 @@
 package com.github.matsik.command.booking.command;
 
-import com.github.matsik.cassandra.model.BookingPartitionKey;
+import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import lombok.Builder;
 

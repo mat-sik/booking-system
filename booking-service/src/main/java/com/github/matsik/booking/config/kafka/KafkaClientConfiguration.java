@@ -3,7 +3,7 @@ package com.github.matsik.booking.config.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.matsik.kafka.mapping.BookingPartitionKeySerializer;
 import com.github.matsik.kafka.task.CommandValue;
-import com.github.matsik.cassandra.model.BookingPartitionKey;
+import com.github.matsik.dto.BookingPartitionKey;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;

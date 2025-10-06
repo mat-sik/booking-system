@@ -1,4 +1,4 @@
-package com.github.matsik.cassandra.model;
+package com.github.matsik.dto;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package com.github.matsik.query.booking.query;
 
-import com.github.matsik.cassandra.model.BookingPartitionKey;
+import com.github.matsik.dto.BookingPartitionKey;
 
 import java.time.LocalDate;
 import java.util.UUID;

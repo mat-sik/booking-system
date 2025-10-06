@@ -1,6 +1,6 @@
 package com.github.matsik.query.booking.service;
 
-import com.github.matsik.query.booking.repository.projection.TimeRange;
+import com.github.matsik.dto.TimeRange;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

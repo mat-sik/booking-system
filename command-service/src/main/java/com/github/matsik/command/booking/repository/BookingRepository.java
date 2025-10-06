@@ -7,8 +7,8 @@ import com.datastax.oss.driver.api.mapper.annotations.Delete;
 import com.datastax.oss.driver.api.mapper.annotations.Insert;
 import com.datastax.oss.driver.api.mapper.annotations.Query;
 import com.datastax.oss.driver.api.mapper.annotations.StatementAttributes;
-import com.github.matsik.cassandra.model.BookingByServiceAndDate;
-import com.github.matsik.cassandra.model.BookingByUser;
+import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
+import com.github.matsik.cassandra.entity.BookingByUser;
 
 import java.time.LocalDate;
 import java.util.Optional;
