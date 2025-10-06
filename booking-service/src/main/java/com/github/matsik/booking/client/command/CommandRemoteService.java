@@ -8,9 +8,6 @@ import com.github.matsik.kafka.task.DeleteBookingCommandValue;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 public class CommandRemoteService {
@@ -23,7 +20,6 @@ public class CommandRemoteService {
         }
 
         BookingPartitionKey key = BookingPartitionKey.Factory.create(request.date(), request.serviceId());
-
         CreateBookingCommandValue value = new CreateBookingCommandValue(
                 request.userId(),
                 request.start(),
@@ -34,16 +30,8 @@ public class CommandRemoteService {
     }
 
     public void deleteBooking(DeleteBookingRequest request) {
-        LocalDate localDate = request.date();
-        UUID serviceId = request.serviceId();
-        UUID bookingId = request.bookingId();
-        UUID userId = request.userId();
-
-        // TODO: verify is user is the owner
-
-        BookingPartitionKey key = BookingPartitionKey.Factory.create(localDate, serviceId);
-
-        DeleteBookingCommandValue value = new DeleteBookingCommandValue(bookingId, userId);
+        BookingPartitionKey key = BookingPartitionKey.Factory.create(request.date(), request.serviceId());
+        DeleteBookingCommandValue value = new DeleteBookingCommandValue(request.bookingId(), request.userId());
 
         client.sendDeleteBookingCommand(key, value);
     }

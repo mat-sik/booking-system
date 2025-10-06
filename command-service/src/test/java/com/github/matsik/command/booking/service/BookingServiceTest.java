@@ -232,7 +232,8 @@ class BookingServiceTest {
                         ),
                         (Function<UUID, DeleteBookingCommand>) (bookingId) -> deleteBookingCommand(
                                 conflictingPartitionKey(),
-                                bookingId
+                                bookingId,
+                                userId()
                         )
                 ),
                 Arguments.of(
@@ -243,7 +244,8 @@ class BookingServiceTest {
                         ),
                         (Function<UUID, DeleteBookingCommand>) (_) -> deleteBookingCommand(
                                 conflictingPartitionKey(),
-                                nonExistingBookingId()
+                                nonExistingBookingId(),
+                                userId()
                         )
                 ),
                 Arguments.of(
@@ -254,7 +256,8 @@ class BookingServiceTest {
                         ),
                         (Function<UUID, DeleteBookingCommand>) (bookingId) -> deleteBookingCommand(
                                 nonConflictingOnServicePartitionKey(),
-                                bookingId
+                                bookingId,
+                                userId()
                         )
                 ),
                 Arguments.of(
@@ -265,17 +268,31 @@ class BookingServiceTest {
                         ),
                         (Function<UUID, DeleteBookingCommand>) (bookingId) -> deleteBookingCommand(
                                 nonConflictingOnDatePartitionKey(),
-                                bookingId
+                                bookingId,
+                                userId()
                         )
+                ),
+                Arguments.of(
+                        "Should do nothing if user doesn't match",
+                        false,
+                        List.of(
+                                conflictingBooking(0, 30)
+                        ),
+                        (Function<UUID, DeleteBookingCommand>) (bookingId) -> deleteBookingCommand(
+                                conflictingPartitionKey(),
+                                bookingId,
+                                nonExistingUserId()
+                        )
+
                 )
         );
     }
 
-    private static DeleteBookingCommand deleteBookingCommand(BookingPartitionKey key, UUID bookingId) {
+    private static DeleteBookingCommand deleteBookingCommand(BookingPartitionKey key, UUID bookingId, UUID userId) {
         return new DeleteBookingCommand(
                 key,
                 bookingId,
-                userId()
+                userId
         );
     }
 
@@ -439,6 +456,10 @@ class BookingServiceTest {
     }
 
     private record Booking(BookingByServiceAndDate bookingByServiceAndDate, BookingByUser bookingByUser) {
+    }
+
+    private static UUID nonExistingUserId() {
+        return numberToUUID(2);
     }
 
     private static UUID userId() {

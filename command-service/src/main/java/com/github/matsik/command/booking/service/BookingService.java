@@ -13,6 +13,7 @@ import com.github.matsik.command.booking.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,6 +26,16 @@ public class BookingService {
 
     public void deleteBooking(DeleteBookingCommand command) {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
+
+        Optional<UUID> ownerId = bookingRepository.findBookingOwner(
+                bookingPartitionKey.serviceId(),
+                bookingPartitionKey.date(),
+                command.bookingId()
+        );
+
+        if (ownerId.isEmpty() || !Objects.equals(ownerId.get(), command.userId())) {
+            return;
+        }
 
         BoundStatement deleteBookingByServiceAndDate = bookingRepository.deleteByPrimaryKey(
                 bookingPartitionKey.serviceId(),
