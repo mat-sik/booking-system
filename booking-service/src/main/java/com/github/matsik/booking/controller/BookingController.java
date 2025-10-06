@@ -43,22 +43,21 @@ public class BookingController {
 
     @GetMapping("/available")
     public ResponseEntity<List<TimeRangeResponse>> getAvailableTimeRanges(
-            @RequestParam LocalDate date,
             @RequestParam UUID serviceId,
+            @RequestParam LocalDate date,
             @RequestParam @Positive int serviceDuration
     ) {
-        return queryService.getAvailableTimeRanges(date, serviceId, serviceDuration);
+        return queryService.getAvailableTimeRanges(serviceId, date, serviceDuration);
     }
-
 
     @GetMapping
     public ResponseEntity<TimeRangeResponse> getUserBookingTimeRange(
-            @RequestParam LocalDate date,
             @RequestParam UUID serviceId,
+            @RequestParam LocalDate date,
             @RequestParam UUID userId,
             @RequestParam UUID bookingId
     ) {
-        return queryService.getUserBookingTimeRange(date, serviceId, userId, bookingId);
+        return queryService.getUserBookingTimeRange(serviceId, date, userId, bookingId);
     }
 
     @GetMapping("/many")

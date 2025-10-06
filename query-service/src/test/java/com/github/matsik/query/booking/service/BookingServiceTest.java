@@ -322,11 +322,11 @@ class BookingServiceTest {
 
     private static GetAvailableTimeRangesQuery getAvailableTimeRangesQuery(int duration) {
         BookingPartitionKey key = aBookingPartitionKey();
-        return GetAvailableTimeRangesQuery.Factory.create(key.date(), key.serviceId(), duration);
+        return GetAvailableTimeRangesQuery.Factory.create(key.serviceId(), key.date(), duration);
     }
 
     private static BookingPartitionKey aBookingPartitionKey() {
-        return BookingPartitionKey.Factory.create(numberToLocalDate(1), numberToUUID(1));
+        return BookingPartitionKey.Factory.create(numberToUUID(1), numberToLocalDate(1));
     }
 
     private static Booking newBooking(UUID serviceId, LocalDate date, UUID bookingId, UUID userId, int start, int end) {

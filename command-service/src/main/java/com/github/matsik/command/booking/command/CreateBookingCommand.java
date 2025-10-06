@@ -15,9 +15,9 @@ public record CreateBookingCommand(
 ) {
 
     public static class Factory {
-        public static CreateBookingCommand create(BookingPartitionKey identifier, CreateBookingCommandValue value) {
+        public static CreateBookingCommand create(BookingPartitionKey key, CreateBookingCommandValue value) {
             return CreateBookingCommand.builder()
-                    .bookingPartitionKey(identifier)
+                    .bookingPartitionKey(key)
                     .userId(value.userId())
                     .start(value.start())
                     .end(value.end())

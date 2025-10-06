@@ -10,11 +10,11 @@ import java.util.UUID;
 @ValidStartEnd
 public record CreateBookingRequest(
 
-        @NotNull(message = "Date cannot be null")
-        LocalDate date,
-
         @NotNull(message = "Service Id cannot be null")
         UUID serviceId,
+
+        @NotNull(message = "Date cannot be null")
+        LocalDate date,
 
         @NotNull(message = "User Id cannot be null")
         UUID userId,

@@ -21,12 +21,12 @@ public class QueryRemoteService {
 
     private final RestClient queryServiceClient;
 
-    public ResponseEntity<List<TimeRangeResponse>> getAvailableTimeRanges(LocalDate date, UUID serviceId, int serviceDuration) {
+    public ResponseEntity<List<TimeRangeResponse>> getAvailableTimeRanges(UUID serviceId, LocalDate date, int serviceDuration) {
         return queryServiceClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(PREFIX + "/available")
-                        .queryParam("date", DateTimeFormatter.ISO_LOCAL_DATE.format(date))
                         .queryParam("serviceId", serviceId.toString())
+                        .queryParam("date", DateTimeFormatter.ISO_LOCAL_DATE.format(date))
                         .queryParam("serviceDuration", String.valueOf(serviceDuration))
                         .build())
                 .retrieve()
@@ -35,16 +35,16 @@ public class QueryRemoteService {
     }
 
     public ResponseEntity<TimeRangeResponse> getUserBookingTimeRange(
-            LocalDate date,
             UUID serviceId,
+            LocalDate date,
             UUID userId,
             UUID bookingId
     ) {
         return queryServiceClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(PREFIX)
-                        .queryParam("date", DateTimeFormatter.ISO_LOCAL_DATE.format(date))
                         .queryParam("serviceId", serviceId.toString())
+                        .queryParam("date", DateTimeFormatter.ISO_LOCAL_DATE.format(date))
                         .queryParam("userId", userId.toString())
                         .queryParam("bookingId", bookingId.toString())
                         .build())

@@ -297,11 +297,11 @@ class BookingServiceTest {
     }
 
     private static BookingPartitionKey nonConflictingOnServicePartitionKey() {
-        return BookingPartitionKey.Factory.create(numberToLocalDate(1), numberToUUID(2));
+        return BookingPartitionKey.Factory.create(numberToUUID(2), numberToLocalDate(1));
     }
 
     private static BookingPartitionKey nonConflictingOnDatePartitionKey() {
-        return BookingPartitionKey.Factory.create(numberToLocalDate(2), numberToUUID(1));
+        return BookingPartitionKey.Factory.create(numberToUUID(1), numberToLocalDate(2));
     }
 
     private Optional<BookingByServiceAndDate> findBooking(Booking booking) {
@@ -374,7 +374,7 @@ class BookingServiceTest {
     }
 
     private static BookingPartitionKey conflictingPartitionKey() {
-        return BookingPartitionKey.Factory.create(numberToLocalDate(1), numberToUUID(1));
+        return BookingPartitionKey.Factory.create(numberToUUID(1), numberToLocalDate(1));
     }
 
     private static Booking nonConflictingBooking(int start, int end) {
@@ -389,7 +389,7 @@ class BookingServiceTest {
     }
 
     private static BookingPartitionKey nonConflictingPartitionKey() {
-        return BookingPartitionKey.Factory.create(numberToLocalDate(3), numberToUUID(3));
+        return BookingPartitionKey.Factory.create(numberToUUID(3), numberToLocalDate(3));
     }
 
     private static Booking newBooking(UUID serviceId, UUID bookingId, LocalDate date, int start, int end) {

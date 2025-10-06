@@ -19,7 +19,7 @@ public class CommandRemoteService {
             throw new IllegalArgumentException("Booking start value should be lower than the end value.");
         }
 
-        BookingPartitionKey key = BookingPartitionKey.Factory.create(request.date(), request.serviceId());
+        BookingPartitionKey key = BookingPartitionKey.Factory.create(request.serviceId(), request.date());
         CreateBookingCommandValue value = new CreateBookingCommandValue(
                 request.userId(),
                 request.start(),
@@ -30,7 +30,7 @@ public class CommandRemoteService {
     }
 
     public void deleteBooking(DeleteBookingRequest request) {
-        BookingPartitionKey key = BookingPartitionKey.Factory.create(request.date(), request.serviceId());
+        BookingPartitionKey key = BookingPartitionKey.Factory.create(request.serviceId(), request.date());
         DeleteBookingCommandValue value = new DeleteBookingCommandValue(request.bookingId(), request.userId());
 
         client.sendDeleteBookingCommand(key, value);

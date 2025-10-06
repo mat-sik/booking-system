@@ -13,17 +13,17 @@ import java.util.UUID;
 @EqualsAndHashCode
 public class BookingPartitionKey {
 
-    private final LocalDate date;
     private final UUID serviceId;
+    private final LocalDate date;
 
-    private BookingPartitionKey(LocalDate date, UUID serviceId) {
-        this.date = date;
+    private BookingPartitionKey(UUID serviceId, LocalDate date) {
         this.serviceId = serviceId;
+        this.date = date;
     }
 
     public static class Factory {
-        public static BookingPartitionKey create(LocalDate date, UUID serviceId) {
-            return new BookingPartitionKey(date, serviceId);
+        public static BookingPartitionKey create(UUID serviceId, LocalDate date) {
+            return new BookingPartitionKey(serviceId, date);
         }
     }
 }

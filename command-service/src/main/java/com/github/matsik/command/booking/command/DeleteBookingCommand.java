@@ -7,8 +7,8 @@ import java.util.UUID;
 
 public record DeleteBookingCommand(BookingPartitionKey bookingPartitionKey, UUID bookingId, UUID userId) {
     public static class Factory {
-        public static DeleteBookingCommand create(BookingPartitionKey identifier, DeleteBookingCommandValue value) {
-            return new DeleteBookingCommand(identifier, value.bookingId(), value.userId());
+        public static DeleteBookingCommand create(BookingPartitionKey key, DeleteBookingCommandValue value) {
+            return new DeleteBookingCommand(key, value.bookingId(), value.userId());
         }
     }
 }

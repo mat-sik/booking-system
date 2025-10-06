@@ -12,16 +12,16 @@ public class BookingPartitionKeySerializer implements Serializer<BookingPartitio
     public static final int PARTITION_KEY_SIZE = 20;
 
     @Override
-    public byte[] serialize(String topic, BookingPartitionKey identifier) {
-        return serializeToBytes(identifier);
+    public byte[] serialize(String topic, BookingPartitionKey key) {
+        return serializeToBytes(key);
     }
 
-    private static byte[] serializeToBytes(BookingPartitionKey identifier) {
-        UUID serviceId = identifier.serviceId();
+    private static byte[] serializeToBytes(BookingPartitionKey key) {
+        UUID serviceId = key.serviceId();
         long serviceIdMostSignificantBits = serviceId.getMostSignificantBits();
         long serviceIdLeastSignificantBits = serviceId.getLeastSignificantBits();
 
-        LocalDate date =  identifier.date();
+        LocalDate date =  key.date();
         int dateBytes = (int) date.toEpochDay(); // the range should be sufficient for bookings
 
         ByteBuffer buffer = ByteBuffer.allocate(PARTITION_KEY_SIZE);

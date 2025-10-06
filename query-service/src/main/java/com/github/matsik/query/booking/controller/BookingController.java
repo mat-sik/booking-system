@@ -33,11 +33,11 @@ public class BookingController {
 
     @GetMapping("/available")
     public ResponseEntity<List<TimeRangeResponse>> getAvailableTimeRanges(
-            @RequestParam LocalDate date,
             @RequestParam UUID serviceId,
+            @RequestParam LocalDate date,
             @RequestParam @Positive int serviceDuration
     ) {
-        GetAvailableTimeRangesQuery query = GetAvailableTimeRangesQuery.Factory.create(date, serviceId, serviceDuration);
+        GetAvailableTimeRangesQuery query = GetAvailableTimeRangesQuery.Factory.create(serviceId, date, serviceDuration);
         List<TimeRange> availableTimeRanges = service.getAvailableTimeRanges(query);
 
         List<TimeRangeResponse> response = availableTimeRanges.stream()
@@ -49,12 +49,12 @@ public class BookingController {
 
     @GetMapping
     public ResponseEntity<TimeRangeResponse> getUserBookingTimeRange(
-            @RequestParam LocalDate date,
             @RequestParam UUID serviceId,
+            @RequestParam LocalDate date,
             @RequestParam UUID userId,
             @RequestParam UUID bookingId
     ) {
-        GetUserBookingQuery query = GetUserBookingQuery.Factory.create(date, serviceId, userId, bookingId);
+        GetUserBookingQuery query = GetUserBookingQuery.Factory.create(serviceId, date, userId, bookingId);
 
         TimeRange userBookingTimeRange = service.getUserBookingTimeRange(query);
 
