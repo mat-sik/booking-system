@@ -17,7 +17,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class QueryRemoteService {
 
-    private static final String PREFIX = "/booking";
+    private static final String PREFIX = "/bookings";
 
     private final RestClient queryServiceClient;
 
@@ -42,7 +42,7 @@ public class QueryRemoteService {
     ) {
         return queryServiceClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(PREFIX)
+                        .path(PREFIX + "/user")
                         .queryParam("serviceId", serviceId.toString())
                         .queryParam("date", DateTimeFormatter.ISO_LOCAL_DATE.format(date))
                         .queryParam("userId", userId.toString())
@@ -56,7 +56,7 @@ public class QueryRemoteService {
     public ResponseEntity<List<UserBookingResponse>> getFirstUserBookings(UUID userId, int limit) {
         return queryServiceClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(PREFIX + "/many")
+                        .path(PREFIX)
                         .queryParam("userId", userId.toString())
                         .queryParam("limit", String.valueOf(limit))
                         .build())
@@ -74,7 +74,7 @@ public class QueryRemoteService {
     ) {
         return queryServiceClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(PREFIX + "/many")
+                        .path(PREFIX)
                         .queryParam("userId", userId.toString())
                         .queryParam("cursorServiceId", cursorServiceId.toString())
                         .queryParam("cursorDate", cursorDate.toString())

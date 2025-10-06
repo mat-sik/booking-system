@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/booking")
+@RequestMapping("/bookings")
 @RequiredArgsConstructor
 @Validated
 public class BookingController {
@@ -47,7 +47,7 @@ public class BookingController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping
+    @GetMapping("/user")
     public ResponseEntity<TimeRangeResponse> getUserBookingTimeRange(
             @RequestParam UUID serviceId,
             @RequestParam LocalDate date,
@@ -68,7 +68,7 @@ public class BookingController {
         );
     }
 
-    @GetMapping("/many")
+    @GetMapping
     public ResponseEntity<List<UserBookingResponse>> getUserBookings(
             @RequestParam UUID userId,
             @RequestParam(required = false) UUID cursorServiceId,
