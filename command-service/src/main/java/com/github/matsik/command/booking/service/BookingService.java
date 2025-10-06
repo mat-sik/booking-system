@@ -32,7 +32,6 @@ public class BookingService {
                 bookingPartitionKey.date(),
                 command.bookingId()
         );
-
         if (ownerId.isEmpty() || !Objects.equals(ownerId.get(), command.userId())) {
             return;
         }
