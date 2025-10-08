@@ -8,7 +8,7 @@ import java.util.UUID;
 public record GetUserBookingQuery(BookingPartitionKey bookingPartitionKey, UUID userId, UUID bookingId) {
     public static class Factory {
         public static GetUserBookingQuery create(UUID serviceId, LocalDate date, UUID userId, UUID bookingId) {
-            BookingPartitionKey key = BookingPartitionKey.Factory.create(serviceId, date);
+            BookingPartitionKey key = BookingPartitionKey.of(serviceId, date);
             return new GetUserBookingQuery(key, userId, bookingId);
         }
     }

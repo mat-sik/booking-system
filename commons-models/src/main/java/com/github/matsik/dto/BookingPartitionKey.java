@@ -21,9 +21,8 @@ public class BookingPartitionKey {
         this.date = date;
     }
 
-    public static class Factory {
-        public static BookingPartitionKey create(UUID serviceId, LocalDate date) {
-            return new BookingPartitionKey(serviceId, date);
-        }
+    public static BookingPartitionKey of(UUID serviceId, LocalDate date) {
+        return new BookingPartitionKey(serviceId, date);
     }
+
 }

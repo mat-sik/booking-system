@@ -325,7 +325,7 @@ class BookingServiceTest {
     }
 
     private static BookingPartitionKey aBookingPartitionKey() {
-        return BookingPartitionKey.Factory.create(numberToUUID(1), numberToLocalDate(1));
+        return BookingPartitionKey.of(numberToUUID(1), numberToLocalDate(1));
     }
 
     private static Booking newBooking(UUID serviceId, LocalDate date, UUID bookingId, UUID userId, int start, int end) {

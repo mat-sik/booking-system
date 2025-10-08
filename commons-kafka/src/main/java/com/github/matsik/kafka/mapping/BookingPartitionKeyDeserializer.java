@@ -32,7 +32,7 @@ public class BookingPartitionKeyDeserializer implements Deserializer<BookingPart
         int epochDay = buffer.getInt();
         LocalDate date = LocalDate.ofEpochDay(epochDay);
 
-        return BookingPartitionKey.Factory.create(serviceId, date);
+        return BookingPartitionKey.of(serviceId, date);
     }
 
 }
