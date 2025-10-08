@@ -13,13 +13,11 @@ public record CreateBookingCommand(
         UUID userId,
         TimeRange timeRange
 ) {
-    public static class Factory {
-        public static CreateBookingCommand create(BookingPartitionKey key, CreateBookingCommandValue value) {
-            return CreateBookingCommand.builder()
-                    .bookingPartitionKey(key)
-                    .userId(value.userId())
-                    .timeRange(TimeRange.of(value.start(), value.end()))
-                    .build();
-        }
+    public static CreateBookingCommand of(BookingPartitionKey key, CreateBookingCommandValue value) {
+        return CreateBookingCommand.builder()
+                .bookingPartitionKey(key)
+                .userId(value.userId())
+                .timeRange(TimeRange.of(value.start(), value.end()))
+                .build();
     }
 }

@@ -34,10 +34,10 @@ public class BookingCommandListener {
         CommandValue value = record.value();
 
         if (value instanceof CreateBookingCommandValue createBookingCommandValue) {
-            CreateBookingCommand command = CreateBookingCommand.Factory.create(key, createBookingCommandValue);
+            CreateBookingCommand command = CreateBookingCommand.of(key, createBookingCommandValue);
             service.createBooking(command);
         } else if (value instanceof DeleteBookingCommandValue deleteBookingCommandValue) {
-            DeleteBookingCommand command = DeleteBookingCommand.Factory.create(key, deleteBookingCommandValue);
+            DeleteBookingCommand command = DeleteBookingCommand.of(key, deleteBookingCommandValue);
             service.deleteBooking(command);
         } else {
             log.severe(String.format("Unexpected CommandValue: %s", value.toString()));
