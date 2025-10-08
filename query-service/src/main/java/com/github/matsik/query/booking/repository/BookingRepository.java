@@ -30,7 +30,7 @@ public interface BookingRepository {
     default Optional<TimeRange> getUserBookingTimeRange(UUID userId, UUID serviceId, LocalDate date, UUID bookingId) {
         Row row = _getUserBookingTimeRange(userId, serviceId, date, bookingId);
         return Optional.ofNullable(row)
-                .map(TimeRange.Factory::create);
+                .map(TimeRange::of);
     }
 
     @Query("""
@@ -44,7 +44,7 @@ public interface BookingRepository {
 
     default List<TimeRange> getBookedTimeRanges(UUID serviceId, LocalDate date) {
         return _getBookedTimeRanges(serviceId, date)
-                .map(TimeRange.Factory::create)
+                .map(TimeRange::of)
                 .all()
                 .stream()
                 .toList();

@@ -16,7 +16,6 @@ import com.github.matsik.command.config.cassandra.client.CassandraClientProperti
 import com.github.matsik.command.config.cassandra.mapper.booking.BookingMapperConfiguration;
 import com.github.matsik.command.migration.CassandraMigrationService;
 import com.github.matsik.dto.BookingPartitionKey;
-import com.github.matsik.dto.MinuteOfDay;
 import com.github.matsik.dto.TimeRange;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -191,10 +190,7 @@ class BookingServiceTest {
         return CreateBookingCommand.builder()
                 .bookingPartitionKey(key)
                 .userId(userId())
-                .timeRange(TimeRange.Factory.create(
-                        MinuteOfDay.of(start),
-                        MinuteOfDay.of(end)
-                ))
+                .timeRange(TimeRange.of(start, end))
                 .build();
     }
 

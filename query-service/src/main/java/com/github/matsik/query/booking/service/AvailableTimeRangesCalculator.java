@@ -26,7 +26,7 @@ public class AvailableTimeRangesCalculator {
         for (int start = START; start <= END - serviceDuration; start += SKIP) {
             MinuteOfDay startMinuteOfDay = MinuteOfDay.of(start);
             MinuteOfDay endMinuteOfDay = MinuteOfDay.of(start + serviceDuration);
-            TimeRange timeRange = TimeRange.Factory.create(startMinuteOfDay, endMinuteOfDay);
+            TimeRange timeRange = TimeRange.of(startMinuteOfDay, endMinuteOfDay);
 
             boolean isAvailable = true;
             for (TimeRange unavailableTimeRange : unavailableTimeRanges) {
@@ -47,10 +47,7 @@ public class AvailableTimeRangesCalculator {
         int start = Math.max(START, timeRangeTwo.start().minuteOfDay() - OFFSET);
         int end = Math.min(END, timeRangeTwo.end().minuteOfDay() + OFFSET);
 
-        TimeRange offsetTimeRange = TimeRange.Factory.create(
-                MinuteOfDay.of(start),
-                MinuteOfDay.of(end)
-        );
+        TimeRange offsetTimeRange = TimeRange.of(start, end);
 
         return timeRangeOne.isOverlap(offsetTimeRange);
     }
