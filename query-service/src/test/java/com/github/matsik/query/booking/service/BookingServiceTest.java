@@ -321,7 +321,7 @@ class BookingServiceTest {
 
     private static GetAvailableTimeRangesQuery getAvailableTimeRangesQuery(int duration) {
         BookingPartitionKey key = aBookingPartitionKey();
-        return GetAvailableTimeRangesQuery.Factory.create(key.serviceId(), key.date(), duration);
+        return GetAvailableTimeRangesQuery.of(key.serviceId(), key.date(), duration);
     }
 
     private static BookingPartitionKey aBookingPartitionKey() {

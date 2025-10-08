@@ -37,7 +37,7 @@ public class BookingController {
             @RequestParam LocalDate date,
             @RequestParam @Positive int serviceDuration
     ) {
-        GetAvailableTimeRangesQuery query = GetAvailableTimeRangesQuery.Factory.create(serviceId, date, serviceDuration);
+        GetAvailableTimeRangesQuery query = GetAvailableTimeRangesQuery.of(serviceId, date, serviceDuration);
         List<TimeRange> availableTimeRanges = service.getAvailableTimeRanges(query);
 
         List<TimeRangeResponse> response = availableTimeRanges.stream()
@@ -54,7 +54,7 @@ public class BookingController {
             @RequestParam UUID userId,
             @RequestParam UUID bookingId
     ) {
-        GetUserBookingQuery query = GetUserBookingQuery.Factory.create(serviceId, date, userId, bookingId);
+        GetUserBookingQuery query = GetUserBookingQuery.of(serviceId, date, userId, bookingId);
 
         TimeRange userBookingTimeRange = service.getUserBookingTimeRange(query);
 

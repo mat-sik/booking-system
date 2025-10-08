@@ -60,7 +60,12 @@ public interface BookingRepository {
     ResultSet _getFirstUserBookings(UUID userId, int size);
 
     default List<UserBooking> getFirstUserBookings(UUID userId, int limit) {
-        return UserBooking.Factory.create(_getFirstUserBookings(userId, limit));
+        ResultSet resultSet = _getFirstUserBookings(userId, limit);
+        return resultSet
+                .map(UserBooking::of)
+                .all()
+                .stream()
+                .toList();
     }
 
     @Query("""
@@ -88,7 +93,12 @@ public interface BookingRepository {
             UUID cursorBookingId,
             int limit
     ) {
-        return UserBooking.Factory.create(_getNextUserBookings(userId, cursorServiceId, cursorDate, cursorBookingId, limit));
+        ResultSet resultSet = _getNextUserBookings(userId, cursorServiceId, cursorDate, cursorBookingId, limit);
+        return resultSet
+                .map(UserBooking::of)
+                .all()
+                .stream()
+                .toList();
     }
 
 }
