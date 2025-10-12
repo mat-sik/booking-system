@@ -74,7 +74,7 @@ public class BookingController {
             @RequestParam(required = false) UUID cursorServiceId,
             @RequestParam(required = false) LocalDate cursorDate,
             @RequestParam(required = false) UUID cursorBookingId,
-            @RequestParam int limit
+            @RequestParam @Positive int limit
     ) {
         GetUserBookingsQuery query = query(userId, cursorServiceId, cursorDate, cursorBookingId, limit);
 
@@ -94,10 +94,10 @@ public class BookingController {
             UUID cursorBookingId,
             int limit
     ) {
-        if (cursorServiceId == null) {
-            return new GetFirstUserBookingsQuery(userId, limit);
+        if (cursorServiceId != null && cursorDate != null && cursorBookingId != null) {
+            return new GetNextUserBookingsQuery(userId, cursorServiceId, cursorDate, cursorBookingId, limit);
         }
-        return new GetNextUserBookingsQuery(userId, cursorServiceId, cursorDate, cursorBookingId, limit);
+        return new GetFirstUserBookingsQuery(userId, limit);
     }
 
     private UserBookingResponse mapToResponse(UserBooking userBooking) {
