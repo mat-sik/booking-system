@@ -2,7 +2,9 @@ package com.github.matsik.query.booking.controller;
 
 import com.github.matsik.dto.TimeRange;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
+import com.github.matsik.query.booking.query.GetUserBookingQuery;
 import com.github.matsik.query.booking.service.BookingService;
+import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -127,6 +129,82 @@ class BookingControllerTest {
                     .andExpect(jsonPath(String.format("$[%d].start", i)).value(timeRange.start().minuteOfDay()))
                     .andExpect(jsonPath(String.format("$[%d].end", i)).value(timeRange.end().minuteOfDay()));
         }
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("getUserBookingTimeRangeArguments")
+    void getUserBookingTimeRange(
+            String name,
+            String serviceId,
+            String date,
+            String userId,
+            String bookingId,
+            TimeRange expectedTimeRange,
+            int expectedStatus,
+            BiConsumer<ResultActions, TimeRange> bodyChecker
+    ) throws Exception {
+        // given
+        GetUserBookingQuery query = GetUserBookingQuery.of(
+                UUID.fromString(serviceId),
+                LocalDate.parse(date),
+                UUID.fromString(userId),
+                UUID.fromString(bookingId)
+        );
+        if (expectedTimeRange != null) {
+            when(service.getUserBookingTimeRange(query)).thenReturn(expectedTimeRange);
+        } else {
+            when(service.getUserBookingTimeRange(query)).thenThrow(new UserBookingNotFoundException(query));
+        }
+        // when
+        ResultActions resultActions = mockMvc.perform(get("/bookings/user")
+                .queryParam("serviceId", serviceId)
+                .queryParam("date", date)
+                .queryParam("userId", userId)
+                .queryParam("bookingId", bookingId)
+        );
+        // then
+        resultActions
+                .andExpect(status().is(expectedStatus));
+
+        bodyChecker.accept(resultActions, expectedTimeRange);
+    }
+
+    private static Stream<Arguments> getUserBookingTimeRangeArguments() {
+        return Stream.of(
+                Arguments.of(
+                        "User booking not found exception",
+                        "54218760-ae5d-45b9-9ceb-58d36d869027",
+                        "2025-01-02",
+                        "54218760-ae5d-45b9-9ceb-58d36d869028",
+                        "54218760-ae5d-45b9-9ceb-58d36d869029",
+                        null,
+                        404,
+                        (BiConsumer<ResultActions, TimeRange>) (resultActions, _) -> validateProblemDetail(resultActions,
+                                "Not Found",
+                                404,
+                                "UserBooking(date: 2025-01-02, serviceId: 54218760-ae5d-45b9-9ceb-58d36d869027, bookingId: 54218760-ae5d-45b9-9ceb-58d36d869029) was not found."
+                        )
+                ),
+                Arguments.of(
+                        "Correct response",
+                        "54218760-ae5d-45b9-9ceb-58d36d869027",
+                        "2025-01-01",
+                        "54218760-ae5d-45b9-9ceb-58d36d869028",
+                        "54218760-ae5d-45b9-9ceb-58d36d869029",
+                        TimeRange.of(30, 45),
+                        200,
+                        (BiConsumer<ResultActions, TimeRange>) BookingControllerTest::validateTimeRangeResponse
+                )
+        );
+    }
+
+    @SneakyThrows
+    private static void validateTimeRangeResponse(ResultActions resultActions, TimeRange timeRange) {
+        resultActions
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$.start").value(timeRange.start().minuteOfDay()))
+                .andExpect(jsonPath("$.end").value(timeRange.end().minuteOfDay()));
     }
 
     @SneakyThrows
