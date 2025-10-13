@@ -8,6 +8,7 @@ import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 import com.github.matsik.cassandra.entity.BookingByUser;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
+import com.github.matsik.query.booking.TestDataGenerator;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetFirstUserBookingsQuery;
 import com.github.matsik.query.booking.query.GetNextUserBookingsQuery;
@@ -205,12 +206,12 @@ class BookingServiceTest {
     void shouldThrowUserBookingNotFoundException() {
         // given
         Stream.of(
-                booking(numberToUUID(1), aUserId(), 0, 45),
-                booking(numberToUUID(2), aUserId(), 60, 120)
+                booking(TestDataGenerator.numberToUUID(1), aUserId(), 0, 45),
+                booking(TestDataGenerator.numberToUUID(2), aUserId(), 60, 120)
         ).forEach(this::persistBooking);
 
         // expect
-        UUID bookingId = numberToUUID(3);
+        UUID bookingId = TestDataGenerator.numberToUUID(3);
         GetUserBookingQuery query = new GetUserBookingQuery(aBookingPartitionKey(), aUserId(), bookingId);
 
         assertThrows(UserBookingNotFoundException.class, () -> service.getUserBookingTimeRange(query));
@@ -239,28 +240,28 @@ class BookingServiceTest {
                         "Should get first two bookings for user a",
                         new GetFirstUserBookingsQuery(aUserId(), 2),
                         List.of(
-                                userBooking(numberToUUID(1), 0, 60),
-                                userBooking(numberToUUID(3), 120, 250)
+                                userBooking(TestDataGenerator.numberToUUID(1), 0, 60),
+                                userBooking(TestDataGenerator.numberToUUID(3), 120, 250)
                         )
                 ),
                 Arguments.of(
                         "Should get two bookings for user a after the first",
-                        getNextUserBookingQuery(aUserId(), numberToUUID(1), 2),
+                        getNextUserBookingQuery(aUserId(), TestDataGenerator.numberToUUID(1), 2),
                         List.of(
-                                userBooking(numberToUUID(3), 120, 250),
-                                userBooking(numberToUUID(5), 400, 500)
+                                userBooking(TestDataGenerator.numberToUUID(3), 120, 250),
+                                userBooking(TestDataGenerator.numberToUUID(5), 400, 500)
                         )
                 ),
                 Arguments.of(
                         "Should get third bookings for user b after the first two",
-                        getNextUserBookingQuery(bUserId(), numberToUUID(4), 2),
+                        getNextUserBookingQuery(bUserId(), TestDataGenerator.numberToUUID(4), 2),
                         List.of(
-                                userBooking(numberToUUID(6), 525, 600)
+                                userBooking(TestDataGenerator.numberToUUID(6), 525, 600)
                         )
                 ),
                 Arguments.of(
                         "Should get no bookings",
-                        getNextUserBookingQuery(aUserId(), numberToUUID(5), 2),
+                        getNextUserBookingQuery(aUserId(), TestDataGenerator.numberToUUID(5), 2),
                         List.of(
                         )
                 ),
@@ -268,9 +269,9 @@ class BookingServiceTest {
                         "Should get all bookings of user a",
                         new GetFirstUserBookingsQuery(aUserId(), 4),
                         List.of(
-                                userBooking(numberToUUID(1), 0, 60),
-                                userBooking(numberToUUID(3), 120, 250),
-                                userBooking(numberToUUID(5), 400, 500)
+                                userBooking(TestDataGenerator.numberToUUID(1), 0, 60),
+                                userBooking(TestDataGenerator.numberToUUID(3), 120, 250),
+                                userBooking(TestDataGenerator.numberToUUID(5), 400, 500)
                         )
                 )
         );
@@ -278,12 +279,12 @@ class BookingServiceTest {
 
     private static List<Booking> bookings() {
         return List.of(
-                booking(numberToUUID(1), aUserId(), 0, 60),
-                booking(numberToUUID(2), bUserId(), 75, 105),
-                booking(numberToUUID(3), aUserId(), 120, 250),
-                booking(numberToUUID(4), bUserId(), 300, 375),
-                booking(numberToUUID(5), aUserId(), 400, 500),
-                booking(numberToUUID(6), bUserId(), 525, 600)
+                booking(TestDataGenerator.numberToUUID(1), aUserId(), 0, 60),
+                booking(TestDataGenerator.numberToUUID(2), bUserId(), 75, 105),
+                booking(TestDataGenerator.numberToUUID(3), aUserId(), 120, 250),
+                booking(TestDataGenerator.numberToUUID(4), bUserId(), 300, 375),
+                booking(TestDataGenerator.numberToUUID(5), aUserId(), 400, 500),
+                booking(TestDataGenerator.numberToUUID(6), bUserId(), 525, 600)
         );
     }
 
@@ -325,7 +326,7 @@ class BookingServiceTest {
     }
 
     private static BookingPartitionKey aBookingPartitionKey() {
-        return BookingPartitionKey.of(numberToUUID(1), numberToLocalDate(1));
+        return BookingPartitionKey.of(TestDataGenerator.numberToUUID(1), TestDataGenerator.numberToLocalDate(1));
     }
 
     private static Booking newBooking(UUID serviceId, LocalDate date, UUID bookingId, UUID userId, int start, int end) {
@@ -400,20 +401,11 @@ class BookingServiceTest {
     }
 
     private static UUID aUserId() {
-        return numberToUUID(1);
+        return TestDataGenerator.numberToUUID(1);
     }
 
     private static UUID bUserId() {
-        return numberToUUID(2);
-    }
-
-    public static UUID numberToUUID(long number) {
-        String uuidString = String.format("%08d-0000-0000-0000-000000000000", number);
-        return UUID.fromString(uuidString);
-    }
-
-    public static LocalDate numberToLocalDate(int number) {
-        return LocalDate.of(2025, 9, number);
+        return TestDataGenerator.numberToUUID(2);
     }
 
     private static void execMigration() throws IOException {
