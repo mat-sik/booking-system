@@ -11,6 +11,8 @@ public class QueryRemoteServiceClientConfiguration {
     public RestClient queryServiceClient(QueryRemoteServiceClientProperties properties) {
         return RestClient.builder()
                 .baseUrl(properties.baseUrl())
+                .defaultStatusHandler(_ -> true, (_, _) -> {
+                })
                 .build();
     }
 
