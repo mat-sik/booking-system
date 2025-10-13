@@ -1,7 +1,6 @@
 package com.github.matsik.command.config.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.matsik.jackson.ObjectMapperFactory;
 import com.github.matsik.kafka.task.CommandValue;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +11,7 @@ public class JacksonConfiguration {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return ObjectMapperFactory.create();
+        return new ObjectMapper();
     }
 
     @Bean
