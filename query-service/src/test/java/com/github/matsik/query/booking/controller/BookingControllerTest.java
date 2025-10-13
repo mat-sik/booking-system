@@ -2,11 +2,14 @@ package com.github.matsik.query.booking.controller;
 
 import com.github.matsik.dto.TimeRange;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
+import com.github.matsik.query.booking.query.GetFirstUserBookingsQuery;
+import com.github.matsik.query.booking.query.GetNextUserBookingsQuery;
 import com.github.matsik.query.booking.query.GetUserBookingQuery;
+import com.github.matsik.query.booking.query.GetUserBookingsQuery;
+import com.github.matsik.query.booking.repository.projection.UserBooking;
 import com.github.matsik.query.booking.service.BookingService;
 import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -15,7 +18,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -75,21 +80,21 @@ class BookingControllerTest {
         return Stream.of(
                 Arguments.of(
                         "Incorrect serviceId UUID",
-                        "54218760-ae5d-45b9-9ceb-58d36d86902X",
-                        "2025-01-01",
+                        incorrectServiceId(),
+                        date(),
                         "15",
                         List.of(),
                         400,
                         (BiConsumer<ResultActions, List<TimeRange>>) (resultActions, _) -> validateProblemDetail(resultActions,
                                 "Bad Request",
                                 400,
-                                "Parameter: 'serviceId' has incorrect value: '54218760-ae5d-45b9-9ceb-58d36d86902X'"
+                                String.format("Parameter: 'serviceId' has incorrect value: '%s'", incorrectServiceId())
                         )
                 ),
                 Arguments.of(
                         "Incorrect serviceDuration",
-                        "54218760-ae5d-45b9-9ceb-58d36d869028",
-                        "2025-01-01",
+                        serviceId(),
+                        date(),
                         "0",
                         List.of(),
                         400,
@@ -101,8 +106,8 @@ class BookingControllerTest {
                 ),
                 Arguments.of(
                         "Correct response",
-                        "54218760-ae5d-45b9-9ceb-58d36d869028",
-                        "2025-01-01",
+                        serviceId(),
+                        date(),
                         "15",
                         List.of(
                                 TimeRange.of(30, 45),
@@ -113,6 +118,10 @@ class BookingControllerTest {
                         (BiConsumer<ResultActions, List<TimeRange>>) BookingControllerTest::validateTimeRangesResponse
                 )
         );
+    }
+
+    private static String incorrectServiceId() {
+        return "54218760-ae5d-45b9-9ceb-58d36d86902X";
     }
 
     @SneakyThrows
@@ -173,24 +182,24 @@ class BookingControllerTest {
         return Stream.of(
                 Arguments.of(
                         "User booking not found exception",
-                        "54218760-ae5d-45b9-9ceb-58d36d869027",
-                        "2025-01-02",
-                        "54218760-ae5d-45b9-9ceb-58d36d869028",
-                        "54218760-ae5d-45b9-9ceb-58d36d869029",
+                        serviceId(),
+                        date(),
+                        userId(),
+                        bookingId(),
                         null,
                         404,
                         (BiConsumer<ResultActions, TimeRange>) (resultActions, _) -> validateProblemDetail(resultActions,
                                 "Not Found",
                                 404,
-                                "UserBooking(date: 2025-01-02, serviceId: 54218760-ae5d-45b9-9ceb-58d36d869027, bookingId: 54218760-ae5d-45b9-9ceb-58d36d869029) was not found."
+                                String.format("UserBooking(date: %s, serviceId: %s, bookingId: %s) was not found.", date(), serviceId(), bookingId())
                         )
                 ),
                 Arguments.of(
                         "Correct response",
-                        "54218760-ae5d-45b9-9ceb-58d36d869027",
-                        "2025-01-01",
-                        "54218760-ae5d-45b9-9ceb-58d36d869028",
-                        "54218760-ae5d-45b9-9ceb-58d36d869029",
+                        serviceId(),
+                        date(),
+                        userId(),
+                        bookingId(),
                         TimeRange.of(30, 45),
                         200,
                         (BiConsumer<ResultActions, TimeRange>) BookingControllerTest::validateTimeRangeResponse
@@ -205,6 +214,161 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$.start").value(timeRange.start().minuteOfDay()))
                 .andExpect(jsonPath("$.end").value(timeRange.end().minuteOfDay()));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("getUserBookingsArguments")
+    void getUserBookings(
+            String name,
+            String userId,
+            String serviceId,
+            String date,
+            String bookingId,
+            String limit,
+            List<UserBooking> expectedUserBookings,
+            int expectedStatus,
+            BiConsumer<ResultActions, List<UserBooking>> bodyChecker
+    ) throws Exception {
+        // given
+        if (!expectedUserBookings.isEmpty()) {
+            GetUserBookingsQuery query = query(userId, serviceId, date, bookingId, limit);
+            when(service.getUserBookings(query)).thenReturn(expectedUserBookings);
+        }
+        // when
+        ResultActions resultActions = mockMvc.perform(bookings(userId, serviceId, date, bookingId, limit));
+        // then
+        resultActions
+                .andExpect(status().is(expectedStatus));
+
+        bodyChecker.accept(resultActions, expectedUserBookings);
+    }
+
+    private static Stream<Arguments> getUserBookingsArguments() {
+        return Stream.of(
+                Arguments.of(
+                        "Missing required parameter",
+                        null,
+                        serviceId(),
+                        date(),
+                        bookingId(),
+                        "10",
+                        List.of(),
+                        400,
+                        (BiConsumer<ResultActions, List<UserBooking>>) (resultActions, _) -> validateProblemDetail(resultActions,
+                                "Bad Request",
+                                400,
+                                "Required request parameter 'userId' for method parameter type UUID is not present"
+                        )
+                ),
+                Arguments.of(
+                        "Correct response for next bookings",
+                        userId(),
+                        serviceId(),
+                        date(),
+                        bookingId(),
+                        "10",
+                        List.of(
+                                userBooking(30, 60),
+                                userBooking(90, 120)
+                        ),
+                        200,
+                        (BiConsumer<ResultActions, List<UserBooking>>) BookingControllerTest::validateUserBookingsResponse
+                ),
+                Arguments.of(
+                        "Correct response for first bookings",
+                        userId(),
+                        serviceId(),
+                        date(),
+                        null,
+                        "10",
+                        List.of(
+                                userBooking(30, 60),
+                                userBooking(90, 120)
+                        ),
+                        200,
+                        (BiConsumer<ResultActions, List<UserBooking>>) BookingControllerTest::validateUserBookingsResponse
+                )
+        );
+    }
+
+    private static UserBooking userBooking(int start, int end) {
+        return UserBooking.builder()
+                .serviceId(UUID.fromString(serviceId()))
+                .date(LocalDate.parse(date()))
+                .bookingId(UUID.fromString(bookingId()))
+                .timeRange(TimeRange.of(start, end))
+                .build();
+    }
+
+    private GetUserBookingsQuery query(
+            String userIdStr,
+            String serviceIdStr,
+            String dateStr,
+            String bookingIdStr,
+            String limitStr
+    ) {
+        UUID userId = UUID.fromString(userIdStr);
+        int limit = Integer.parseInt(limitStr);
+        if (serviceIdStr != null && dateStr != null && bookingIdStr != null) {
+            return new GetNextUserBookingsQuery(
+                    userId,
+                    UUID.fromString(serviceIdStr),
+                    LocalDate.parse(dateStr),
+                    UUID.fromString(bookingIdStr),
+                    limit
+            );
+        }
+        return new GetFirstUserBookingsQuery(userId, limit);
+    }
+
+    private RequestBuilder bookings(
+            String userId,
+            String serviceId,
+            String date,
+            String bookingId,
+            String limit
+    ) {
+        MockHttpServletRequestBuilder requestBuilder = get("/bookings");
+        if (userId != null) {
+            requestBuilder
+                    .queryParam("userId", userId);
+        }
+        if (serviceId != null) {
+            requestBuilder
+                    .queryParam("cursorServiceId", serviceId);
+        }
+        if (date != null) {
+            requestBuilder
+                    .queryParam("cursorDate", date);
+        }
+        if (bookingId != null) {
+            requestBuilder
+                    .queryParam("cursorBookingId", bookingId);
+        }
+        if (limit != null) {
+            requestBuilder
+                    .queryParam("limit", limit);
+        }
+        return requestBuilder;
+    }
+
+    @SneakyThrows
+    private static void validateUserBookingsResponse(ResultActions resultActions, List<UserBooking> userBookings) {
+        resultActions = resultActions
+                .andExpect(jsonPath("$.length()").value(userBookings.size()));
+
+        for (int i = 0; i < userBookings.size(); i++) {
+            UserBooking userBooking = userBookings.get(i);
+
+            resultActions
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath(String.format("$[%d].length()", i)).value(5))
+                    .andExpect(jsonPath(String.format("$[%d].serviceId", i)).value(userBooking.serviceId().toString()))
+                    .andExpect(jsonPath(String.format("$[%d].date", i)).value(userBooking.date().toString()))
+                    .andExpect(jsonPath(String.format("$[%d].bookingId", i)).value(userBooking.bookingId().toString()))
+                    .andExpect(jsonPath(String.format("$[%d].start", i)).value(userBooking.timeRange().start().minuteOfDay()))
+                    .andExpect(jsonPath(String.format("$[%d].end", i)).value(userBooking.timeRange().end().minuteOfDay()));
+        }
     }
 
     @SneakyThrows
@@ -223,11 +387,28 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.detail").value(detail));
     }
 
-    @Test
-    void getUserBookingTimeRange() {
+    public static String userId() {
+        return numberToUUID(1).toString();
     }
 
-    @Test
-    void getUserBookings() {
+    public static String serviceId() {
+        return numberToUUID(2).toString();
+    }
+
+    public static String bookingId() {
+        return numberToUUID(3).toString();
+    }
+
+    public static String date() {
+        return numberToLocalDate(1).toString();
+    }
+
+    public static UUID numberToUUID(long number) {
+        String uuidString = String.format("%08d-0000-0000-0000-000000000000", number);
+        return UUID.fromString(uuidString);
+    }
+
+    public static LocalDate numberToLocalDate(int number) {
+        return LocalDate.of(2025, 9, number);
     }
 }

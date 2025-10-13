@@ -4,6 +4,7 @@ import com.github.matsik.query.booking.service.exception.UserBookingNotFoundExce
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -41,6 +42,11 @@ public class ControllerAdvice {
                 .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
                 .sorted()
                 .collect(Collectors.joining(", "));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ProblemDetail onMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
 }
