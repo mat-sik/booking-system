@@ -6,9 +6,3 @@ cassandra:
   contactPoints: ${BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS}
   keyspaceName: ${BOOKING_SYSTEM_CASSANDRA_KEYSPACE_NAME}
   localDatacenter: ${BOOKING_SYSTEM_DATACENTER}
-
-logging:
-  level:
-    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
-    com.mongodb: DEBUG
-    org.mongodb.driver: DEBUG
