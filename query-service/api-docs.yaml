@@ -6,10 +6,18 @@ info:
 servers:
   - url: http://localhost:8080
 paths:
-  /booking/available:
+  /bookings/available:
     get:
       summary: Get available time ranges for a service on a specific date.
       parameters:
+        - name: serviceId
+          in: query
+          description: The ID of the service for which time ranges are being queried.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "54218760-ae5d-45b9-9ceb-58d36d869021"
         - name: date
           in: query
           description: The date to check for available time ranges.
@@ -18,13 +26,6 @@ paths:
             type: string
             format: date
           example: "2024-12-01"
-        - name: serviceId
-          in: query
-          description: The ID of the service for which time ranges are being queried.
-          required: true
-          schema:
-            $ref: '#/components/schemas/ObjectId'
-          example: "010000000000000000000000"
         - name: serviceDuration
           in: query
           description: The duration of the service in minutes.
@@ -51,30 +52,43 @@ paths:
         '400':
           description: Bad request due to invalid parameters or malformed input.
           content:
-            application/json:
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
-              example:
-                type: "https://example.com/validation-error"
-                title: "Validation Error"
-                status: 400
-                detail: "Invalid date format. Expected YYYY-MM-DD."
+              examples:
+                invalidUUID:
+                  summary: Invalid UUID format
+                  value:
+                    type: "about:blank"
+                    title: "Bad Request"
+                    status: 400
+                    detail: "Parameter: 'serviceId' has incorrect value: '54218760-ae5d-45b9-9ceb-58d36d86902X'"
+                invalidDuration:
+                  summary: Invalid service duration
+                  value:
+                    type: "about:blank"
+                    title: "Bad Request"
+                    status: 400
+                    detail: "getAvailableTimeRanges.serviceDuration: must be greater than 0"
         '500':
           description: Internal server error due to an unexpected condition.
           content:
-            application/json:
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
-              example:
-                type: "https://example.com/server-error"
-                title: "Internal Server Error"
-                status: 500
-                detail: "An unexpected error occurred."
 
-  /booking:
+  /bookings/user:
     get:
-      summary: Get the booking information for a specific user.
+      summary: Get the time range for a specific user booking.
       parameters:
+        - name: serviceId
+          in: query
+          description: The ID of the service for the booking.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "54218760-ae5d-45b9-9ceb-58d36d869021"
         - name: date
           in: query
           description: The date of the booking.
@@ -83,220 +97,219 @@ paths:
             type: string
             format: date
           example: "2024-12-01"
-        - name: serviceId
+        - name: userId
           in: query
-          description: The ID of the service for the booking.
+          description: The ID of the user who made the booking.
           required: true
           schema:
-            $ref: '#/components/schemas/ObjectId'
-          example: "010000000000000000000000"
+            type: string
+            format: uuid
+          example: "54218760-ae5d-45b9-9ceb-58d36d869022"
         - name: bookingId
           in: query
           description: The ID of the booking.
           required: true
           schema:
-            $ref: '#/components/schemas/ObjectId'
-          example: "100000000000000000000000"
+            type: string
+            format: uuid
+          example: "54218760-ae5d-45b9-9ceb-58d36d869023"
       responses:
         '200':
-          description: User booking information.
+          description: User booking time range information.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserBookingResponse'
+                $ref: '#/components/schemas/TimeRangeResponse'
               example:
-                userId: "110000000000000000000000"
                 start: 540
                 end: 600
         '400':
           description: Bad request due to invalid parameters or malformed input.
           content:
-            application/json:
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
               example:
-                type: "https://example.com/validation-error"
-                title: "Validation Error"
+                type: "about:blank"
+                title: "Bad Request"
                 status: 400
-                detail: "Missing required parameter 'date'."
+                detail: "Required request parameter 'userId' for method parameter type UUID is not present"
         '404':
           description: User booking not found.
           content:
-            application/json:
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
               example:
-                type: "https://example.com/not-found"
+                type: "about:blank"
                 title: "Not Found"
                 status: 404
-                detail: "Booking with ID 100000000000000000000000 not found."
+                detail: "UserBooking(date: 2024-12-01, serviceId: 54218760-ae5d-45b9-9ceb-58d36d869021, bookingId: 54218760-ae5d-45b9-9ceb-58d36d869023) was not found."
         '500':
           description: Internal server error due to an unexpected condition.
           content:
-            application/json:
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
-              example:
-                type: "https://example.com/server-error"
-                title: "Internal Server Error"
-                status: 500
-                detail: "An unexpected error occurred."
 
-  /booking/all:
+  /bookings:
     get:
-      summary: Get all bookings for specified dates, services, and users.
+      summary: Get user bookings with cursor-based pagination.
+      description: Retrieve bookings for a specific user. Supports cursor-based pagination for efficient fetching of large result sets.
       parameters:
-        - name: dates
+        - name: userId
           in: query
-          description: A comma-separated list of dates to fetch bookings for.
+          description: The ID of the user whose bookings to retrieve.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "54218760-ae5d-45b9-9ceb-58d36d869022"
+        - name: cursorServiceId
+          in: query
+          description: The service ID cursor for pagination (required with cursorDate and cursorBookingId for next page).
           required: false
           schema:
             type: string
-            example: "2024-12-01,2024-12-02"
-            default: ""
-        - name: serviceIds
+            format: uuid
+          example: "54218760-ae5d-45b9-9ceb-58d36d869021"
+        - name: cursorDate
           in: query
-          description: A comma-separated list of service IDs to filter bookings.
+          description: The date cursor for pagination (required with cursorServiceId and cursorBookingId for next page).
           required: false
           schema:
             type: string
-            example: "010000000000000000000000,010000000000000000000001"
-            default: ""
-        - name: userIds
+            format: date
+          example: "2024-12-01"
+        - name: cursorBookingId
           in: query
-          description: A comma-separated list of user IDs to filter bookings.
+          description: The booking ID cursor for pagination (required with cursorServiceId and cursorDate for next page).
           required: false
           schema:
             type: string
-            example: "110000000000000000000000,110000000000000000000001"
-            default: ""
+            format: uuid
+          example: "54218760-ae5d-45b9-9ceb-58d36d869023"
+        - name: limit
+          in: query
+          description: Maximum number of bookings to return.
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+          example: 10
       responses:
         '200':
-          description: A list of service bookings.
+          description: A list of user bookings.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ServiceBookingResponse'
+                  $ref: '#/components/schemas/UserBookingResponse'
               example:
-                - id: "000000000000000000000000"
+                - serviceId: "54218760-ae5d-45b9-9ceb-58d36d869021"
                   date: "2024-12-01"
-                  serviceId: "010000000000000000000000"
-                  bookings:
-                    - id: "100000000000000000000000"
-                      userId: "110000000000000000000000"
-                      start: 540
-                      end: 600
+                  bookingId: "54218760-ae5d-45b9-9ceb-58d36d869023"
+                  start: 540
+                  end: 600
+                - serviceId: "54218760-ae5d-45b9-9ceb-58d36d869021"
+                  date: "2024-12-02"
+                  bookingId: "54218760-ae5d-45b9-9ceb-58d36d869024"
+                  start: 660
+                  end: 720
         '400':
           description: Bad request due to invalid parameters or malformed input.
           content:
-            application/json:
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
               example:
-                type: "https://example.com/validation-error"
-                title: "Validation Error"
+                type: "about:blank"
+                title: "Bad Request"
                 status: 400
-                detail: "Invalid service ID format."
+                detail: "Required request parameter 'userId' for method parameter type UUID is not present"
         '500':
           description: Internal server error due to an unexpected condition.
           content:
-            application/json:
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
-              example:
-                type: "https://example.com/server-error"
-                title: "Internal Server Error"
-                status: 500
-                detail: "An unexpected error occurred."
 
 components:
   schemas:
-    ObjectId:
-      type: string
-      pattern: "^[a-fA-F0-9]{24}$" # MongoDB ObjectId format
-      example: "000000000000000000000000"
-
     TimeRangeResponse:
       type: object
       properties:
         start:
           type: integer
+          description: Start time in minutes from midnight (0-1439)
+          example: 540
         end:
           type: integer
-      example:
-        start: 540
-        end: 600
+          description: End time in minutes from midnight (0-1439)
+          example: 600
+      required:
+        - start
+        - end
 
     UserBookingResponse:
       type: object
       properties:
-        userId:
-          $ref: '#/components/schemas/ObjectId'
-        start:
-          type: integer
-        end:
-          type: integer
-      example:
-        userId: "110000000000000000000000"
-        start: 540
-        end: 600
-
-    ServiceBookingResponse:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/ObjectId'
+        serviceId:
+          type: string
+          format: uuid
+          description: The ID of the booked service
+          example: "54218760-ae5d-45b9-9ceb-58d36d869021"
         date:
           type: string
           format: date
-        serviceId:
-          $ref: '#/components/schemas/ObjectId'
-        bookings:
-          type: array
-          items:
-            $ref: '#/components/schemas/Booking'
-      example:
-        id: "000000000000000000000000"
-        date: "2024-12-01"
-        serviceId: "010000000000000000000000"
-        bookings:
-          - id: "100000000000000000000000"
-            userId: "110000000000000000000000"
-            start: 540
-            end: 600
-
-    Booking:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/ObjectId'
-        userId:
-          $ref: '#/components/schemas/ObjectId'
+          description: The date of the booking
+          example: "2024-12-01"
+        bookingId:
+          type: string
+          format: uuid
+          description: The ID of the booking
+          example: "54218760-ae5d-45b9-9ceb-58d36d869023"
         start:
           type: integer
+          description: Start time in minutes from midnight (0-1439)
+          example: 540
         end:
           type: integer
-      example:
-        id: "100000000000000000000000"
-        userId: "110000000000000000000000"
-        start: 540
-        end: 600
+          description: End time in minutes from midnight (0-1439)
+          example: 600
+      required:
+        - serviceId
+        - date
+        - bookingId
+        - start
+        - end
 
     ProblemDetail:
       type: object
       properties:
         type:
           type: string
+          description: URI reference identifying the problem type
+          example: "about:blank"
         title:
           type: string
+          description: Short, human-readable summary of the problem
+          example: "Bad Request"
         status:
           type: integer
+          description: HTTP status code
+          example: 400
         detail:
           type: string
-      example:
-        type: "https://example.com/validation-error"
-        title: "Validation Error"
-        status: 400
-        detail: "Invalid input data."
+          description: Human-readable explanation specific to this occurrence
+          example: "Parameter: 'serviceId' has incorrect value: 'invalid-uuid'"
+        instance:
+          type: string
+          description: URI reference identifying the specific occurrence of the problem
+      required:
+        - type
+        - title
+        - status
+        - detail
