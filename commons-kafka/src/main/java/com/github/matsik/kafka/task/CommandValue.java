@@ -11,5 +11,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = DeleteBookingCommandValue.class),
         @JsonSubTypes.Type(value = CreateBookingCommandValue.class)
 })
-public interface CommandValue {
+public sealed interface CommandValue permits CreateBookingCommandValue, DeleteBookingCommandValue {
 }

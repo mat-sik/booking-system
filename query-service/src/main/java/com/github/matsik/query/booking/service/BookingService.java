@@ -39,13 +39,10 @@ public class BookingService {
     }
 
     public List<UserBooking> getUserBookings(GetUserBookingsQuery query) {
-        if (query instanceof GetFirstUserBookingsQuery getFirstUserBookingsQuery) {
-            return getFirstUserBookings(getFirstUserBookingsQuery);
-        } else if (query instanceof GetNextUserBookingsQuery getNextUserBookingsQuery) {
-            return getNextUserBookings(getNextUserBookingsQuery);
-        } else {
-            throw new IllegalArgumentException();
-        }
+        return switch (query) {
+            case GetFirstUserBookingsQuery first -> getFirstUserBookings(first);
+            case GetNextUserBookingsQuery next -> getNextUserBookings(next);
+        };
     }
 
     private List<UserBooking> getFirstUserBookings(GetFirstUserBookingsQuery query) {

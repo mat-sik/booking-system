@@ -1,4 +1,4 @@
 package com.github.matsik.query.booking.query;
 
-public interface GetUserBookingsQuery {
+public sealed interface GetUserBookingsQuery permits GetFirstUserBookingsQuery, GetNextUserBookingsQuery {
 }

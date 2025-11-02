@@ -3,10 +3,10 @@ package com.github.matsik.command.booking.listener;
 import com.github.matsik.command.booking.command.CreateBookingCommand;
 import com.github.matsik.command.booking.command.DeleteBookingCommand;
 import com.github.matsik.command.booking.service.BookingService;
+import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.kafka.task.CommandValue;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
-import com.github.matsik.dto.BookingPartitionKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -33,14 +33,15 @@ public class BookingCommandListener {
         BookingPartitionKey key = record.key();
         CommandValue value = record.value();
 
-        if (value instanceof CreateBookingCommandValue createBookingCommandValue) {
-            CreateBookingCommand command = CreateBookingCommand.of(key, createBookingCommandValue);
-            service.createBooking(command);
-        } else if (value instanceof DeleteBookingCommandValue deleteBookingCommandValue) {
-            DeleteBookingCommand command = DeleteBookingCommand.of(key, deleteBookingCommandValue);
-            service.deleteBooking(command);
-        } else {
-            log.severe(String.format("Unexpected CommandValue: %s", value.toString()));
+        switch (value) {
+            case CreateBookingCommandValue create -> {
+                CreateBookingCommand command = CreateBookingCommand.of(key, create);
+                service.createBooking(command);
+            }
+            case DeleteBookingCommandValue delete -> {
+                DeleteBookingCommand command = DeleteBookingCommand.of(key, delete);
+                service.deleteBooking(command);
+            }
         }
     }
 
