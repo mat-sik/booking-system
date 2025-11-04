@@ -2,16 +2,7 @@ spring:
   application:
     name: query
 
-mongo:
-  host: ${BOOKING_SYSTEM_MONGO_HOST}
-  port: 27017
-  login: ${BOOKING_SYSTEM_MONGO_LOGIN}
-  password: ${BOOKING_SYSTEM_MONGO_PASSWORD}
-  authDatabase: ${BOOKING_SYSTEM_MONGO_AUTH_DB}
-  database: ${BOOKING_SYSTEM_MONGO_DB}
-
-logging:
-  level:
-    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
-    com.mongodb: DEBUG
-    org.mongodb.driver: DEBUG
+cassandra:
+  contactPoints: ${BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS}
+  keyspaceName: ${BOOKING_SYSTEM_CASSANDRA_KEYSPACE_NAME}
+  localDatacenter: ${BOOKING_SYSTEM_DATACENTER}

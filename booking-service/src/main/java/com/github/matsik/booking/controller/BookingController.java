@@ -4,13 +4,11 @@ import com.github.matsik.booking.client.command.CommandRemoteService;
 import com.github.matsik.booking.client.query.QueryRemoteService;
 import com.github.matsik.booking.controller.request.CreateBookingRequest;
 import com.github.matsik.booking.controller.request.DeleteBookingRequest;
-import com.github.matsik.query.response.ServiceBookingResponse;
 import com.github.matsik.query.response.TimeRangeResponse;
 import com.github.matsik.query.response.UserBookingResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,9 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/booking")
+@RequestMapping("/bookings")
 @RequiredArgsConstructor
 @Validated
 public class BookingController {
@@ -44,31 +43,35 @@ public class BookingController {
 
     @GetMapping("/available")
     public ResponseEntity<List<TimeRangeResponse>> getAvailableTimeRanges(
-            @RequestParam("date") LocalDate date,
-            @RequestParam("serviceId") ObjectId serviceId,
-            @RequestParam("serviceDuration") @Positive int serviceDuration
+            @RequestParam UUID serviceId,
+            @RequestParam LocalDate date,
+            @RequestParam @Positive int serviceDuration
     ) {
-        List<TimeRangeResponse> responses = queryService.getAvailableTimeRanges(date, serviceId, serviceDuration);
-        return ResponseEntity.ok(responses);
+        return queryService.getAvailableTimeRanges(serviceId, date, serviceDuration);
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<TimeRangeResponse> getUserBookingTimeRange(
+            @RequestParam UUID serviceId,
+            @RequestParam LocalDate date,
+            @RequestParam UUID userId,
+            @RequestParam UUID bookingId
+    ) {
+        return queryService.getUserBookingTimeRange(serviceId, date, userId, bookingId);
     }
 
     @GetMapping
-    public ResponseEntity<UserBookingResponse> getUserBooking(
-            @RequestParam("date") LocalDate date,
-            @RequestParam("serviceId") ObjectId serviceId,
-            @RequestParam("bookingId") ObjectId bookingId
+    public ResponseEntity<List<UserBookingResponse>> getUserBookings(
+            @RequestParam UUID userId,
+            @RequestParam(required = false) UUID cursorServiceId,
+            @RequestParam(required = false) LocalDate cursorDate,
+            @RequestParam(required = false) UUID cursorBookingId,
+            @RequestParam int limit
     ) {
-        UserBookingResponse response = queryService.getUserBooking(date, serviceId, bookingId);
-        return ResponseEntity.ok(response);
+        if (cursorServiceId != null && cursorDate != null && cursorBookingId != null) {
+            return queryService.getNextUserBookings(userId, cursorServiceId, cursorDate, cursorBookingId, limit);
+        }
+        return queryService.getFirstUserBookings(userId, limit);
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<ServiceBookingResponse>> getBookings(
-            @RequestParam(required = false, defaultValue = "") List<LocalDate> dates,
-            @RequestParam(required = false, defaultValue = "") List<ObjectId> serviceIds,
-            @RequestParam(required = false, defaultValue = "") List<ObjectId> userIds
-    ) {
-        List<ServiceBookingResponse> responses = queryService.getBookings(dates, serviceIds, userIds);
-        return ResponseEntity.ok(responses);
-    }
 }

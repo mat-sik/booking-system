@@ -1,13 +1,18 @@
 package com.github.matsik.command.booking.command;
 
+import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
-import org.bson.types.ObjectId;
+import lombok.Builder;
 
-public record DeleteBookingCommand(ServiceBookingIdentifier serviceBookingIdentifier, ObjectId bookingId) {
-    public static class Factory {
-        public static DeleteBookingCommand create(ServiceBookingIdentifier identifier, DeleteBookingCommandValue value) {
-            return new DeleteBookingCommand(identifier, value.bookingId());
-        }
+import java.util.UUID;
+
+@Builder
+public record DeleteBookingCommand(BookingPartitionKey bookingPartitionKey, UUID bookingId, UUID userId) {
+    public static DeleteBookingCommand of(BookingPartitionKey key, DeleteBookingCommandValue value) {
+        return DeleteBookingCommand.builder()
+                .bookingPartitionKey(key)
+                .bookingId(value.bookingId())
+                .userId(value.userId())
+                .build();
     }
 }

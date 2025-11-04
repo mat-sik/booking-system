@@ -1,9 +1,12 @@
 package com.github.matsik.query.response;
 
-import org.bson.types.ObjectId;
+import java.time.LocalDate;
+import java.util.UUID;
 
 public record UserBookingResponse(
-        ObjectId userId,
+        UUID serviceId,
+        LocalDate date,
+        UUID bookingId,
         int start,
         int end
 ) {

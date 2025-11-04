@@ -1,15 +1,23 @@
 package com.github.matsik.command.booking.command;
 
+import com.github.matsik.dto.BookingPartitionKey;
+import com.github.matsik.dto.TimeRange;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
-import org.bson.types.ObjectId;
+import lombok.Builder;
 
-public record CreateBookingCommand(ServiceBookingIdentifier serviceBookingIdentifier, ObjectId userId, int start,
-                                   int end) {
+import java.util.UUID;
 
-    public static class Factory {
-        public static CreateBookingCommand create(ServiceBookingIdentifier identifier, CreateBookingCommandValue value) {
-            return new CreateBookingCommand(identifier, value.userId(), value.start(), value.end());
-        }
+@Builder
+public record CreateBookingCommand(
+        BookingPartitionKey bookingPartitionKey,
+        UUID userId,
+        TimeRange timeRange
+) {
+    public static CreateBookingCommand of(BookingPartitionKey key, CreateBookingCommandValue value) {
+        return CreateBookingCommand.builder()
+                .bookingPartitionKey(key)
+                .userId(value.userId())
+                .timeRange(TimeRange.of(value.start(), value.end()))
+                .build();
     }
 }

@@ -1,16 +1,13 @@
 package com.github.matsik.query.booking.query;
 
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
-import org.bson.types.ObjectId;
+import com.github.matsik.dto.BookingPartitionKey;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
-public record GetAvailableTimeRangesQuery(GetBookingTimeRangesQuery getBookingTimeRangesQuery, int serviceDuration) {
-    public static class Factory {
-        public static GetAvailableTimeRangesQuery create(LocalDate date, ObjectId serviceId, int serviceDuration) {
-            ServiceBookingIdentifier identifier = ServiceBookingIdentifier.Factory.create(date, serviceId);
-            GetBookingTimeRangesQuery query = new GetBookingTimeRangesQuery(identifier);
-            return new GetAvailableTimeRangesQuery(query, serviceDuration);
-        }
+public record GetAvailableTimeRangesQuery(BookingPartitionKey bookingPartitionKey, int serviceDuration) {
+    public static GetAvailableTimeRangesQuery of(UUID serviceId, LocalDate date, int serviceDuration) {
+        BookingPartitionKey key = BookingPartitionKey.of(serviceId, date);
+        return new GetAvailableTimeRangesQuery(key, serviceDuration);
     }
 }

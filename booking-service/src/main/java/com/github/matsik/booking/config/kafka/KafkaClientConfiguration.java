@@ -1,9 +1,9 @@
 package com.github.matsik.booking.config.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.matsik.kafka.mapping.ServiceBookingIdentifierSerializer;
+import com.github.matsik.kafka.mapping.BookingPartitionKeySerializer;
 import com.github.matsik.kafka.task.CommandValue;
-import com.github.matsik.mongo.model.ServiceBookingIdentifier;
+import com.github.matsik.dto.BookingPartitionKey;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -21,6 +21,8 @@ import java.util.Map;
 @Configuration
 public class KafkaClientConfiguration {
 
+    public static final String BOOKINGS_TOPIC_NAME = "bookings";
+
     @Bean
     public KafkaAdmin admin(KafkaClientProperties kafkaClientProperties) {
         Map<String, Object> configs = Map.of(
@@ -31,14 +33,14 @@ public class KafkaClientConfiguration {
 
     @Bean
     public NewTopic bookingsTopic() {
-        return TopicBuilder.name("bookings")
+        return TopicBuilder.name(BOOKINGS_TOPIC_NAME)
                 .partitions(3)
                 .replicas(1)
                 .build();
     }
 
     @Bean
-    public ProducerFactory<ServiceBookingIdentifier, CommandValue> producerFactory(
+    public ProducerFactory<BookingPartitionKey, CommandValue> producerFactory(
             KafkaClientProperties kafkaClientProperties,
             ObjectMapper objectMapper
     ) {
@@ -50,13 +52,13 @@ public class KafkaClientConfiguration {
 
         return new DefaultKafkaProducerFactory<>(
                 props,
-                new ServiceBookingIdentifierSerializer(),
+                new BookingPartitionKeySerializer(),
                 jsonSerializer
         );
     }
 
     @Bean
-    public KafkaTemplate<ServiceBookingIdentifier, CommandValue> kafkaTemplate(ProducerFactory<ServiceBookingIdentifier, CommandValue> producerFactory) {
+    public KafkaTemplate<BookingPartitionKey, CommandValue> kafkaTemplate(ProducerFactory<BookingPartitionKey, CommandValue> producerFactory) {
         return new KafkaTemplate<>(producerFactory);
     }
 

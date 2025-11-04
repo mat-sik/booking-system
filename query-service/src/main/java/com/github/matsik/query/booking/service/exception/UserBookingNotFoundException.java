@@ -1,12 +1,12 @@
 package com.github.matsik.query.booking.service.exception;
 
-import com.github.matsik.query.booking.query.GetBookingQuery;
+import com.github.matsik.query.booking.query.GetUserBookingQuery;
 
 public class UserBookingNotFoundException extends RuntimeException {
-    public UserBookingNotFoundException(GetBookingQuery query) {
+    public UserBookingNotFoundException(GetUserBookingQuery query) {
         super(String.format("UserBooking(date: %s, serviceId: %s, bookingId: %s) was not found.",
-                query.serviceBookingIdentifier().date(),
-                query.serviceBookingIdentifier().serviceId(),
+                query.bookingPartitionKey().date(),
+                query.bookingPartitionKey().serviceId(),
                 query.bookingId())
         );
     }
