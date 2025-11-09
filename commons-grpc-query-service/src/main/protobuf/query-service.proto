@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package com.github.matsik.query.booking;
+
+option java_package = "com.github.matsik.query.booking.grpc";
+option java_multiple_files = true;
+
+import "google/type/date.proto";
+
+service BookingServiceGrpc {
+  rpc ListAvailableTimeRanges(ListAvailableTimeRangesRequest) returns (ListAvailableTimeRangesResponse);
+  rpc GetUserBookingTimeRange(GetUserBookingTimeRangeRequest) returns (GetUserBookingTimeRangeResponse);
+  rpc ListUserBookings(ListUserBookingsRequest) returns (ListUserBookingsResponse);
+}
+
+message ListAvailableTimeRangesRequest {
+  string service_id = 1;
+  google.type.Date date = 2;
+  int32 service_duration = 3;
+}
+
+message ListAvailableTimeRangesResponse {
+  repeated TimeRange time_ranges = 1;
+}
+
+message GetUserBookingTimeRangeRequest {
+  string service_id = 1;
+  google.type.Date date = 2;
+  string user_id = 3;
+  string booking_id = 4;
+}
+
+message GetUserBookingTimeRangeResponse {
+  TimeRange time_range = 1;
+}
+
+message ListUserBookingsRequest {
+  string user_id = 1;
+  string cursor_service_id = 2;
+  google.type.Date cursor_date = 3;
+  string cursor_booking_id = 4;
+  int32 limit = 5;
+}
+
+message ListUserBookingsResponse {
+  repeated UserBooking user_bookings = 1;
+}
+
+message TimeRange {
+  int32 start = 1;
+  int32 end = 2;
+}
+
+message UserBooking {
+  string service_id = 1;
+  google.type.Date date = 2;
+  string booking_id = 3;
+  int32 start = 4;
+  int32 end = 5;
+}
