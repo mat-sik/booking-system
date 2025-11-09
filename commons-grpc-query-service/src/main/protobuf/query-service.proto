@@ -7,7 +7,7 @@ option java_multiple_files = true;
 
 import "google/type/date.proto";
 
-service BookingServiceGrpc {
+service QueryService {
   rpc ListAvailableTimeRanges(ListAvailableTimeRangesRequest) returns (ListAvailableTimeRangesResponse);
   rpc GetUserBookingTimeRange(GetUserBookingTimeRangeRequest) returns (GetUserBookingTimeRangeResponse);
   rpc ListUserBookings(ListUserBookingsRequest) returns (ListUserBookingsResponse);
