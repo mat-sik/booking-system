@@ -1,89 +1,105 @@
 package com.github.matsik.booking.client.query;
 
-import com.github.matsik.query.response.TimeRangeResponse;
-import com.github.matsik.query.response.UserBookingResponse;
+import com.github.matsik.booking.controller.response.TimeRangeResponse;
+import com.github.matsik.booking.controller.response.UserBookingResponse;
+import com.github.matsik.query.booking.grpc.GetUserBookingTimeRangeRequest;
+import com.github.matsik.query.booking.grpc.GetUserBookingTimeRangeResponse;
+import com.github.matsik.query.booking.grpc.ListAvailableTimeRangesRequest;
+import com.github.matsik.query.booking.grpc.ListAvailableTimeRangesResponse;
+import com.github.matsik.query.booking.grpc.ListUserBookingsRequest;
+import com.github.matsik.query.booking.grpc.ListUserBookingsResponse;
+import com.github.matsik.query.booking.grpc.QueryServiceGrpc;
+import io.grpc.StatusException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
+
+import static com.github.matsik.query.grpc.GrpcMapper.grpcDate;
 
 @Service
 @RequiredArgsConstructor
 public class QueryRemoteService {
 
-    private static final String PREFIX = "/bookings";
+    private final QueryServiceGrpc.QueryServiceBlockingV2Stub queryServiceStub;
+    private final GrpcMapper grpcMapper;
 
-    private final RestClient queryServiceClient;
+    public List<TimeRangeResponse> getAvailableTimeRanges(UUID serviceId, LocalDate date, int serviceDuration) {
+        ListAvailableTimeRangesRequest request = ListAvailableTimeRangesRequest.newBuilder()
+                .setServiceId(serviceId.toString())
+                .setDate(grpcDate(date))
+                .setServiceDuration(serviceDuration)
+                .build();
 
-    public ResponseEntity<List<TimeRangeResponse>> getAvailableTimeRanges(UUID serviceId, LocalDate date, int serviceDuration) {
-        return queryServiceClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path(PREFIX + "/available")
-                        .queryParam("serviceId", serviceId.toString())
-                        .queryParam("date", DateTimeFormatter.ISO_LOCAL_DATE.format(date))
-                        .queryParam("serviceDuration", String.valueOf(serviceDuration))
-                        .build())
-                .retrieve()
-                .toEntity(new ParameterizedTypeReference<>() {
-                });
+        try {
+            ListAvailableTimeRangesResponse response = queryServiceStub.listAvailableTimeRanges(request);
+            return response.getTimeRangesList().stream()
+                    .map(grpcMapper::timeRangeResponse)
+                    .toList();
+        } catch (StatusException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
-    public ResponseEntity<TimeRangeResponse> getUserBookingTimeRange(
+    public TimeRangeResponse getUserBookingTimeRange(
             UUID serviceId,
             LocalDate date,
             UUID userId,
             UUID bookingId
     ) {
-        return queryServiceClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path(PREFIX + "/user")
-                        .queryParam("serviceId", serviceId.toString())
-                        .queryParam("date", DateTimeFormatter.ISO_LOCAL_DATE.format(date))
-                        .queryParam("userId", userId.toString())
-                        .queryParam("bookingId", bookingId.toString())
-                        .build())
-                .retrieve()
-                .toEntity(new ParameterizedTypeReference<>() {
-                });
+        GetUserBookingTimeRangeRequest request = GetUserBookingTimeRangeRequest.newBuilder()
+                .setServiceId(serviceId.toString())
+                .setDate(grpcDate(date))
+                .setUserId(userId.toString())
+                .setBookingId(bookingId.toString())
+                .build();
+
+        try {
+            GetUserBookingTimeRangeResponse response = queryServiceStub.getUserBookingTimeRange(request);
+            return grpcMapper.timeRangeResponse(response.getTimeRange());
+        } catch (StatusException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
-    public ResponseEntity<List<UserBookingResponse>> getFirstUserBookings(UUID userId, int limit) {
-        return queryServiceClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path(PREFIX)
-                        .queryParam("userId", userId.toString())
-                        .queryParam("limit", String.valueOf(limit))
-                        .build())
-                .retrieve()
-                .toEntity(new ParameterizedTypeReference<>() {
-                });
+    public List<UserBookingResponse> getFirstUserBookings(UUID userId, int limit) {
+        ListUserBookingsRequest request = ListUserBookingsRequest.newBuilder()
+                .setUserId(userId.toString())
+                .setLimit(limit)
+                .build();
+
+        return listUserBookings(request);
     }
 
-    public ResponseEntity<List<UserBookingResponse>> getNextUserBookings(
+    public List<UserBookingResponse> getNextUserBookings(
             UUID userId,
             UUID cursorServiceId,
             LocalDate cursorDate,
             UUID cursorBookingId,
             int limit
     ) {
-        return queryServiceClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path(PREFIX)
-                        .queryParam("userId", userId.toString())
-                        .queryParam("cursorServiceId", cursorServiceId.toString())
-                        .queryParam("cursorDate", cursorDate.toString())
-                        .queryParam("cursorBookingId", cursorBookingId.toString())
-                        .queryParam("limit", String.valueOf(limit))
-                        .build())
-                .retrieve()
-                .toEntity(new ParameterizedTypeReference<>() {
-                });
+        ListUserBookingsRequest request = ListUserBookingsRequest.newBuilder()
+                .setUserId(userId.toString())
+                .setLimit(limit)
+                .setCursorServiceId(cursorServiceId.toString())
+                .setCursorDate(grpcDate(cursorDate))
+                .setCursorBookingId(cursorBookingId.toString())
+                .build();
+
+        return listUserBookings(request);
+    }
+
+    private List<UserBookingResponse> listUserBookings(ListUserBookingsRequest request) {
+        try {
+            ListUserBookingsResponse response = queryServiceStub.listUserBookings(request);
+            return response.getUserBookingsList().stream()
+                    .map(grpcMapper::userBookingResponse)
+                    .toList();
+        } catch (StatusException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
 }

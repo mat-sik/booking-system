@@ -4,8 +4,8 @@ import com.github.matsik.booking.client.command.CommandRemoteService;
 import com.github.matsik.booking.client.query.QueryRemoteService;
 import com.github.matsik.booking.controller.request.CreateBookingRequest;
 import com.github.matsik.booking.controller.request.DeleteBookingRequest;
-import com.github.matsik.query.response.TimeRangeResponse;
-import com.github.matsik.query.response.UserBookingResponse;
+import com.github.matsik.booking.controller.response.TimeRangeResponse;
+import com.github.matsik.booking.controller.response.UserBookingResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +47,7 @@ public class BookingController {
             @RequestParam LocalDate date,
             @RequestParam @Positive int serviceDuration
     ) {
-        return queryService.getAvailableTimeRanges(serviceId, date, serviceDuration);
+        return ResponseEntity.ok(queryService.getAvailableTimeRanges(serviceId, date, serviceDuration));
     }
 
     @GetMapping("/user")
@@ -57,7 +57,7 @@ public class BookingController {
             @RequestParam UUID userId,
             @RequestParam UUID bookingId
     ) {
-        return queryService.getUserBookingTimeRange(serviceId, date, userId, bookingId);
+        return ResponseEntity.ok(queryService.getUserBookingTimeRange(serviceId, date, userId, bookingId));
     }
 
     @GetMapping
@@ -69,9 +69,9 @@ public class BookingController {
             @RequestParam int limit
     ) {
         if (cursorServiceId != null && cursorDate != null && cursorBookingId != null) {
-            return queryService.getNextUserBookings(userId, cursorServiceId, cursorDate, cursorBookingId, limit);
+            return ResponseEntity.ok(queryService.getNextUserBookings(userId, cursorServiceId, cursorDate, cursorBookingId, limit));
         }
-        return queryService.getFirstUserBookings(userId, limit);
+        return ResponseEntity.ok(queryService.getFirstUserBookings(userId, limit));
     }
 
 }

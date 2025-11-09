@@ -27,14 +27,14 @@
         <protobuf-java.version>4.32.1</protobuf-java.version>
         <protoc-gen-grpc-java.version>1.76.0</protoc-gen-grpc-java.version>
         <spring-grpc.version>0.12.0</spring-grpc.version>
+        <proto-google-common-protos.version>2.22.0</proto-google-common-protos.version>
     </properties>
 
     <modules>
         <module>commons-models</module>
-        <module>commons-json</module>
         <module>commons-kafka</module>
-        <module>command-service</module>
         <module>commons-grpc-query-service</module>
+        <module>command-service</module>
         <module>query-service</module>
         <module>booking-service</module>
     </modules>
@@ -44,11 +44,6 @@
             <dependency>
                 <groupId>com.github.matsik</groupId>
                 <artifactId>commons-kafka</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.matsik</groupId>
-                <artifactId>commons-json</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -68,6 +63,11 @@
                 <version>${com.datastax.oss.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.api.grpc</groupId>
+                <artifactId>proto-google-common-protos</artifactId>
+                <version>${proto-google-common-protos.version}</version>
             </dependency>
 
             <dependency>
