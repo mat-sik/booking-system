@@ -19,10 +19,6 @@
         </dependency>
         <dependency>
             <groupId>com.github.matsik</groupId>
-            <artifactId>commons-json</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.matsik</groupId>
             <artifactId>commons-kafka</artifactId>
         </dependency>
 

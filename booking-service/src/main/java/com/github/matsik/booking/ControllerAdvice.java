@@ -1,6 +1,7 @@
 package com.github.matsik.booking;
 
 import com.github.matsik.booking.client.command.exception.BookingCommandDeliveryException;
+import com.github.matsik.booking.client.query.exception.UserBookingNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -13,6 +14,11 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class ControllerAdvice {
+
+    @ExceptionHandler(UserBookingNotFoundException.class)
+    public ProblemDetail onUserBookingNotFoundException(UserBookingNotFoundException exception) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
 
     @ExceptionHandler(BookingCommandDeliveryException.class)
     public ProblemDetail onBookingCommandDeliveryException(BookingCommandDeliveryException ex) {

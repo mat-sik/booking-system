@@ -23,12 +23,17 @@
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <com.datastax.oss.version>4.17.0</com.datastax.oss.version>
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
+        <protobuf-maven-plugin.version>4.0.2</protobuf-maven-plugin.version>
+        <protobuf-java.version>4.32.1</protobuf-java.version>
+        <protoc-gen-grpc-java.version>1.76.0</protoc-gen-grpc-java.version>
+        <spring-grpc.version>0.12.0</spring-grpc.version>
+        <proto-google-common-protos.version>2.22.0</proto-google-common-protos.version>
     </properties>
 
     <modules>
         <module>commons-models</module>
-        <module>commons-json</module>
         <module>commons-kafka</module>
+        <module>commons-grpc-query-service</module>
         <module>command-service</module>
         <module>query-service</module>
         <module>booking-service</module>
@@ -43,12 +48,12 @@
             </dependency>
             <dependency>
                 <groupId>com.github.matsik</groupId>
-                <artifactId>commons-json</artifactId>
+                <artifactId>commons-models</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.matsik</groupId>
-                <artifactId>commons-models</artifactId>
+                <artifactId>commons-grpc-query-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -59,7 +64,19 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>com.google.api.grpc</groupId>
+                <artifactId>proto-google-common-protos</artifactId>
+                <version>${proto-google-common-protos.version}</version>
+            </dependency>
 
+            <dependency>
+                <groupId>org.springframework.grpc</groupId>
+                <artifactId>spring-grpc-dependencies</artifactId>
+                <version>${spring-grpc.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -104,6 +121,28 @@
                             </exclude>
                         </excludes>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>io.github.ascopes</groupId>
+                    <artifactId>protobuf-maven-plugin</artifactId>
+                    <version>${protobuf-maven-plugin.version}</version>
+                    <configuration>
+                        <protoc>${protobuf-java.version}</protoc>
+                        <binaryMavenPlugins>
+                            <binaryMavenPlugin>
+                                <groupId>io.grpc</groupId>
+                                <artifactId>protoc-gen-grpc-java</artifactId>
+                                <version>${protoc-gen-grpc-java.version}</version>
+                            </binaryMavenPlugin>
+                        </binaryMavenPlugins>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>generate</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

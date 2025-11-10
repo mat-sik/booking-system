@@ -8,4 +8,5 @@ kafka:
 
 query:
   service:
-    baseUrl: ${BOOKING_SYSTEM_QUERY_SERVICE_URL}
+    grpc:
+      address: ${BOOKING_SYSTEM_QUERY_SERVICE_ADDRESS}

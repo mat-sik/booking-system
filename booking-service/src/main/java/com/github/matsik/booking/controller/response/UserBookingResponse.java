@@ -1,4 +1,4 @@
-package com.github.matsik.query.response;
+package com.github.matsik.booking.controller.response;
 
 import java.time.LocalDate;
 import java.util.UUID;

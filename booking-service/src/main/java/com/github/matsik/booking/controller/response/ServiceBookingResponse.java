@@ -1,4 +1,4 @@
-package com.github.matsik.query.response;
+package com.github.matsik.booking.controller.response;
 
 import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 

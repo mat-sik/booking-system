@@ -1,6 +1,9 @@
 spring:
   application:
     name: query
+  grpc:
+    server:
+      address: 0.0.0.0:${BOOKING_SYSTEM_QUERY_SERVICE_PORT:50051}
 
 cassandra:
   contactPoints: ${BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS}
