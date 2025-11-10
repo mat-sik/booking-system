@@ -1,5 +1,6 @@
 services:
   booking-service:
+    restart: on-failure
     image: booking-service:latest
     networks:
       - net
@@ -7,28 +8,32 @@ services:
       - "8080:8080"
     env_file:
       - .env
-    restart: on-failure
 
   query-service:
+    restart: on-failure
     image: query-service:latest
     networks:
       - net
-    ports:
-      - "8081:8080"
     env_file:
       - .env
-    restart: on-failure
 
   command-service:
+    restart: on-failure
     image: command-service:latest
     networks:
       - net
+    ports:
+      - "50051:50051"
     env_file:
       - .env
-    restart: on-failure
 
   cassandra:
+    restart: on-failure
     image: cassandra:5.0.5
+    networks:
+      - net
+    ports:
+      - "9042:9042"
     environment:
       CASSANDRA_SEEDS: "cassandra"
       CASSANDRA_CLUSTER_NAME: booking-system
@@ -36,10 +41,6 @@ services:
       CASSANDRA_RACK: RACK1
       CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
       CASSANDRA_NUM_TOKENS: 128
-    networks:
-      - net
-    ports:
-      - "9042:9042"
     volumes:
       - cassandra-data:/var/lib/cassandra
 
@@ -66,9 +67,97 @@ services:
       - kafka-data:/etc/kafka/secrets
       - kafka-data:/mnt/shared/config
 
+  alloy:
+    restart: on-failure
+    image: grafana/alloy:v1.9.1
+    networks:
+      - net
+    ports:
+      - "12345:12345"
+    volumes:
+      - ./config-docker-compose.alloy:/etc/config.alloy
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/config.alloy
+
+  prometheus:
+    restart: on-failure
+    image: prom/prometheus:v3.4.1
+    networks:
+      - net
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus.yaml
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus.yaml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+      - --enable-feature=native-histograms
+
+  otel-collector:
+    restart: on-failure
+    image: otel/opentelemetry-collector-contrib:0.134.1
+    networks:
+      - net
+    ports:
+      - "4317:4317"
+    volumes:
+      - ./otel-collector.yaml:/etc/otel-collector.yaml
+    command:
+      - --config=/etc/otel-collector.yaml
+
+  loki:
+    restart: on-failure
+    image: grafana/loki:3.5.5
+    ports:
+      - "3100:3100"
+    networks:
+      - net
+    user: root
+    volumes:
+      - ./loki.yaml:/etc/loki.yaml
+      - loki-data:/loki/wal
+    command:
+      - -config.file=/etc/loki.yaml
+
+  tempo:
+    restart: on-failure
+    image: grafana/tempo:2.8.2
+    ports:
+      - "3200:3200"
+    networks:
+      - net
+    user: root
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml
+      - tempo-data:/var/tempo
+    command:
+      - -config.file=/etc/tempo.yaml
+
+  grafana:
+    restart: on-failure
+    image: grafana/grafana:12.0.1
+    ports:
+      - "3000:3000"
+    networks:
+      - net
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: true
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+    volumes:
+      - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+
 volumes:
   kafka-data:
   cassandra-data:
+  prometheus-data:
+  tempo-data:
+  loki-data:
 
 networks:
   net:
