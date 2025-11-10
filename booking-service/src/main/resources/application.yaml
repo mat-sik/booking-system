@@ -1,6 +1,9 @@
 spring:
   application:
     name: booking-service
+  threads:
+    virtual:
+      enabled: true
 
 kafka:
   clientId: ${BOOKING_SYSTEM_KAFKA_BOOKING_SERVICE_CLIENT_ID}

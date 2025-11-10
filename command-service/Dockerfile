@@ -1,4 +1,4 @@
-FROM amazoncorretto:24 AS build-stage
+FROM amazoncorretto:25 AS build-stage
 
 WORKDIR /app
 
@@ -28,7 +28,7 @@ RUN --mount=type=cache,target=/root/.m2 \
 
 RUN java -Djarmode=layertools -jar command-service/target/*.jar extract
 
-FROM amazoncorretto:24-alpine AS release-stage
+FROM amazoncorretto:25-alpine AS release-stage
 
 WORKDIR /app
 

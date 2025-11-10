@@ -1,6 +1,9 @@
 spring:
   application:
     name: command
+  threads:
+    virtual:
+      enabled: true
 
 cassandra:
   contactPoints: ${BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS}

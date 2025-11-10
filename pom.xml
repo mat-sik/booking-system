@@ -19,7 +19,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>24</java.version>
+        <java.version>25</java.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <com.datastax.oss.version>4.17.0</com.datastax.oss.version>
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>

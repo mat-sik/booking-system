@@ -1,6 +1,9 @@
 spring:
   application:
     name: query
+  threads:
+    virtual:
+      enabled: true
   grpc:
     server:
       address: 0.0.0.0:${BOOKING_SYSTEM_QUERY_SERVICE_PORT:50051}
