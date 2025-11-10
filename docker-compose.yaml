@@ -7,6 +7,7 @@ services:
       - "8080:8080"
     env_file:
       - .env
+    restart: on-failure
 
   query-service:
     image: query-service:latest
@@ -16,6 +17,7 @@ services:
       - "8081:8080"
     env_file:
       - .env
+    restart: on-failure
 
   command-service:
     image: command-service:latest
@@ -23,6 +25,7 @@ services:
       - net
     env_file:
       - .env
+    restart: on-failure
 
   cassandra:
     image: cassandra:5.0.5
