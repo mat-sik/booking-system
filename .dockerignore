@@ -18,7 +18,6 @@ command-service/target
 command-service-service/Dockerfile
 
 query-service/target
-query-service/api-docs.yaml
 query-service-service/Dockerfile
 
 commons-kafka/target
