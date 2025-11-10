@@ -1,5 +1,6 @@
 package com.github.matsik.booking.client.query;
 
+import com.github.matsik.booking.client.query.exception.UserBookingNotFoundException;
 import com.github.matsik.booking.controller.response.TimeRangeResponse;
 import com.github.matsik.booking.controller.response.UserBookingResponse;
 import com.github.matsik.query.booking.grpc.GetUserBookingTimeRangeRequest;
@@ -9,6 +10,7 @@ import com.github.matsik.query.booking.grpc.ListAvailableTimeRangesResponse;
 import com.github.matsik.query.booking.grpc.ListUserBookingsRequest;
 import com.github.matsik.query.booking.grpc.ListUserBookingsResponse;
 import com.github.matsik.query.booking.grpc.QueryServiceGrpc;
+import io.grpc.Status;
 import io.grpc.StatusException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,7 +41,7 @@ public class QueryRemoteService {
                     .map(grpcMapper::timeRangeResponse)
                     .toList();
         } catch (StatusException ex) {
-            throw new RuntimeException(ex);
+            throw handleStatusException(ex);
         }
     }
 
@@ -60,7 +62,10 @@ public class QueryRemoteService {
             GetUserBookingTimeRangeResponse response = queryServiceStub.getUserBookingTimeRange(request);
             return grpcMapper.timeRangeResponse(response.getTimeRange());
         } catch (StatusException ex) {
-            throw new RuntimeException(ex);
+            if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
+                throw new UserBookingNotFoundException(serviceId, date, userId, bookingId);
+            }
+            throw handleStatusException(ex);
         }
     }
 
@@ -98,8 +103,15 @@ public class QueryRemoteService {
                     .map(grpcMapper::userBookingResponse)
                     .toList();
         } catch (StatusException ex) {
-            throw new RuntimeException(ex);
+            throw handleStatusException(ex);
         }
+    }
+
+    private RuntimeException handleStatusException(StatusException ex) {
+        if (ex.getStatus().getCode() == Status.Code.INVALID_ARGUMENT) {
+            return new IllegalArgumentException(ex.getMessage());
+        }
+        return new RuntimeException(ex);
     }
 
 }
