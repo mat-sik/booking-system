@@ -28,9 +28,3 @@ datasources:
     editable: false
     apiVersion: 1
     uid: tempo
-    jsonData:
-      httpMethod: GET
-      serviceMap:
-        datasourceUid: prometheus
-      streamingEnabled:
-        search: true
