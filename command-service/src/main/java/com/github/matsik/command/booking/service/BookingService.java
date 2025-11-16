@@ -36,6 +36,11 @@ public class BookingService {
         if (ownerId.isEmpty() || !Objects.equals(ownerId.get(), command.userId())) {
             return;
         }
+        batchRemove(command);
+    }
+
+    private void batchRemove(DeleteBookingCommand command) {
+        BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
 
         BoundStatement deleteBookingByServiceAndDate = bookingRepository.deleteByPrimaryKey(
                 bookingPartitionKey.serviceId(),
@@ -66,6 +71,12 @@ public class BookingService {
         if (overlappingBookingCount > 0) {
             return Optional.empty();
         }
+        return Optional.of(batchCreate(command));
+    }
+
+    private UUID batchCreate(CreateBookingCommand command) {
+        BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
+        TimeRange timeRange = command.timeRange();
 
         UUID bookingId = UUID.randomUUID();
 
@@ -98,7 +109,7 @@ public class BookingService {
 
         session.execute(batchStatement);
 
-        return Optional.of(bookingId);
+        return bookingId;
     }
 
     private long findOverlappingBookings(BookingPartitionKey bookingPartitionKey, TimeRange timeRange) {
