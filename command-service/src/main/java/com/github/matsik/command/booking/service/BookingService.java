@@ -6,11 +6,14 @@ import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
 import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 import com.github.matsik.cassandra.entity.BookingByUser;
-import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.command.booking.command.CreateBookingCommand;
 import com.github.matsik.command.booking.command.DeleteBookingCommand;
 import com.github.matsik.command.booking.repository.BookingRepository;
+import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +40,10 @@ public class BookingService {
                 command.bookingId()
         );
         if (ownerId.isEmpty() || !Objects.equals(ownerId.get(), command.userId())) {
+            Span.current().addEvent("Not matching owner", Attributes.of(
+                    AttributeKey.stringKey("booking.owner.real"), ownerId.isPresent() ? ownerId.get().toString() : "",
+                    AttributeKey.stringKey("booking.owner.provided"), command.userId().toString()
+            ));
             return;
         }
         batchRemove(command);
@@ -74,6 +81,9 @@ public class BookingService {
 
         long overlappingBookingCount = findOverlappingBookings(bookingPartitionKey, timeRange);
         if (overlappingBookingCount > 0) {
+            Span.current().addEvent("Booking overlap", Attributes.of(
+                    AttributeKey.longKey("booking.overlap.count"), overlappingBookingCount
+            ));
             return Optional.empty();
         }
         return Optional.of(batchCreate(command));
