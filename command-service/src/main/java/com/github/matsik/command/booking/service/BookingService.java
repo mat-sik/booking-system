@@ -11,6 +11,8 @@ import com.github.matsik.command.booking.command.CreateBookingCommand;
 import com.github.matsik.command.booking.command.DeleteBookingCommand;
 import com.github.matsik.command.booking.repository.BookingRepository;
 import com.github.matsik.dto.TimeRange;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,7 @@ public class BookingService {
     private final CqlSession session;
     private final BookingRepository bookingRepository;
 
+    @WithSpan(kind = SpanKind.CONSUMER)
     public void deleteBooking(DeleteBookingCommand command) {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
 
@@ -39,6 +42,7 @@ public class BookingService {
         batchRemove(command);
     }
 
+    @WithSpan(kind = SpanKind.CONSUMER)
     private void batchRemove(DeleteBookingCommand command) {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
 
@@ -63,6 +67,7 @@ public class BookingService {
         session.execute(batchStatement);
     }
 
+    @WithSpan(kind = SpanKind.CONSUMER)
     public Optional<UUID> createBooking(CreateBookingCommand command) {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
         TimeRange timeRange = command.timeRange();
@@ -74,6 +79,7 @@ public class BookingService {
         return Optional.of(batchCreate(command));
     }
 
+    @WithSpan(kind = SpanKind.CONSUMER)
     private UUID batchCreate(CreateBookingCommand command) {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
         TimeRange timeRange = command.timeRange();
