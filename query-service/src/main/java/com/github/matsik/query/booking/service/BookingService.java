@@ -10,6 +10,8 @@ import com.github.matsik.query.booking.repository.BookingRepository;
 import com.github.matsik.dto.TimeRange;
 import com.github.matsik.query.booking.repository.projection.UserBooking;
 import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ public class BookingService {
     private final BookingRepository repository;
     private final AvailableTimeRangesCalculator availableTimeRangesCalculator;
 
+    @WithSpan(kind = SpanKind.SERVER)
     public List<TimeRange> getAvailableTimeRanges(GetAvailableTimeRangesQuery query) {
         BookingPartitionKey key = query.bookingPartitionKey();
         List<TimeRange> unavailableTimeRanges = repository.getBookedTimeRanges(key.serviceId(), key.date());
@@ -31,6 +34,7 @@ public class BookingService {
         return availableTimeRangesCalculator.getAvailableTimeRanges(unavailableTimeRanges, serviceDuration);
     }
 
+    @WithSpan(kind = SpanKind.SERVER)
     public TimeRange getUserBookingTimeRange(GetUserBookingQuery query) {
         BookingPartitionKey key = query.bookingPartitionKey();
 
@@ -45,10 +49,12 @@ public class BookingService {
         };
     }
 
+    @WithSpan(kind = SpanKind.SERVER)
     private List<UserBooking> getFirstUserBookings(GetFirstUserBookingsQuery query) {
         return repository.getFirstUserBookings(query.userId(), query.limit());
     }
 
+    @WithSpan(kind = SpanKind.SERVER)
     private List<UserBooking> getNextUserBookings(GetNextUserBookingsQuery query) {
         return repository.getNextUserBookings(
                 query.userId(),

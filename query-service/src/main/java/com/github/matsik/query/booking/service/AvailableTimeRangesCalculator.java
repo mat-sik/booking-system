@@ -2,6 +2,8 @@ package com.github.matsik.query.booking.service;
 
 import com.github.matsik.dto.MinuteOfDay;
 import com.github.matsik.dto.TimeRange;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +23,7 @@ public class AvailableTimeRangesCalculator {
 
     private static final int SERVICE_TIME_SLICE = 30;
 
+    @WithSpan(kind = SpanKind.SERVER)
     public List<TimeRange> getAvailableTimeRanges(List<TimeRange> unavailableTimeRanges, int serviceDuration) {
         List<TimeRange> availableTimeRanges = new ArrayList<>();
         for (int start = START; start <= END - serviceDuration; start += SKIP) {
