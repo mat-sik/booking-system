@@ -32,6 +32,9 @@ public class BookingService {
 
     @WithSpan(kind = SpanKind.CONSUMER)
     public void deleteBooking(DeleteBookingCommand command) {
+        Span span = Span.current();
+        setSpanAttributes(span, command);
+
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
 
         Optional<UUID> ownerId = bookingRepository.findBookingOwner(
@@ -40,13 +43,27 @@ public class BookingService {
                 command.bookingId()
         );
         if (ownerId.isEmpty() || !Objects.equals(ownerId.get(), command.userId())) {
-            Span.current().addEvent("Not matching owner", Attributes.of(
-                    AttributeKey.stringKey("booking.owner.real"), ownerId.isPresent() ? ownerId.get().toString() : "",
-                    AttributeKey.stringKey("booking.owner.provided"), command.userId().toString()
-            ));
+            String ownerIdString = ownerId.isPresent() ? ownerId.get().toString() : "";
+            addSpanEventNotMatchingOwner(span, ownerIdString, command.userId().toString());
             return;
         }
         batchRemove(command);
+    }
+
+    private void setSpanAttributes(Span span, DeleteBookingCommand command) {
+        BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
+
+        span.setAttribute(AttributeKey.stringKey("deleteBookingCommand.bookingPartitionKey.serviceId"), bookingPartitionKey.serviceId().toString());
+        span.setAttribute(AttributeKey.stringKey("deleteBookingCommand.bookingPartitionKey.date"), bookingPartitionKey.date().toString());
+        span.setAttribute(AttributeKey.stringKey("deleteBookingCommand.bookingId"), command.bookingId().toString());
+        span.setAttribute(AttributeKey.stringKey("deleteBookingCommand.userId"), command.userId().toString());
+    }
+
+    private void addSpanEventNotMatchingOwner(Span span, String ownerId, String commandUserId) {
+        span.addEvent("Not matching owner", Attributes.of(
+                AttributeKey.stringKey("booking.owner.real"), ownerId,
+                AttributeKey.stringKey("booking.owner.provided"), commandUserId
+        ));
     }
 
     @WithSpan(kind = SpanKind.CONSUMER)
@@ -76,17 +93,35 @@ public class BookingService {
 
     @WithSpan(kind = SpanKind.CONSUMER)
     public Optional<UUID> createBooking(CreateBookingCommand command) {
+        Span span = Span.current();
+        setSpanAttributes(span, command);
+
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
         TimeRange timeRange = command.timeRange();
 
         long overlappingBookingCount = findOverlappingBookings(bookingPartitionKey, timeRange);
         if (overlappingBookingCount > 0) {
-            Span.current().addEvent("Booking overlap", Attributes.of(
-                    AttributeKey.longKey("booking.overlap.count"), overlappingBookingCount
-            ));
+            addSpanEventOverlappingBookingCount(span, overlappingBookingCount);
             return Optional.empty();
         }
         return Optional.of(batchCreate(command));
+    }
+
+    private void setSpanAttributes(Span span, CreateBookingCommand command) {
+        BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
+        TimeRange timeRange = command.timeRange();
+
+        span.setAttribute(AttributeKey.stringKey("createBookingCommand.bookingPartitionKey.serviceId"), bookingPartitionKey.serviceId().toString());
+        span.setAttribute(AttributeKey.stringKey("createBookingCommand.bookingPartitionKey.date"), bookingPartitionKey.date().toString());
+        span.setAttribute(AttributeKey.stringKey("createBookingCommand.userId"), command.userId().toString());
+        span.setAttribute(AttributeKey.longKey("createBookingCommand.timeRange.end"), timeRange.start().minuteOfDay());
+        span.setAttribute(AttributeKey.longKey("createBookingCommand.timeRange.start"), timeRange.start().minuteOfDay());
+    }
+
+    private void addSpanEventOverlappingBookingCount(Span span, long overlappingBookingCount) {
+        span.addEvent("Booking overlap", Attributes.of(
+                AttributeKey.longKey("booking.overlap.count"), overlappingBookingCount
+        ));
     }
 
     @WithSpan(kind = SpanKind.CONSUMER)
