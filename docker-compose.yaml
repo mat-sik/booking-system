@@ -12,8 +12,9 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_SERVICE_NAME: booking-service
+      OTEL_TRACES_EXPORTER: otlp
       OTEL_METRICS_EXPORTER: otlp
-      OTEL_LOGS_EXPORTER: experimental-otlp/stdout
+      OTEL_LOGS_EXPORTER: otlp
 
   query-service:
     restart: on-failure
@@ -26,8 +27,9 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_SERVICE_NAME: query-service
+      OTEL_TRACES_EXPORTER: otlp
       OTEL_METRICS_EXPORTER: otlp
-      OTEL_LOGS_EXPORTER: experimental-otlp/stdout
+      OTEL_LOGS_EXPORTER: otlp
 
   command-service:
     restart: on-failure
@@ -42,8 +44,9 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_SERVICE_NAME: command-service
+      OTEL_TRACES_EXPORTER: otlp
       OTEL_METRICS_EXPORTER: otlp
-      OTEL_LOGS_EXPORTER: experimental-otlp/stdout
+      OTEL_LOGS_EXPORTER: otlp
 
   cassandra:
     restart: on-failure
@@ -84,22 +87,6 @@ services:
       - kafka-data:/var/lib/kafka/data
       - kafka-data:/etc/kafka/secrets
       - kafka-data:/mnt/shared/config
-
-  alloy:
-    restart: on-failure
-    image: grafana/alloy:v1.9.1
-    networks:
-      - net
-    ports:
-      - "12345:12345"
-    volumes:
-      - ./config-docker-compose.alloy:/etc/config.alloy
-      - /var/run/docker.sock:/var/run/docker.sock
-    command:
-      - run
-      - --server.http.listen-addr=0.0.0.0:12345
-      - --storage.path=/var/lib/alloy/data
-      - /etc/config.alloy
 
   prometheus:
     restart: on-failure

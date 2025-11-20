@@ -12,9 +12,10 @@ exporters:
     endpoint: tempo:4317
     tls:
       insecure: true
+  otlphttp:
+    endpoint: "http://loki:3100/otlp"
   prometheus:
     endpoint: 0.0.0.0:9090
-  debug:
 
 service:
   extensions: [health_check]
@@ -23,8 +24,11 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [otlp]
-
     metrics:
       receivers: [otlp]
       processors: [batch]
       exporters: [prometheus]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp]
