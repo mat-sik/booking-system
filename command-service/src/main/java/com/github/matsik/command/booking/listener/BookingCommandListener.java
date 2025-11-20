@@ -8,7 +8,6 @@ import com.github.matsik.kafka.task.CommandValue;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
@@ -18,7 +17,6 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-@Log
 public class BookingCommandListener {
 
     private final BookingService service;
