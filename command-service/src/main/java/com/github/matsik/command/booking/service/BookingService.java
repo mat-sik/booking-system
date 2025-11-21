@@ -13,6 +13,9 @@ import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -29,9 +33,17 @@ public class BookingService {
 
     private final CqlSession session;
     private final BookingRepository bookingRepository;
+    private final Meter meter;
+
+    public void deleteBooking(DeleteBookingCommand command) {
+        recordMetrics(() -> {
+            _deleteBooking(command);
+            return null;
+        }, "delete_booking");
+    }
 
     @WithSpan(kind = SpanKind.CONSUMER)
-    public void deleteBooking(DeleteBookingCommand command) {
+    private void _deleteBooking(DeleteBookingCommand command) {
         Span span = Span.current();
         setSpanAttributes(span, command);
 
@@ -91,8 +103,12 @@ public class BookingService {
         session.execute(batchStatement);
     }
 
-    @WithSpan(kind = SpanKind.CONSUMER)
     public Optional<UUID> createBooking(CreateBookingCommand command) {
+        return recordMetrics(() -> _createBooking(command), "create_booking");
+    }
+
+    @WithSpan(kind = SpanKind.CONSUMER)
+    private Optional<UUID> _createBooking(CreateBookingCommand command) {
         Span span = Span.current();
         setSpanAttributes(span, command);
 
@@ -170,5 +186,30 @@ public class BookingService {
                 timeRange.start().minuteOfDay(),
                 timeRange.end().minuteOfDay()
         );
+    }
+
+    private <T> T recordMetrics(Supplier<T> operation, String commandName) {
+        long startTime = System.nanoTime();
+        T result = operation.get();
+        long duration = System.nanoTime() - startTime;
+
+        recordDurationAndIncrementCounter(meter, duration, commandName);
+
+        return result;
+    }
+
+    private void recordDurationAndIncrementCounter(Meter meter, long duration, String commandName) {
+        LongCounter counter = meter.counterBuilder(String.format("%s.records", commandName))
+                .setDescription(String.format("Total %s records", commandName))
+                .setUnit("requests")
+                .build();
+
+        DoubleHistogram histogram = meter.histogramBuilder(String.format("%s.record.processing.duration", commandName))
+                .setDescription(String.format("Duration of processing %s record", commandName))
+                .setUnit("ms")
+                .build();
+
+        counter.add(1L);
+        histogram.record(duration);
     }
 }

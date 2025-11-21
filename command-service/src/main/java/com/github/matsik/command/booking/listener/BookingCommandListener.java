@@ -7,6 +7,9 @@ import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.kafka.task.CommandValue;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
+import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -20,11 +23,14 @@ import java.util.List;
 public class BookingCommandListener {
 
     private final BookingService service;
+    private final Meter meter;
 
     @KafkaListener(topics = "bookings", groupId = "${kafka.groupId}", containerFactory = "kafkaListenerContainerFactory")
     public void listen(List<ConsumerRecord<BookingPartitionKey, CommandValue>> records, Acknowledgment ack) {
-        records.forEach(this::processRecord);
-        ack.acknowledge();
+        recordMetrics(() -> {
+            records.forEach(this::processRecord);
+            ack.acknowledge();
+        });
     }
 
     private void processRecord(ConsumerRecord<BookingPartitionKey, CommandValue> record) {
@@ -41,6 +47,29 @@ public class BookingCommandListener {
                 service.deleteBooking(command);
             }
         }
+    }
+
+    private void recordMetrics(Runnable operation) {
+        long startTime = System.nanoTime();
+        operation.run();
+        long duration = System.nanoTime() - startTime;
+
+        recordDurationAndIncrementCounter(meter, duration);
+    }
+
+    private void recordDurationAndIncrementCounter(Meter meter, long duration) {
+        LongCounter counter = meter.counterBuilder("record.batches")
+                .setDescription("Total record batches processed")
+                .setUnit("batches")
+                .build();
+
+        DoubleHistogram histogram = meter.histogramBuilder("record.batches.processing.duration")
+                .setDescription("Duration of handling a record batch")
+                .setUnit("ms")
+                .build();
+
+        counter.add(1L);
+        histogram.record(duration);
     }
 
 }
