@@ -65,10 +65,10 @@ public class BookingService {
     private void setSpanAttributes(Span span, DeleteBookingCommand command) {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
 
-        span.setAttribute(AttributeKey.stringKey("deleteBookingCommand.bookingPartitionKey.serviceId"), bookingPartitionKey.serviceId().toString());
-        span.setAttribute(AttributeKey.stringKey("deleteBookingCommand.bookingPartitionKey.date"), bookingPartitionKey.date().toString());
-        span.setAttribute(AttributeKey.stringKey("deleteBookingCommand.bookingId"), command.bookingId().toString());
-        span.setAttribute(AttributeKey.stringKey("deleteBookingCommand.userId"), command.userId().toString());
+        span.setAttribute(AttributeKey.stringKey("delete_booking_command.booking_partition_key.serviceId"), bookingPartitionKey.serviceId().toString());
+        span.setAttribute(AttributeKey.stringKey("delete_booking_command.booking_partition_key.date"), bookingPartitionKey.date().toString());
+        span.setAttribute(AttributeKey.stringKey("delete_booking_command.bookingId"), command.bookingId().toString());
+        span.setAttribute(AttributeKey.stringKey("delete_booking_command.userId"), command.userId().toString());
     }
 
     private void addSpanEventNotMatchingOwner(Span span, String ownerId, String commandUserId) {
@@ -127,11 +127,11 @@ public class BookingService {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
         TimeRange timeRange = command.timeRange();
 
-        span.setAttribute(AttributeKey.stringKey("createBookingCommand.bookingPartitionKey.serviceId"), bookingPartitionKey.serviceId().toString());
-        span.setAttribute(AttributeKey.stringKey("createBookingCommand.bookingPartitionKey.date"), bookingPartitionKey.date().toString());
-        span.setAttribute(AttributeKey.stringKey("createBookingCommand.userId"), command.userId().toString());
-        span.setAttribute(AttributeKey.longKey("createBookingCommand.timeRange.end"), timeRange.start().minuteOfDay());
-        span.setAttribute(AttributeKey.longKey("createBookingCommand.timeRange.start"), timeRange.start().minuteOfDay());
+        span.setAttribute(AttributeKey.stringKey("create_booking_command.booking_partition_key.service_id"), bookingPartitionKey.serviceId().toString());
+        span.setAttribute(AttributeKey.stringKey("create_booking_command.booking_partition_key.date"), bookingPartitionKey.date().toString());
+        span.setAttribute(AttributeKey.stringKey("create_booking_command.user_id"), command.userId().toString());
+        span.setAttribute(AttributeKey.longKey("create_booking_command.time_range.end"), timeRange.start().minuteOfDay());
+        span.setAttribute(AttributeKey.longKey("create_booking_command.time_range.start"), timeRange.start().minuteOfDay());
     }
 
     private void addSpanEventOverlappingBookingCount(Span span, long overlappingBookingCount) {

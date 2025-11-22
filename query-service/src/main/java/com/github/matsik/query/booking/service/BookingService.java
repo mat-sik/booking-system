@@ -42,9 +42,9 @@ public class BookingService {
     private void setSpanAttributes(Span span, GetAvailableTimeRangesQuery query) {
         BookingPartitionKey bookingPartitionKey = query.bookingPartitionKey();
 
-        span.setAttribute(AttributeKey.stringKey("getAvailableTimeRangesQuery.bookingPartitionKey.serviceId"), bookingPartitionKey.serviceId().toString());
-        span.setAttribute(AttributeKey.stringKey("getAvailableTimeRangesQuery.bookingPartitionKey.date"), bookingPartitionKey.date().toString());
-        span.setAttribute(AttributeKey.longKey("getAvailableTimeRangesQuery.serviceDuration"), query.serviceDuration());
+        span.setAttribute(AttributeKey.stringKey("get_available_time_ranges_query.booking_partition_key.service_id"), bookingPartitionKey.serviceId().toString());
+        span.setAttribute(AttributeKey.stringKey("get_available_time_ranges_query.booking_partition_key.date"), bookingPartitionKey.date().toString());
+        span.setAttribute(AttributeKey.longKey("get_available_time_ranges_query.service_duration"), query.serviceDuration());
     }
 
     @WithSpan(kind = SpanKind.SERVER)
@@ -61,10 +61,10 @@ public class BookingService {
     private void setSpanAttributes(Span span, GetUserBookingQuery query) {
         BookingPartitionKey bookingPartitionKey = query.bookingPartitionKey();
 
-        span.setAttribute(AttributeKey.stringKey("getUserBookingQuery.bookingPartitionKey.serviceId"), bookingPartitionKey.serviceId().toString());
-        span.setAttribute(AttributeKey.stringKey("getUserBookingQuery.bookingPartitionKey.date"), bookingPartitionKey.date().toString());
-        span.setAttribute(AttributeKey.stringKey("getUserBookingQuery.userId"), query.userId().toString());
-        span.setAttribute(AttributeKey.stringKey("getUserBookingQuery.bookingId"), query.bookingId().toString());
+        span.setAttribute(AttributeKey.stringKey("get_user_booking_query.booking_partition_key.service_id"), bookingPartitionKey.serviceId().toString());
+        span.setAttribute(AttributeKey.stringKey("get_user_booking_query.booking_partition_key.date"), bookingPartitionKey.date().toString());
+        span.setAttribute(AttributeKey.stringKey("get_user_booking_query.user_id"), query.userId().toString());
+        span.setAttribute(AttributeKey.stringKey("get_user_booking_query.booking_id"), query.bookingId().toString());
     }
 
     public List<UserBooking> getUserBookings(GetUserBookingsQuery query) {
@@ -83,8 +83,8 @@ public class BookingService {
     }
 
     private void setSpanAttributes(Span span, GetFirstUserBookingsQuery query) {
-        span.setAttribute(AttributeKey.stringKey("getFirstUserBookingsQuery.userId"), query.userId().toString());
-        span.setAttribute(AttributeKey.longKey("getFirstUserBookingsQuery.limit"), query.limit());
+        span.setAttribute(AttributeKey.stringKey("get_first_user_bookings_query.user_id"), query.userId().toString());
+        span.setAttribute(AttributeKey.longKey("get_first_user_bookings_query.limit"), query.limit());
     }
 
     @WithSpan(kind = SpanKind.SERVER)
@@ -102,10 +102,10 @@ public class BookingService {
     }
 
     private void setSpanAttributes(Span span, GetNextUserBookingsQuery query) {
-        span.setAttribute(AttributeKey.stringKey("getNextUserBookingsQuery.userId"), query.userId().toString());
-        span.setAttribute(AttributeKey.stringKey("getNextUserBookingsQuery.cursorServiceId"), query.cursorServiceId().toString());
-        span.setAttribute(AttributeKey.stringKey("getNextUserBookingsQuery.cursorDate"), query.cursorDate().toString());
-        span.setAttribute(AttributeKey.stringKey("getNextUserBookingsQuery.cursorBookingId"), query.cursorBookingId().toString());
-        span.setAttribute(AttributeKey.longKey("getNextUserBookingsQuery.limit"), query.limit());
+        span.setAttribute(AttributeKey.stringKey("get_next_user_bookings_query.user_id"), query.userId().toString());
+        span.setAttribute(AttributeKey.stringKey("get_next_user_bookings_query.cursor_service_id"), query.cursorServiceId().toString());
+        span.setAttribute(AttributeKey.stringKey("get_next_user_bookings_query.cursor_date"), query.cursorDate().toString());
+        span.setAttribute(AttributeKey.stringKey("get_next_user_bookings_query.cursor_booking_id"), query.cursorBookingId().toString());
+        span.setAttribute(AttributeKey.longKey("get_next_user_bookings_query.limit"), query.limit());
     }
 }
