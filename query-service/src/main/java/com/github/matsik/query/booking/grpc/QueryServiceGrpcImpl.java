@@ -9,25 +9,28 @@ import com.github.matsik.query.booking.service.BookingService;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.Meter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.grpc.server.service.GrpcService;
 
 import java.util.List;
 
-@RequiredArgsConstructor
+import static com.github.matsik.query.metrics.MetricsRecorder.recordMetrics;
+
 @GrpcService
+@RequiredArgsConstructor
 public class QueryServiceGrpcImpl extends QueryServiceGrpc.QueryServiceImplBase {
 
     private final BookingService bookingService;
     private final GrpcMapper grpcMapper;
-    private final Meter meter;
+
+    private final LongCounter requestCounter;
+    private final DoubleHistogram requestHistogram;
 
     public void listAvailableTimeRanges(
             ListAvailableTimeRangesRequest request,
             StreamObserver<ListAvailableTimeRangesResponse> responseObserver
     ) {
-        recordMetrics(() -> {
+        recordMetrics(requestCounter, requestHistogram, () -> {
             GetAvailableTimeRangesQuery query = grpcMapper.getAvailableTimeRangesQuery(request);
 
             List<TimeRange> availableTimeRanges = bookingService.getAvailableTimeRanges(query);
@@ -42,7 +45,7 @@ public class QueryServiceGrpcImpl extends QueryServiceGrpc.QueryServiceImplBase 
             GetUserBookingTimeRangeRequest request,
             StreamObserver<GetUserBookingTimeRangeResponse> responseObserver
     ) {
-        recordMetrics(() -> {
+        recordMetrics(requestCounter, requestHistogram, () -> {
             GetUserBookingQuery query = grpcMapper.getUserBookingQuery(request);
 
             TimeRange userBookingTimeRange = bookingService.getUserBookingTimeRange(query);
@@ -57,7 +60,7 @@ public class QueryServiceGrpcImpl extends QueryServiceGrpc.QueryServiceImplBase 
             ListUserBookingsRequest request,
             StreamObserver<ListUserBookingsResponse> responseObserver
     ) {
-        recordMetrics(() -> {
+        recordMetrics(requestCounter, requestHistogram, () -> {
             GetUserBookingsQuery query = grpcMapper.GetUserBookingsQuery(request);
 
             List<UserBooking> userBookings = bookingService.getUserBookings(query);
@@ -65,28 +68,5 @@ public class QueryServiceGrpcImpl extends QueryServiceGrpc.QueryServiceImplBase 
             responseObserver.onNext(grpcMapper.listUserBookingsResponse(userBookings));
             responseObserver.onCompleted();
         }, "list_user_bookings");
-    }
-
-    private void recordMetrics(Runnable operation, String requestName) {
-        long startTime = System.nanoTime();
-        operation.run();
-        long duration = System.nanoTime() - startTime;
-
-        recordDurationAndIncrementCounter(meter, duration, requestName);
-    }
-
-    private void recordDurationAndIncrementCounter(Meter meter, long durationNs, String requestName) {
-        LongCounter counter = meter.counterBuilder(String.format("%s.requests", requestName))
-                .setDescription(String.format("Total %s requests", requestName))
-                .setUnit("requests")
-                .build();
-
-        DoubleHistogram histogram = meter.histogramBuilder(String.format("%s.duration", requestName))
-                .setDescription(String.format("Duration of handling a %s request", requestName))
-                .setUnit("ms")
-                .build();
-
-        counter.add(1L);
-        histogram.record(durationNs / 1_000_000.0);
     }
 }
