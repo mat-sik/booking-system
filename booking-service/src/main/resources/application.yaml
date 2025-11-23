@@ -5,6 +5,11 @@ spring:
     virtual:
       enabled: true
 
+logging:
+  structured:
+    format:
+      console=ecs
+
 kafka:
   clientId: ${BOOKING_SYSTEM_KAFKA_BOOKING_SERVICE_CLIENT_ID}
   bootstrapServers: ${BOOKING_SYSTEM_KAFKA_BOOTSTRAP_SERVERS}

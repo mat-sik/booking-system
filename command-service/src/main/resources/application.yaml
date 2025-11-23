@@ -5,6 +5,11 @@ spring:
     virtual:
       enabled: true
 
+logging:
+  structured:
+    format:
+      console=ecs
+
 cassandra:
   contactPoints: ${BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS}
   keyspaceName: ${BOOKING_SYSTEM_CASSANDRA_KEYSPACE_NAME}

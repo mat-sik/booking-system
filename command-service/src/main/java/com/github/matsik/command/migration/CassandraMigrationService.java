@@ -32,7 +32,10 @@ public class CassandraMigrationService {
     public void runMigrations() {
         try (CqlSession systemSession = createSystemSession()) {
             for (String migrationFileName : migrationFiles) {
-                log.info("Executing migration file: {}", migrationFileName);
+                log.atInfo()
+                        .setMessage("Executing migration")
+                        .addKeyValue("migration_file_name", migrationFileName)
+                        .log();
                 Optional<String> persistedChecksum = isMigrationTableInitializationScript(migrationFileName) ?
                         Optional.empty() : isMigrationExecuted(systemSession, migrationFileName);
 
@@ -43,7 +46,10 @@ public class CassandraMigrationService {
                 } else if (persistedChecksum.isEmpty()) {
                     execMigration(systemSession, migrationFileName);
                     markMigrationAsExecuted(systemSession, migrationFileName, calculatedChecksum);
-                    log.info("Executed migration file: {}", migrationFileName);
+                    log.atInfo()
+                            .setMessage("Executed migration")
+                            .addKeyValue("migration_file_name", migrationFileName)
+                            .log();
                 }
             }
         } catch (Exception e) {

@@ -1,5 +1,6 @@
 services:
   booking-service:
+    restart: on-failure
     image: booking-service:latest
     networks:
       - net
@@ -7,28 +8,62 @@ services:
       - "8080:8080"
     env_file:
       - .env
-    restart: on-failure
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_SERVICE_NAME: booking-service
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+      OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_MDC_ATTRIBUTES: "*"
+      OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_KEY_VALUE_PAIR_ATTRIBUTES: true
+      OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_LOGGER_CONTEXT_ATTRIBUTES: true
 
   query-service:
+    restart: on-failure
     image: query-service:latest
     networks:
       - net
-    ports:
-      - "8081:8080"
     env_file:
       - .env
-    restart: on-failure
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_SERVICE_NAME: query-service
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+      OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_MDC_ATTRIBUTES: "*"
+      OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_KEY_VALUE_PAIR_ATTRIBUTES: true
+      OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_LOGGER_CONTEXT_ATTRIBUTES: true
 
   command-service:
+    restart: on-failure
     image: command-service:latest
     networks:
       - net
+    ports:
+      - "50051:50051"
     env_file:
       - .env
-    restart: on-failure
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_SERVICE_NAME: command-service
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+      OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_MDC_ATTRIBUTES: "*"
+      OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_KEY_VALUE_PAIR_ATTRIBUTES: true
+      OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_LOGGER_CONTEXT_ATTRIBUTES: true
 
   cassandra:
+    restart: on-failure
     image: cassandra:5.0.5
+    networks:
+      - net
+    ports:
+      - "9042:9042"
     environment:
       CASSANDRA_SEEDS: "cassandra"
       CASSANDRA_CLUSTER_NAME: booking-system
@@ -36,10 +71,6 @@ services:
       CASSANDRA_RACK: RACK1
       CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
       CASSANDRA_NUM_TOKENS: 128
-    networks:
-      - net
-    ports:
-      - "9042:9042"
     volumes:
       - cassandra-data:/var/lib/cassandra
 
@@ -66,9 +97,81 @@ services:
       - kafka-data:/etc/kafka/secrets
       - kafka-data:/mnt/shared/config
 
+  prometheus:
+    restart: on-failure
+    image: prom/prometheus:v3.4.1
+    networks:
+      - net
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus.yaml
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus.yaml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+      - --enable-feature=native-histograms
+
+  otel-collector:
+    restart: on-failure
+    image: otel/opentelemetry-collector-contrib:0.134.1
+    networks:
+      - net
+    ports:
+      - "4317:4317"
+    volumes:
+      - ./otel-collector.yaml:/etc/otel-collector.yaml
+    command:
+      - --config=/etc/otel-collector.yaml
+
+  loki:
+    restart: on-failure
+    image: grafana/loki:3.5.5
+    ports:
+      - "3100:3100"
+    networks:
+      - net
+    user: root
+    volumes:
+      - ./loki.yaml:/etc/loki.yaml
+      - loki-data:/loki/wal
+    command:
+      - -config.file=/etc/loki.yaml
+
+  tempo:
+    restart: on-failure
+    image: grafana/tempo:2.8.2
+    ports:
+      - "3200:3200"
+    networks:
+      - net
+    user: root
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml
+      - tempo-data:/var/tempo
+    command:
+      - -config.file=/etc/tempo.yaml
+
+  grafana:
+    restart: on-failure
+    image: grafana/grafana:12.0.1
+    ports:
+      - "3000:3000"
+    networks:
+      - net
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: true
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+    volumes:
+      - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+
 volumes:
   kafka-data:
   cassandra-data:
+  prometheus-data:
+  tempo-data:
+  loki-data:
 
 networks:
   net:

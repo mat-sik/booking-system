@@ -6,7 +6,6 @@ import com.github.matsik.kafka.task.CommandValue;
 import com.github.matsik.kafka.task.CreateBookingCommandValue;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +17,6 @@ import static com.github.matsik.booking.config.kafka.KafkaClientConfiguration.BO
 
 @Component
 @RequiredArgsConstructor
-@Log
 public class CommandClient {
     private static final int TIMEOUT = 10;
     private static final TimeUnit TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
