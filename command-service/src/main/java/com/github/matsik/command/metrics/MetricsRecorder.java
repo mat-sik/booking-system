@@ -10,7 +10,10 @@ import java.util.function.Supplier;
 public class MetricsRecorder {
 
     public static void recordMetrics(LongCounter counter, DoubleHistogram histogram, Runnable operation, String operationName) {
-        recordMetrics(counter, histogram, () -> operation, operationName);
+        recordMetrics(counter, histogram, () -> {
+            operation.run();
+            return null;
+        }, operationName);
     }
 
     public static <T> T recordMetrics(LongCounter counter, DoubleHistogram histogram, Supplier<T> operation, String operationName) {
