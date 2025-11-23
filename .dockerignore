@@ -23,3 +23,11 @@ query-service-service/Dockerfile
 commons-kafka/target
 commons-models/target
 commons-grpc-query-service/target
+
+grafana-datasources.yaml
+loki.yaml
+otel-collector.yaml
+prometheus.yaml
+tempo.yaml
+
+load-tests
