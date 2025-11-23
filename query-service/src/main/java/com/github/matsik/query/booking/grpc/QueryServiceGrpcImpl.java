@@ -75,7 +75,7 @@ public class QueryServiceGrpcImpl extends QueryServiceGrpc.QueryServiceImplBase 
         recordDurationAndIncrementCounter(meter, duration, requestName);
     }
 
-    private void recordDurationAndIncrementCounter(Meter meter, long duration, String requestName) {
+    private void recordDurationAndIncrementCounter(Meter meter, long durationNs, String requestName) {
         LongCounter counter = meter.counterBuilder(String.format("%s.requests", requestName))
                 .setDescription(String.format("Total %s requests", requestName))
                 .setUnit("requests")
@@ -87,6 +87,6 @@ public class QueryServiceGrpcImpl extends QueryServiceGrpc.QueryServiceImplBase 
                 .build();
 
         counter.add(1L);
-        histogram.record(duration);
+        histogram.record(durationNs / 1_000_000.0);
     }
 }

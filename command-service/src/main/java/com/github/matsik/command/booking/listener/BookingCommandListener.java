@@ -57,7 +57,7 @@ public class BookingCommandListener {
         recordDurationAndIncrementCounter(meter, duration);
     }
 
-    private void recordDurationAndIncrementCounter(Meter meter, long duration) {
+    private void recordDurationAndIncrementCounter(Meter meter, long durationNs) {
         LongCounter counter = meter.counterBuilder("record.batches")
                 .setDescription("Total record batches processed")
                 .setUnit("batches")
@@ -69,7 +69,7 @@ public class BookingCommandListener {
                 .build();
 
         counter.add(1L);
-        histogram.record(duration);
+        histogram.record(durationNs / 1_000_000.0);
     }
 
 }

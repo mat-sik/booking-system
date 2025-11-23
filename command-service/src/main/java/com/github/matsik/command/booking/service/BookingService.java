@@ -198,7 +198,7 @@ public class BookingService {
         return result;
     }
 
-    private void recordDurationAndIncrementCounter(Meter meter, long duration, String commandName) {
+    private void recordDurationAndIncrementCounter(Meter meter, long durationNs, String commandName) {
         LongCounter counter = meter.counterBuilder(String.format("%s.records", commandName))
                 .setDescription(String.format("Total %s records", commandName))
                 .setUnit("requests")
@@ -210,6 +210,6 @@ public class BookingService {
                 .build();
 
         counter.add(1L);
-        histogram.record(duration);
+        histogram.record(durationNs / 1_000_000.0);
     }
 }
