@@ -68,7 +68,6 @@ class BookingAPIUser(HttpUser):
             start = slot["start"]
             end = slot["end"]
         else:
-            slot = None
             start, end = get_random_time_slot()
 
         payload = {
