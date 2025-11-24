@@ -29,7 +29,6 @@ class BookingAPIUser(HttpUser):
 
     def on_start(self):
         self.user_id = str(uuid.uuid4())
-        self.created_bookings = []
         self.fetched_bookings = []
         self.available_slots = {}
 
@@ -86,17 +85,7 @@ class BookingAPIUser(HttpUser):
                 catch_response=True,
                 name="/bookings/create"
         ) as response:
-            if response.status_code == 200:
-                self.created_bookings.append({
-                    "date": date,
-                    "serviceId": service_id,
-                    "bookingId": str(uuid.uuid4()),
-                    "userId": self.user_id
-                })
-                if key in self.available_slots and slot:
-                    self.available_slots[key].remove(slot)
-                response.success()
-            elif response.status_code == 400:
+            if response.status_code in [200, 400]:
                 response.success()
             else:
                 response.failure(f"Got unexpected status code {response.status_code}")
@@ -152,16 +141,22 @@ class BookingAPIUser(HttpUser):
 
     @task(1)
     def delete_booking(self):
-        if self.created_bookings:
-            booking = random.choice(self.created_bookings)
-            payload = booking
+        if self.fetched_bookings:
+            booking = random.choice(self.fetched_bookings)
+            date = booking["date"]
+            service_id = booking["serviceId"]
+            booking_id = booking["bookingId"]
         else:
-            payload = {
-                "date": random.choice(dates),
-                "serviceId": random.choice(service_ids),
-                "bookingId": str(uuid.uuid4()),
-                "userId": self.user_id
-            }
+            date = random.choice(dates)
+            service_id = random.choice(service_ids)
+            booking_id = str(uuid.uuid4())
+
+        payload = {
+            "date": date,
+            "serviceId": service_id,
+            "bookingId": booking_id,
+            "userId": self.user_id
+        }
 
         with self.client.post(
                 "/bookings/delete",
@@ -170,8 +165,8 @@ class BookingAPIUser(HttpUser):
                 name="/bookings/delete"
         ) as response:
             if response.status_code in [200, 400]:
-                if response.status_code == 200 and payload in self.created_bookings:
-                    self.created_bookings.remove(payload)
+                if response.status_code == 200 and payload in self.fetched_bookings:
+                    self.fetched_bookings.remove(payload)
                 response.success()
             else:
                 response.failure(f"Got status code {response.status_code}")
