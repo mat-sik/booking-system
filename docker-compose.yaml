@@ -71,6 +71,7 @@ services:
       CASSANDRA_RACK: RACK1
       CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
       CASSANDRA_NUM_TOKENS: 128
+      JVM_OPTS: "-Xms2G -Xmx2G -XX:MaxDirectMemorySize=1G"
     volumes:
       - cassandra-data:/var/lib/cassandra
 
