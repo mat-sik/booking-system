@@ -1,74 +1,49 @@
 package com.github.matsik.command.config.kafka;
 
-import com.github.matsik.kafka.mapping.BookingPartitionKeyDeserializer;
-import com.github.matsik.kafka.task.CommandValue;
-import com.github.matsik.dto.BookingPartitionKey;
+import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.config.KafkaListenerContainerFactory;
-import org.springframework.kafka.config.TopicBuilder;
-import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.core.KafkaAdmin;
-import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
-import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
 
-import java.util.Map;
+import java.util.Properties;
 
 @Configuration
 public class KafkaClientConfiguration {
 
     @Bean
-    public KafkaAdmin admin(KafkaClientProperties kafkaClientProperties) {
-        Map<String, Object> configs = Map.of(
-                AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClientProperties.bootstrapServers()
-        );
-        return new KafkaAdmin(configs);
+    public Admin kafkaAdmin(Properties kafkaAdminProperties) {
+        return Admin.create(kafkaAdminProperties);
     }
 
     @Bean
-    public NewTopic bookingsTopic() {
-        return TopicBuilder.name("bookings")
-                .partitions(3)
-                .replicas(1)
-                .build();
+    public Properties kafkaAdminProperties(KafkaProperties kafkaProperties) {
+        var adminProperties = new Properties();
+
+        adminProperties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.client().bootstrapServers());
+
+        return adminProperties;
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<BookingPartitionKey, CommandValue>> kafkaListenerContainerFactory(
-            ConsumerFactory<BookingPartitionKey, CommandValue> localDateCommandValueConsumerFactory
-    ) {
-        ConcurrentKafkaListenerContainerFactory<BookingPartitionKey, CommandValue> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(localDateCommandValueConsumerFactory);
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
-        factory.setBatchListener(true);
+    public Properties kafkaConsumerProperties(KafkaProperties kafkaProperties) {
+        var consumerProperties = new Properties();
 
-        return factory;
-    }
+        consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.client().bootstrapServers());
+        consumerProperties.put(ConsumerConfig.CLIENT_ID_CONFIG, kafkaProperties.client().clientId());
 
-    @Bean
-    public ConsumerFactory<BookingPartitionKey, CommandValue> localDateCommandValueConsumerFactory(
-            KafkaClientProperties kafkaClientProperties,
-            JsonDeserializer<CommandValue> commandValueJsonDeserializer
-    ) {
-        Map<String, Object> consumerConfig = consumerConfig(kafkaClientProperties);
-        return new DefaultKafkaConsumerFactory<>(consumerConfig, new BookingPartitionKeyDeserializer(), commandValueJsonDeserializer);
-    }
+        consumerProperties.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.consumer().groupId());
 
-    private Map<String, Object> consumerConfig(KafkaClientProperties kafkaClientProperties) {
-        return Map.of(
-                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClientProperties.bootstrapServers(),
-                ConsumerConfig.GROUP_ID_CONFIG, kafkaClientProperties.groupId(),
-                ConsumerConfig.CLIENT_ID_CONFIG, kafkaClientProperties.clientId(),
-                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false,
-                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest",
-                JsonDeserializer.TRUSTED_PACKAGES, "com.github.matsik.kafka.task"
-        );
+        consumerProperties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, kafkaProperties.consumer().maxPollIntervalMs());
+        consumerProperties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, kafkaProperties.consumer().maxPollRecords());
+
+        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "com.github.matsik.kafka.mapping.BookingPartitionKeyDeserializer");
+        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "com.github.matsik.kafka.mapping.CommandValueDeserializer");
+
+        consumerProperties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+        consumerProperties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+        return consumerProperties;
     }
 
 }

@@ -2,14 +2,12 @@ package com.github.matsik.kafka.mapping;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.matsik.kafka.task.CommandValue;
-import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
 
-@RequiredArgsConstructor
 public class CommandValueSerializer implements Serializer<CommandValue> {
 
-    private final ObjectMapper objectMapper;
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
     public byte[] serialize(String s, CommandValue commandValue) {
@@ -18,7 +16,7 @@ public class CommandValueSerializer implements Serializer<CommandValue> {
         }
 
         try {
-            return objectMapper.writeValueAsBytes(commandValue);
+            return OBJECT_MAPPER.writeValueAsBytes(commandValue);
         } catch (Exception e) {
             throw new SerializationException("Error serializing CommandValue to JSON", e);
         }

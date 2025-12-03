@@ -6,11 +6,21 @@ spring:
       enabled: true
 
 cassandra:
-  contactPoints: ${BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS}
-  keyspaceName: ${BOOKING_SYSTEM_CASSANDRA_KEYSPACE_NAME}
-  localDatacenter: ${BOOKING_SYSTEM_DATACENTER}
+  contact-points: ${BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS}
+  keyspace-name: ${BOOKING_SYSTEM_CASSANDRA_KEYSPACE_NAME}
+  local-datacenter: ${BOOKING_SYSTEM_DATACENTER}
 
 kafka:
-  clientId: ${BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_CLIENT_ID}
-  groupId: ${BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_GROUP_ID}
-  bootstrapServers: ${BOOKING_SYSTEM_KAFKA_BOOTSTRAP_SERVERS}
+  client:
+    client-id: ${BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_CLIENT_ID}
+    bootstrap-servers: ${BOOKING_SYSTEM_KAFKA_BOOTSTRAP_SERVERS}
+  consumer:
+    group-id: ${BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_GROUP_ID}
+    concurrent-consumer-count: 3
+    max-poll-interval-ms: 300_000
+    max-poll-records: 500
+    poll-timeout-ms: 5000
+  topics:
+    booking-topic-name: bookings
+    partitions: 3
+    replication-factor: 3
