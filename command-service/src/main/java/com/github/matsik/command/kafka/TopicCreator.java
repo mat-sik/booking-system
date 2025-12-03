@@ -1,6 +1,7 @@
 package com.github.matsik.command.kafka;
 
 import com.github.matsik.command.config.kafka.KafkaProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.clients.admin.ListTopicsResult;
@@ -12,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 @Component
+@Slf4j
 public class TopicCreator {
 
     private final Admin admin;
@@ -29,6 +31,11 @@ public class TopicCreator {
 
         if (!topicExists(bookingTopicName)) {
             createTopics(bookingTopicName, partitions, replicationFactor);
+        } else {
+            log.atInfo()
+                    .setMessage("Topic already exists")
+                    .addKeyValue("bookingTopicName", bookingTopicName)
+                    .log();
         }
     }
 
@@ -49,6 +56,12 @@ public class TopicCreator {
 
         try {
             future.all().get();
+            log.atInfo()
+                    .setMessage("Successfully created topics.")
+                    .addKeyValue("name", name)
+                    .addKeyValue("partitions", partitions)
+                    .addKeyValue("replicationFactor", replicationFactor)
+                    .log();
         } catch (InterruptedException | ExecutionException ex) {
             throw new RuntimeException("Unable to create topics.", ex);
         }
