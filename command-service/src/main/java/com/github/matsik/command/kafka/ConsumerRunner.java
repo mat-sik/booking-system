@@ -41,9 +41,11 @@ public class ConsumerRunner implements Runnable {
                 consumer.commitSync();
             }
         } finally {
+            log.info("Shutting down consumer thread");
+            Thread.interrupted();
             consumer.close();
             shutdownLatch.countDown();
-            log.info("Shutting down consumer thread");
+            log.info("Shut down consumer thread");
         }
     }
 
