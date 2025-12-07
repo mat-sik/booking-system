@@ -23,4 +23,4 @@ kafka:
   topics:
     booking-topic-name: bookings
     partitions: 3
-    replication-factor: 3
+    replication-factor: 1
