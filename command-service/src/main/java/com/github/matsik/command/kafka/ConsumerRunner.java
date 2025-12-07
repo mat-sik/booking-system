@@ -40,10 +40,17 @@ public class ConsumerRunner implements Runnable {
                 recordsHandler.onRecords(records);
                 consumer.commitSync();
             }
+            log.info("Exited poll loop because of interrupt");
+        } catch (Exception ex) {
+            log.warn("Exited poll loop with exception", ex);
         } finally {
             log.info("Shutting down consumer thread");
             Thread.interrupted();
-            consumer.close();
+            try {
+                consumer.close();
+            } catch (Exception ex) {
+                log.warn("Failed to close consumer", ex);
+            }
             shutdownLatch.countDown();
             log.info("Shut down consumer thread");
         }
