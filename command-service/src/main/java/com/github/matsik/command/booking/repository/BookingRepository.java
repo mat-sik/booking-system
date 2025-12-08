@@ -2,7 +2,6 @@ package com.github.matsik.command.booking.repository;
 
 import com.datastax.oss.driver.api.core.PagingIterable;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.mapper.annotations.Dao;
 import com.datastax.oss.driver.api.mapper.annotations.Delete;
 import com.datastax.oss.driver.api.mapper.annotations.Insert;
@@ -36,23 +35,4 @@ public interface BookingRepository {
     @Delete(entityClass = BookingByUser.class)
     @StatementAttributes(consistencyLevel = "QUORUM")
     BoundStatement deleteByPrimaryKey(UUID userId, UUID serviceId, LocalDate date, UUID bookingId);
-
-    @Query("""
-            SELECT user_id
-            FROM bookings_by_service_and_date
-            WHERE service_id = :serviceId AND date = :date AND booking_id = :bookingId
-            """)
-    @StatementAttributes(consistencyLevel = "QUORUM")
-    Row findBookingOwner(UUID serviceId, LocalDate date, UUID bookingId);
-
-    @Query("""
-            SELECT COUNT(*)
-            FROM bookings_by_service_and_date
-            WHERE service_id = :serviceId AND date = :date
-              AND start < :end
-              AND end > :start
-            ALLOW FILTERING
-            """)
-    @StatementAttributes(consistencyLevel = "QUORUM")
-    long findOverlappingBookingCount(UUID serviceId, LocalDate date, int start, int end);
 }

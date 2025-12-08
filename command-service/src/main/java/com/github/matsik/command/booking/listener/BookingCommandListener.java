@@ -13,11 +13,9 @@ import io.opentelemetry.api.metrics.LongCounter;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.springframework.stereotype.Component;
 
 import static com.github.matsik.command.metrics.MetricsRecorder.recordMetrics;
 
-@Component
 @RequiredArgsConstructor
 public class BookingCommandListener implements RecordsHandler {
 

@@ -17,7 +17,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BookingCache {
 
-    private final BookingPersistenceAdapter bookingPersistenceAdapter;
+    private final BookingPersistenceService bookingPersistenceService;
 
     private final Map<BookingPartitionKey, Set<Booking>> bookingsCache;
 
@@ -75,7 +75,7 @@ public class BookingCache {
     private Set<Booking> fetch(BookingPartitionKey bookingPartitionKey) {
         Set<Booking> bookings = bookingsCache.get(bookingPartitionKey);
         if (bookings == null) {
-            List<BookingByServiceAndDate> freshBookings = bookingPersistenceAdapter.findAllByServiceAndDate(
+            List<BookingByServiceAndDate> freshBookings = bookingPersistenceService.findAllByServiceAndDate(
                     bookingPartitionKey.serviceId(),
                     bookingPartitionKey.date()
             );

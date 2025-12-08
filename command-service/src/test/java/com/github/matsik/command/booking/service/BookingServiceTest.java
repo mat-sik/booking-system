@@ -11,7 +11,9 @@ import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 import com.github.matsik.cassandra.entity.BookingByUser;
 import com.github.matsik.command.booking.command.CreateBookingCommand;
 import com.github.matsik.command.booking.command.DeleteBookingCommand;
-import com.github.matsik.command.booking.repository.BookingPersistenceAdapter;
+import com.github.matsik.command.booking.repository.BookingCache;
+import com.github.matsik.command.booking.repository.BookingPersistenceCachingAdapter;
+import com.github.matsik.command.booking.repository.BookingPersistenceService;
 import com.github.matsik.command.config.cassandra.client.CassandraClientConfiguration;
 import com.github.matsik.command.config.cassandra.client.CassandraClientProperties;
 import com.github.matsik.command.config.cassandra.mapper.booking.BookingMapperConfiguration;
@@ -19,7 +21,10 @@ import com.github.matsik.command.config.otel.OtelConfiguration;
 import com.github.matsik.command.migration.CassandraMigrationService;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
+import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.api.metrics.LongCounter;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -34,6 +39,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,8 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         CassandraMigrationService.class,
         CassandraClientConfiguration.class,
         BookingMapperConfiguration.class,
-        BookingPersistenceAdapter.class,
-        BookingService.class,
+        BookingPersistenceService.class,
         OtelConfiguration.class
 })
 @Testcontainers
@@ -59,10 +64,18 @@ class BookingServiceTest {
     private static final CassandraContainer CASSANDRA_CONTAINER = new CassandraContainer("cassandra:5.0.5");
 
     @Autowired
-    private BookingService bookingService;
+    private CqlSession cqlSession;
 
     @Autowired
-    private CqlSession cqlSession;
+    private BookingPersistenceService bookingPersistenceService;
+
+    @Autowired
+    private LongCounter recordCounter;
+
+    @Autowired
+    private DoubleHistogram recordHistogram;
+
+    private BookingService bookingService;
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -74,6 +87,13 @@ class BookingServiceTest {
     @Configuration
     @EnableConfigurationProperties(CassandraClientProperties.class)
     public static class TestCassandraConfig {
+    }
+
+    @BeforeEach
+    void setUp() {
+        BookingCache bookingCache = new BookingCache(bookingPersistenceService, new HashMap<>());
+        BookingPersistenceCachingAdapter bookingPersistenceCachingAdapter = new BookingPersistenceCachingAdapter(bookingPersistenceService, bookingCache);
+        bookingService = new BookingService(bookingPersistenceCachingAdapter, recordCounter, recordHistogram);
     }
 
     @AfterEach

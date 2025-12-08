@@ -1,8 +1,15 @@
 package com.github.matsik.command.kafka;
 
+import com.github.matsik.command.booking.listener.BookingCommandListener;
+import com.github.matsik.command.booking.repository.BookingCache;
+import com.github.matsik.command.booking.repository.BookingPersistenceCachingAdapter;
+import com.github.matsik.command.booking.repository.BookingPersistenceService;
+import com.github.matsik.command.booking.service.BookingService;
 import com.github.matsik.command.config.kafka.KafkaProperties;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.kafka.task.CommandValue;
+import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.api.metrics.LongCounter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -11,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -29,9 +37,15 @@ public class ConsumerManager implements SmartLifecycle {
 
     private final Properties kafkaConsumerProperties;
 
-    private final RecordsHandler recordsHandler;
-
     private final TopicCreator topicCreator;
+
+    private final LongCounter batchCounter;
+    private final DoubleHistogram batchHistogram;
+
+    private final LongCounter recordCounter;
+    private final DoubleHistogram recordHistogram;
+    
+    BookingPersistenceService bookingPersistenceService;
 
     private final int consumerCount;
     private final CountDownLatch shutdownLatch;
@@ -44,17 +58,27 @@ public class ConsumerManager implements SmartLifecycle {
     public ConsumerManager(
             Properties kafkaConsumerProperties,
             KafkaProperties kafkaProperties,
-            RecordsHandler recordsHandler,
-            TopicCreator topicCreator
+            TopicCreator topicCreator,
+            LongCounter batchCounter,
+            DoubleHistogram batchHistogram,
+            LongCounter recordCounter,
+            DoubleHistogram recordHistogram,
+            BookingPersistenceService bookingPersistenceService
     ) {
         this.running = new AtomicBoolean();
         this.executorService = Executors.newVirtualThreadPerTaskExecutor();
 
         this.kafkaConsumerProperties = kafkaConsumerProperties;
 
-        this.recordsHandler = recordsHandler;
-
         this.topicCreator = topicCreator;
+        
+        this.batchCounter = batchCounter;
+        this.batchHistogram = batchHistogram;
+        
+        this.recordCounter = recordCounter;
+        this.recordHistogram = recordHistogram;
+        
+        this.bookingPersistenceService = bookingPersistenceService;
 
         this.consumerCount = kafkaProperties.consumer().concurrentConsumerCount();
         this.shutdownLatch = new CountDownLatch(consumerCount);
@@ -79,12 +103,21 @@ public class ConsumerManager implements SmartLifecycle {
             Consumer<BookingPartitionKey, CommandValue> consumer = new KafkaConsumer<>(kafkaConsumerProperties);
             consumer.subscribe(Collections.singletonList(bookingTopicName));
 
-            ConsumerRunner consumerRunner = new ConsumerRunner(consumer, recordsHandler, pollTimeoutMs, shutdownLatch);
+            ConsumerRunner consumerRunner = consumerRunner(consumer);
 
             Future<?> runningConsumer = executorService.submit(consumerRunner);
             runningConsumers.add(runningConsumer);
         }
         log.info("Consumer manager is started");
+    }
+
+    private ConsumerRunner consumerRunner(Consumer<BookingPartitionKey, CommandValue> consumer) {
+        BookingCache bookingCache = new BookingCache(bookingPersistenceService, new HashMap<>());
+        BookingPersistenceCachingAdapter bookingPersistenceCachingAdapter = new BookingPersistenceCachingAdapter(bookingPersistenceService, bookingCache);
+        BookingService bookingService = new BookingService(bookingPersistenceCachingAdapter, recordCounter, recordHistogram);
+
+        RecordsHandler recordsHandler = new BookingCommandListener(bookingService, batchCounter, batchHistogram);
+        return new ConsumerRunner(consumer, recordsHandler, pollTimeoutMs, shutdownLatch);
     }
 
     @Override

@@ -12,7 +12,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -20,7 +19,6 @@ import java.util.UUID;
 
 import static com.github.matsik.command.metrics.MetricsRecorder.recordMetrics;
 
-@Service
 @RequiredArgsConstructor
 public class BookingService {
 

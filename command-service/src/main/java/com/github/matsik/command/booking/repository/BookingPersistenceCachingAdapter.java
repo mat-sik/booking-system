@@ -11,7 +11,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BookingPersistenceCachingAdapter implements BookingCommandsPort {
 
-    private final BookingPersistenceAdapter bookingPersistenceAdapter;
+    private final BookingPersistenceService bookingPersistenceService;
 
     private final BookingCache bookingsCache;
 
@@ -22,7 +22,7 @@ public class BookingPersistenceCachingAdapter implements BookingCommandsPort {
 
     @Override
     public UUID createBooking(BookingPartitionKey bookingPartitionKey, UUID userId, TimeRange timeRange) {
-        UUID bookingId = bookingPersistenceAdapter.createBooking(bookingPartitionKey, userId, timeRange);
+        UUID bookingId = bookingPersistenceService.createBooking(bookingPartitionKey, userId, timeRange);
         bookingsCache.add(bookingPartitionKey, bookingId, userId, timeRange);
         return bookingId;
     }
@@ -34,7 +34,7 @@ public class BookingPersistenceCachingAdapter implements BookingCommandsPort {
 
     @Override
     public void deleteBooking(BookingPartitionKey bookingPartitionKey, UUID userId, UUID bookingId) {
-        bookingPersistenceAdapter.deleteBooking(bookingPartitionKey, userId, bookingId);
+        bookingPersistenceService.deleteBooking(bookingPartitionKey, userId, bookingId);
         bookingsCache.delete(bookingPartitionKey, bookingId, userId);
     }
 
