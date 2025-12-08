@@ -53,8 +53,9 @@ public class BookingService {
         }
 
         bookingCommandsPort.deleteBooking(
+                bookingPartitionKey.serviceId(),
+                bookingPartitionKey.date(),
                 command.userId(),
-                bookingPartitionKey,
                 command.bookingId()
         );
     }
@@ -88,8 +89,10 @@ public class BookingService {
         TimeRange timeRange = command.timeRange();
 
         long overlappingBookingCount = bookingCommandsPort.findOverlappingBookingCount(
-                bookingPartitionKey,
-                timeRange
+                bookingPartitionKey.serviceId(),
+                bookingPartitionKey.date(),
+                timeRange.start().minuteOfDay(),
+                timeRange.end().minuteOfDay()
         );
 
         if (overlappingBookingCount > 0) {
@@ -98,9 +101,11 @@ public class BookingService {
         }
 
         UUID bookingId = bookingCommandsPort.createBooking(
+                bookingPartitionKey.serviceId(),
+                bookingPartitionKey.date(),
                 command.userId(),
-                bookingPartitionKey,
-                timeRange
+                timeRange.start().minuteOfDay(),
+                timeRange.end().minuteOfDay()
         );
 
         return Optional.of(bookingId);

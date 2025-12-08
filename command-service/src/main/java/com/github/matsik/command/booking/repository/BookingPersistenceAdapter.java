@@ -28,19 +28,15 @@ public class BookingPersistenceAdapter implements BookingCommandsPort {
 
     @Override
     @WithSpan(kind = SpanKind.CONSUMER)
-    public UUID createBooking(
-            UUID userId,
-            BookingPartitionKey bookingPartitionKey,
-            TimeRange timeRange
-    ) {
+    public UUID createBooking(UUID serviceId, LocalDate date, UUID userId, int start, int end) {
         UUID bookingId = UUID.randomUUID();
 
         BookingByServiceAndDate bookingByServiceAndDate = BookingByServiceAndDate.builder()
-                .serviceId(bookingPartitionKey.serviceId())
-                .date(bookingPartitionKey.date())
+                .serviceId(serviceId)
+                .date(date)
                 .bookingId(bookingId)
-                .start(timeRange.start().minuteOfDay())
-                .end(timeRange.end().minuteOfDay())
+                .start(start)
+                .end(end)
                 .userId(userId)
                 .build();
 
@@ -48,11 +44,11 @@ public class BookingPersistenceAdapter implements BookingCommandsPort {
 
         BookingByUser bookingByUser = BookingByUser.builder()
                 .userId(userId)
-                .serviceId(bookingPartitionKey.serviceId())
-                .date(bookingPartitionKey.date())
+                .serviceId(serviceId)
+                .date(date)
                 .bookingId(bookingId)
-                .start(timeRange.start().minuteOfDay())
-                .end(timeRange.end().minuteOfDay())
+                .start(start)
+                .end(end)
                 .build();
 
         BoundStatement createBookingByUser = bookingRepository.save(bookingByUser);
@@ -69,23 +65,10 @@ public class BookingPersistenceAdapter implements BookingCommandsPort {
 
     @Override
     @WithSpan(kind = SpanKind.CONSUMER)
-    public void deleteBooking(
-            UUID userId,
-            BookingPartitionKey bookingPartitionKey,
-            UUID bookingId
-    ) {
-        BoundStatement deleteBookingByServiceAndDate = bookingRepository.deleteByPrimaryKey(
-                bookingPartitionKey.serviceId(),
-                bookingPartitionKey.date(),
-                bookingId
-        );
+    public void deleteBooking(UUID serviceId, LocalDate date, UUID userId, UUID bookingId) {
+        BoundStatement deleteBookingByServiceAndDate = bookingRepository.deleteByPrimaryKey(serviceId, date, bookingId);
 
-        BoundStatement deleteBookingByUser = bookingRepository.deleteByPrimaryKey(
-                userId,
-                bookingPartitionKey.serviceId(),
-                bookingPartitionKey.date(),
-                bookingId
-        );
+        BoundStatement deleteBookingByUser = bookingRepository.deleteByPrimaryKey(userId, serviceId, date, bookingId);
 
         BatchStatement batchStatement = BatchStatement.builder(DefaultBatchType.LOGGED)
                 .addStatement(deleteBookingByServiceAndDate)
@@ -103,16 +86,8 @@ public class BookingPersistenceAdapter implements BookingCommandsPort {
     }
 
     @Override
-    public long findOverlappingBookingCount(
-            BookingPartitionKey bookingPartitionKey,
-            TimeRange timeRange
-    ) {
-        return bookingRepository.findOverlappingBookingCount(
-                bookingPartitionKey.serviceId(),
-                bookingPartitionKey.date(),
-                timeRange.start().minuteOfDay(),
-                timeRange.end().minuteOfDay()
-        );
+    public long findOverlappingBookingCount(UUID serviceId, LocalDate date, int start, int end) {
+        return bookingRepository.findOverlappingBookingCount(serviceId, date, start, end);
     }
 
 }
