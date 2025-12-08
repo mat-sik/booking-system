@@ -15,6 +15,7 @@ import com.github.matsik.command.booking.repository.BookingPersistenceAdapter;
 import com.github.matsik.command.config.cassandra.client.CassandraClientConfiguration;
 import com.github.matsik.command.config.cassandra.client.CassandraClientProperties;
 import com.github.matsik.command.config.cassandra.mapper.booking.BookingMapperConfiguration;
+import com.github.matsik.command.config.otel.OtelConfiguration;
 import com.github.matsik.command.migration.CassandraMigrationService;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
@@ -48,7 +49,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         CassandraClientConfiguration.class,
         BookingMapperConfiguration.class,
         BookingPersistenceAdapter.class,
-        BookingService.class
+        BookingService.class,
+        OtelConfiguration.class
 })
 @Testcontainers
 class BookingServiceTest {
