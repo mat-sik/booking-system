@@ -11,7 +11,6 @@ import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 import com.github.matsik.cassandra.entity.BookingByUser;
 
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.UUID;
 
 @Dao
@@ -40,12 +39,6 @@ public interface BookingRepository {
             """)
     @StatementAttributes(consistencyLevel = "QUORUM")
     Row _findBookingOwner(UUID serviceId, LocalDate date, UUID bookingId);
-
-    default Optional<UUID> findBookingOwner(UUID serviceId, LocalDate date, UUID bookingId) {
-        Row row = _findBookingOwner(serviceId, date, bookingId);
-        return Optional.ofNullable(row)
-                .map(rowValue -> rowValue.getUuid("user_id"));
-    }
 
     @Query("""
             SELECT COUNT(*)

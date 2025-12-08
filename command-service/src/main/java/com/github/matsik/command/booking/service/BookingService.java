@@ -1,14 +1,8 @@
 package com.github.matsik.command.booking.service;
 
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.BatchStatement;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
-import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
-import com.github.matsik.cassandra.entity.BookingByUser;
 import com.github.matsik.command.booking.command.CreateBookingCommand;
 import com.github.matsik.command.booking.command.DeleteBookingCommand;
-import com.github.matsik.command.booking.repository.BookingRepository;
+import com.github.matsik.command.booking.repository.BookingPersistenceAdapter;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
 import io.opentelemetry.api.common.AttributeKey;
@@ -31,8 +25,7 @@ import static com.github.matsik.command.metrics.MetricsRecorder.recordMetrics;
 @RequiredArgsConstructor
 public class BookingService {
 
-    private final CqlSession session;
-    private final BookingRepository bookingRepository;
+    private final BookingPersistenceAdapter bookingPersistenceAdapter;
 
     private final LongCounter recordCounter;
     private final DoubleHistogram recordHistogram;
@@ -48,17 +41,23 @@ public class BookingService {
 
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
 
-        Optional<UUID> ownerId = bookingRepository.findBookingOwner(
+        Optional<UUID> ownerId = bookingPersistenceAdapter.findBookingOwner(
                 bookingPartitionKey.serviceId(),
                 bookingPartitionKey.date(),
                 command.bookingId()
         );
+
         if (ownerId.isEmpty() || !Objects.equals(ownerId.get(), command.userId())) {
             String ownerIdString = ownerId.isPresent() ? ownerId.get().toString() : "";
             addSpanEventNotMatchingOwner(span, ownerIdString, command.userId().toString());
             return;
         }
-        batchRemove(command);
+
+        bookingPersistenceAdapter.batchDeleteBooking(
+                command.userId(),
+                bookingPartitionKey,
+                command.bookingId()
+        );
     }
 
     private void setSpanAttributes(Span span, DeleteBookingCommand command) {
@@ -77,31 +76,6 @@ public class BookingService {
         ));
     }
 
-    @WithSpan(kind = SpanKind.CONSUMER)
-    private void batchRemove(DeleteBookingCommand command) {
-        BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
-
-        BoundStatement deleteBookingByServiceAndDate = bookingRepository.deleteByPrimaryKey(
-                bookingPartitionKey.serviceId(),
-                bookingPartitionKey.date(),
-                command.bookingId()
-        );
-
-        BoundStatement deleteBookingByUser = bookingRepository.deleteByPrimaryKey(
-                command.userId(),
-                bookingPartitionKey.serviceId(),
-                bookingPartitionKey.date(),
-                command.bookingId()
-        );
-
-        BatchStatement batchStatement = BatchStatement.builder(DefaultBatchType.LOGGED)
-                .addStatement(deleteBookingByServiceAndDate)
-                .addStatement(deleteBookingByUser)
-                .build();
-
-        session.execute(batchStatement);
-    }
-
     public Optional<UUID> createBooking(CreateBookingCommand command) {
         return recordMetrics(recordCounter, recordHistogram, () -> _createBooking(command), "create_booking");
     }
@@ -114,12 +88,23 @@ public class BookingService {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
         TimeRange timeRange = command.timeRange();
 
-        long overlappingBookingCount = findOverlappingBookings(bookingPartitionKey, timeRange);
+        long overlappingBookingCount = bookingPersistenceAdapter.findOverlappingBookingCount(
+                bookingPartitionKey,
+                timeRange
+        );
+
         if (overlappingBookingCount > 0) {
             addSpanEventOverlappingBookingCount(span, overlappingBookingCount);
             return Optional.empty();
         }
-        return Optional.of(batchCreate(command));
+
+        UUID bookingId = bookingPersistenceAdapter.batchCreateBooking(
+                command.userId(),
+                bookingPartitionKey,
+                timeRange
+        );
+
+        return Optional.of(bookingId);
     }
 
     private void setSpanAttributes(Span span, CreateBookingCommand command) {
@@ -137,53 +122,5 @@ public class BookingService {
         span.addEvent("Booking overlap", Attributes.of(
                 AttributeKey.longKey("booking.overlap.count"), overlappingBookingCount
         ));
-    }
-
-    @WithSpan(kind = SpanKind.CONSUMER)
-    private UUID batchCreate(CreateBookingCommand command) {
-        BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
-        TimeRange timeRange = command.timeRange();
-
-        UUID bookingId = UUID.randomUUID();
-
-        BookingByServiceAndDate bookingByServiceAndDate = BookingByServiceAndDate.builder()
-                .serviceId(bookingPartitionKey.serviceId())
-                .date(bookingPartitionKey.date())
-                .bookingId(bookingId)
-                .start(timeRange.start().minuteOfDay())
-                .end(timeRange.end().minuteOfDay())
-                .userId(command.userId())
-                .build();
-
-        BoundStatement createBookingByServiceAndDate = bookingRepository.save(bookingByServiceAndDate);
-
-        BookingByUser bookingByUser = BookingByUser.builder()
-                .userId(command.userId())
-                .serviceId(bookingPartitionKey.serviceId())
-                .date(bookingPartitionKey.date())
-                .bookingId(bookingId)
-                .start(timeRange.start().minuteOfDay())
-                .end(timeRange.end().minuteOfDay())
-                .build();
-
-        BoundStatement createBookingByUser = bookingRepository.save(bookingByUser);
-
-        BatchStatement batchStatement = BatchStatement.builder(DefaultBatchType.LOGGED)
-                .addStatement(createBookingByServiceAndDate)
-                .addStatement(createBookingByUser)
-                .build();
-
-        session.execute(batchStatement);
-
-        return bookingId;
-    }
-
-    private long findOverlappingBookings(BookingPartitionKey bookingPartitionKey, TimeRange timeRange) {
-        return bookingRepository.findOverlappingBookingCount(
-                bookingPartitionKey.serviceId(),
-                bookingPartitionKey.date(),
-                timeRange.start().minuteOfDay(),
-                timeRange.end().minuteOfDay()
-        );
     }
 }

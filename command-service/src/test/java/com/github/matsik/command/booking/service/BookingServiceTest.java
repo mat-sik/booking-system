@@ -11,6 +11,7 @@ import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 import com.github.matsik.cassandra.entity.BookingByUser;
 import com.github.matsik.command.booking.command.CreateBookingCommand;
 import com.github.matsik.command.booking.command.DeleteBookingCommand;
+import com.github.matsik.command.booking.repository.BookingPersistenceAdapter;
 import com.github.matsik.command.config.cassandra.client.CassandraClientConfiguration;
 import com.github.matsik.command.config.cassandra.client.CassandraClientProperties;
 import com.github.matsik.command.config.cassandra.mapper.booking.BookingMapperConfiguration;
@@ -46,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         CassandraMigrationService.class,
         CassandraClientConfiguration.class,
         BookingMapperConfiguration.class,
+        BookingPersistenceAdapter.class,
         BookingService.class
 })
 @Testcontainers
