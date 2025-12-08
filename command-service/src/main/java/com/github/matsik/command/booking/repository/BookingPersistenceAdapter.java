@@ -97,7 +97,7 @@ public class BookingPersistenceAdapter implements BookingCommandsPort {
 
     @Override
     public Optional<UUID> findBookingOwner(UUID serviceId, LocalDate date, UUID bookingId) {
-        Row row = bookingRepository._findBookingOwner(serviceId, date, bookingId);
+        Row row = bookingRepository.findBookingOwner(serviceId, date, bookingId);
         return Optional.ofNullable(row)
                 .map(rowValue -> rowValue.getUuid("user_id"));
     }

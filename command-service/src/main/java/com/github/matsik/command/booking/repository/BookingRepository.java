@@ -38,7 +38,7 @@ public interface BookingRepository {
             WHERE service_id = :serviceId AND date = :date AND booking_id = :bookingId
             """)
     @StatementAttributes(consistencyLevel = "QUORUM")
-    Row _findBookingOwner(UUID serviceId, LocalDate date, UUID bookingId);
+    Row findBookingOwner(UUID serviceId, LocalDate date, UUID bookingId);
 
     @Query("""
             SELECT COUNT(*)
