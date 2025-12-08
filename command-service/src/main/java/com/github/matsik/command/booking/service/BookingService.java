@@ -2,7 +2,6 @@ package com.github.matsik.command.booking.service;
 
 import com.github.matsik.command.booking.command.CreateBookingCommand;
 import com.github.matsik.command.booking.command.DeleteBookingCommand;
-import com.github.matsik.command.booking.repository.BookingPersistenceAdapter;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
 import io.opentelemetry.api.common.AttributeKey;
@@ -25,7 +24,7 @@ import static com.github.matsik.command.metrics.MetricsRecorder.recordMetrics;
 @RequiredArgsConstructor
 public class BookingService {
 
-    private final BookingPersistenceAdapter bookingPersistenceAdapter;
+    private final BookingCommandsPort bookingCommandsPort;
 
     private final LongCounter recordCounter;
     private final DoubleHistogram recordHistogram;
@@ -41,7 +40,7 @@ public class BookingService {
 
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
 
-        Optional<UUID> ownerId = bookingPersistenceAdapter.findBookingOwner(
+        Optional<UUID> ownerId = bookingCommandsPort.findBookingOwner(
                 bookingPartitionKey.serviceId(),
                 bookingPartitionKey.date(),
                 command.bookingId()
@@ -53,7 +52,7 @@ public class BookingService {
             return;
         }
 
-        bookingPersistenceAdapter.batchDeleteBooking(
+        bookingCommandsPort.deleteBooking(
                 command.userId(),
                 bookingPartitionKey,
                 command.bookingId()
@@ -88,7 +87,7 @@ public class BookingService {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
         TimeRange timeRange = command.timeRange();
 
-        long overlappingBookingCount = bookingPersistenceAdapter.findOverlappingBookingCount(
+        long overlappingBookingCount = bookingCommandsPort.findOverlappingBookingCount(
                 bookingPartitionKey,
                 timeRange
         );
@@ -98,7 +97,7 @@ public class BookingService {
             return Optional.empty();
         }
 
-        UUID bookingId = bookingPersistenceAdapter.batchCreateBooking(
+        UUID bookingId = bookingCommandsPort.createBooking(
                 command.userId(),
                 bookingPartitionKey,
                 timeRange

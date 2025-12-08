@@ -7,6 +7,7 @@ import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 import com.github.matsik.cassandra.entity.BookingByUser;
+import com.github.matsik.command.booking.service.BookingCommandsPort;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
 import io.opentelemetry.api.trace.SpanKind;
@@ -20,13 +21,14 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class BookingPersistenceAdapter {
+public class BookingPersistenceAdapter implements BookingCommandsPort {
 
     private final CqlSession session;
     private final BookingRepository bookingRepository;
 
+    @Override
     @WithSpan(kind = SpanKind.CONSUMER)
-    public UUID batchCreateBooking(
+    public UUID createBooking(
             UUID userId,
             BookingPartitionKey bookingPartitionKey,
             TimeRange timeRange
@@ -65,8 +67,9 @@ public class BookingPersistenceAdapter {
         return bookingId;
     }
 
+    @Override
     @WithSpan(kind = SpanKind.CONSUMER)
-    public void batchDeleteBooking(
+    public void deleteBooking(
             UUID userId,
             BookingPartitionKey bookingPartitionKey,
             UUID bookingId
@@ -92,12 +95,14 @@ public class BookingPersistenceAdapter {
         session.execute(batchStatement);
     }
 
+    @Override
     public Optional<UUID> findBookingOwner(UUID serviceId, LocalDate date, UUID bookingId) {
         Row row = bookingRepository._findBookingOwner(serviceId, date, bookingId);
         return Optional.ofNullable(row)
                 .map(rowValue -> rowValue.getUuid("user_id"));
     }
 
+    @Override
     public long findOverlappingBookingCount(
             BookingPartitionKey bookingPartitionKey,
             TimeRange timeRange
