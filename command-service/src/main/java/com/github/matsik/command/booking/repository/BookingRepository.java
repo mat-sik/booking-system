@@ -1,5 +1,6 @@
 package com.github.matsik.command.booking.repository;
 
+import com.datastax.oss.driver.api.core.PagingIterable;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.mapper.annotations.Dao;
@@ -23,6 +24,10 @@ public interface BookingRepository {
     @Insert
     @StatementAttributes(consistencyLevel = "QUORUM")
     BoundStatement save(BookingByUser booking);
+
+    @Query("SELECT * FROM bookings_by_service_and_date WHERE service_id = :serviceId AND date = :date")
+    @StatementAttributes(consistencyLevel = "QUORUM")
+    PagingIterable<BookingByServiceAndDate> findAllByServiceAndDate(UUID serviceId, LocalDate date);
 
     @Delete(entityClass = BookingByServiceAndDate.class)
     @StatementAttributes(consistencyLevel = "QUORUM")
@@ -49,10 +54,5 @@ public interface BookingRepository {
             ALLOW FILTERING
             """)
     @StatementAttributes(consistencyLevel = "QUORUM")
-    long findOverlappingBookingCount(
-            UUID serviceId,
-            LocalDate date,
-            int start,
-            int end
-    );
+    long findOverlappingBookingCount(UUID serviceId, LocalDate date, int start, int end);
 }

@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -88,6 +89,10 @@ public class BookingPersistenceAdapter implements BookingCommandsPort {
     @Override
     public long findOverlappingBookingCount(UUID serviceId, LocalDate date, int start, int end) {
         return bookingRepository.findOverlappingBookingCount(serviceId, date, start, end);
+    }
+
+    List<BookingByServiceAndDate> findAllByServiceAndDate(UUID serviceId, LocalDate date) {
+        return bookingRepository.findAllByServiceAndDate(serviceId, date).all();
     }
 
 }
