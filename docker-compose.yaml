@@ -6,9 +6,10 @@ services:
       - net
     ports:
       - "8080:8080"
-    env_file:
-      - .env
     environment:
+      BOOKING_SYSTEM_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      BOOKING_SYSTEM_KAFKA_BOOKING_SERVICE_CLIENT_ID: command-producer
+      BOOKING_SYSTEM_QUERY_SERVICE_ADDRESS: query-service:50051
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_SERVICE_NAME: booking-service
@@ -24,9 +25,10 @@ services:
     image: query-service:latest
     networks:
       - net
-    env_file:
-      - .env
     environment:
+      BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS: cassandra:9042
+      BOOKING_SYSTEM_CASSANDRA_KEYSPACE_NAME: booking_system
+      BOOKING_SYSTEM_DATACENTER: DC1
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_SERVICE_NAME: query-service
@@ -44,9 +46,13 @@ services:
       - net
     ports:
       - "50051:50051"
-    env_file:
-      - .env
     environment:
+      BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS: cassandra:9042
+      BOOKING_SYSTEM_CASSANDRA_KEYSPACE_NAME: booking_system
+      BOOKING_SYSTEM_DATACENTER: DC1
+      BOOKING_SYSTEM_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_CLIENT_ID: command-consumer
+      BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_GROUP_ID: command-consumers
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_SERVICE_NAME: command-service
