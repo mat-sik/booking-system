@@ -40,11 +40,7 @@ public class BookingService {
 
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
 
-        Optional<UUID> ownerId = bookingCommandsPort.findBookingOwner(
-                bookingPartitionKey.serviceId(),
-                bookingPartitionKey.date(),
-                command.bookingId()
-        );
+        Optional<UUID> ownerId = bookingCommandsPort.findBookingOwner(bookingPartitionKey, command.bookingId());
 
         if (ownerId.isEmpty() || !Objects.equals(ownerId.get(), command.userId())) {
             String ownerIdString = ownerId.isPresent() ? ownerId.get().toString() : "";
@@ -52,12 +48,7 @@ public class BookingService {
             return;
         }
 
-        bookingCommandsPort.deleteBooking(
-                bookingPartitionKey.serviceId(),
-                bookingPartitionKey.date(),
-                command.userId(),
-                command.bookingId()
-        );
+        bookingCommandsPort.deleteBooking(bookingPartitionKey, command.userId(), command.bookingId());
     }
 
     private void setSpanAttributes(Span span, DeleteBookingCommand command) {
@@ -88,25 +79,14 @@ public class BookingService {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
         TimeRange timeRange = command.timeRange();
 
-        long overlappingBookingCount = bookingCommandsPort.findOverlappingBookingCount(
-                bookingPartitionKey.serviceId(),
-                bookingPartitionKey.date(),
-                timeRange.start().minuteOfDay(),
-                timeRange.end().minuteOfDay()
-        );
+        long overlappingBookingCount = bookingCommandsPort.findOverlappingBookingCount(bookingPartitionKey, timeRange);
 
         if (overlappingBookingCount > 0) {
             addSpanEventOverlappingBookingCount(span, overlappingBookingCount);
             return Optional.empty();
         }
 
-        UUID bookingId = bookingCommandsPort.createBooking(
-                bookingPartitionKey.serviceId(),
-                bookingPartitionKey.date(),
-                command.userId(),
-                timeRange.start().minuteOfDay(),
-                timeRange.end().minuteOfDay()
-        );
+        UUID bookingId = bookingCommandsPort.createBooking(bookingPartitionKey, command.userId(), timeRange);
 
         return Optional.of(bookingId);
     }
