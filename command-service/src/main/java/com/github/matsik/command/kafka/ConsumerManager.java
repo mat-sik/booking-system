@@ -12,6 +12,7 @@ import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
@@ -101,9 +102,14 @@ public class ConsumerManager implements SmartLifecycle {
 
         for (int i = 0; i < consumerCount; i++) {
             Consumer<BookingPartitionKey, CommandValue> consumer = new KafkaConsumer<>(kafkaConsumerProperties);
-            consumer.subscribe(Collections.singletonList(bookingTopicName));
 
-            ConsumerRunner consumerRunner = consumerRunner(consumer);
+            BookingCache bookingCache = new BookingCache(bookingPersistenceService, new HashMap<>());
+
+            ConsumerRebalanceListener bookingConsumerRebalanceListener = new BookingConsumerRebalanceListener(bookingCache);
+
+            consumer.subscribe(Collections.singletonList(bookingTopicName), bookingConsumerRebalanceListener);
+
+            ConsumerRunner consumerRunner = consumerRunner(consumer, bookingCache);
 
             Future<?> runningConsumer = executorService.submit(consumerRunner);
             runningConsumers.add(runningConsumer);
@@ -111,8 +117,7 @@ public class ConsumerManager implements SmartLifecycle {
         log.info("Consumer manager is started");
     }
 
-    private ConsumerRunner consumerRunner(Consumer<BookingPartitionKey, CommandValue> consumer) {
-        BookingCache bookingCache = new BookingCache(bookingPersistenceService, new HashMap<>());
+    private ConsumerRunner consumerRunner(Consumer<BookingPartitionKey, CommandValue> consumer, BookingCache bookingCache) {
         BookingPersistenceCachingAdapter bookingPersistenceCachingAdapter = new BookingPersistenceCachingAdapter(bookingPersistenceService, bookingCache);
         BookingService bookingService = new BookingService(bookingPersistenceCachingAdapter, recordCounter, recordHistogram);
 
