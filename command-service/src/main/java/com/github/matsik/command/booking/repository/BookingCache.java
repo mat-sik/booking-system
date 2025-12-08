@@ -44,32 +44,25 @@ public class BookingCache {
                 .map(Booking::userId);
     }
 
-    private boolean findBy(Booking booking, UUID bookingId) {
-        return Objects.equal(booking.bookingId(), bookingId);
-    }
-
     void add(BookingPartitionKey bookingPartitionKey, UUID bookingId, UUID userId, TimeRange timeRange) {
         Booking booking = Booking.of(bookingPartitionKey, bookingId, userId, timeRange);
         bookingsCache.computeIfAbsent(bookingPartitionKey, _ -> new HashSet<>())
                 .add(booking);
     }
 
-    void delete(BookingPartitionKey bookingPartitionKey, UUID bookingId, UUID userId) {
+    void delete(BookingPartitionKey bookingPartitionKey, UUID bookingId) {
         Set<Booking> bookings = bookingsCache.get(bookingPartitionKey);
         if (bookings == null) {
             return;
         }
         bookings.stream()
-                .filter(el -> findBy(el, bookingPartitionKey, bookingId, userId))
+                .filter(el -> findBy(el, bookingId))
                 .findAny()
                 .ifPresent(bookings::remove);
     }
 
-    private boolean findBy(Booking booking, BookingPartitionKey bookingPartitionKey, UUID bookingId, UUID userId) {
-        return Objects.equal(booking.serviceId(), bookingPartitionKey.serviceId()) &&
-                Objects.equal(booking.date(), bookingPartitionKey.date()) &&
-                Objects.equal(booking.bookingId(), bookingId) &&
-                Objects.equal(booking.userId(), userId);
+    private boolean findBy(Booking booking, UUID bookingId) {
+        return Objects.equal(booking.bookingId(), bookingId);
     }
 
     private Set<Booking> fetch(BookingPartitionKey bookingPartitionKey) {

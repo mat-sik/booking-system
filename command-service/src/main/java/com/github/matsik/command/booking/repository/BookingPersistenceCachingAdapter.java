@@ -35,7 +35,7 @@ public class BookingPersistenceCachingAdapter implements BookingCommandsPort {
     @Override
     public void deleteBooking(BookingPartitionKey bookingPartitionKey, UUID userId, UUID bookingId) {
         bookingPersistenceService.deleteBooking(bookingPartitionKey, userId, bookingId);
-        bookingsCache.delete(bookingPartitionKey, bookingId, userId);
+        bookingsCache.delete(bookingPartitionKey, bookingId);
     }
 
 }
