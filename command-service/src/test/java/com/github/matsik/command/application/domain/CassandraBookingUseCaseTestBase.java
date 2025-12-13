@@ -12,8 +12,6 @@ import com.github.matsik.cassandra.entity.BookingByUser;
 import com.github.matsik.command.CassandraContainerTestBase;
 import com.github.matsik.command.adapter.out.cassandra.BookingPersistenceService;
 import com.github.matsik.dto.BookingPartitionKey;
-import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.api.metrics.LongCounter;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,12 +29,6 @@ abstract class CassandraBookingUseCaseTestBase extends CassandraContainerTestBas
 
     @Autowired
     protected BookingPersistenceService bookingPersistenceService;
-
-    @Autowired
-    protected LongCounter recordCounter;
-
-    @Autowired
-    protected DoubleHistogram recordHistogram;
 
     @AfterEach
     void tearDown() {

@@ -35,7 +35,7 @@ class DeleteBookingServiceTest extends CassandraBookingUseCaseTestBase {
     void setUp() {
         BookingCache bookingCache = new BookingCache(bookingPersistenceService, new HashMap<>());
         BookingPersistenceCachingAdapter bookingPersistenceCachingAdapter = new BookingPersistenceCachingAdapter(bookingPersistenceService, bookingCache);
-        deleteBookingService = new DeleteBookingService(bookingPersistenceCachingAdapter, recordCounter, recordHistogram);
+        deleteBookingService = new DeleteBookingService(bookingPersistenceCachingAdapter);
     }
 
     @ParameterizedTest(name = "{0}")

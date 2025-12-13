@@ -6,8 +6,6 @@ import com.github.matsik.command.application.port.out.DeleteBookingPort;
 import com.github.matsik.dto.BookingPartitionKey;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -17,23 +15,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.github.matsik.command.metrics.MetricsRecorder.recordMetrics;
-
 @RequiredArgsConstructor
 public class DeleteBookingService implements DeleteBookingUseCase {
 
     private final DeleteBookingPort deleteBookingPort;
 
-    private final LongCounter recordCounter;
-    private final DoubleHistogram recordHistogram;
-
-    @Override
-    public void deleteBooking(DeleteBookingCommand command) {
-        recordMetrics(recordCounter, recordHistogram, () -> _deleteBooking(command), "delete_booking");
-    }
-
     @WithSpan(kind = SpanKind.CONSUMER)
-    private void _deleteBooking(DeleteBookingCommand command) {
+    public void deleteBooking(DeleteBookingCommand command) {
         Span span = Span.current();
         setSpanAttributes(span, command);
 

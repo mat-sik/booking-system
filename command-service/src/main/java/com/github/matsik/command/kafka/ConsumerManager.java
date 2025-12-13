@@ -119,10 +119,10 @@ public class ConsumerManager implements SmartLifecycle {
     private ConsumerRunner consumerRunner(Consumer<BookingPartitionKey, CommandValue> consumer, BookingCache bookingCache) {
         BookingPersistenceCachingAdapter bookingPersistenceCachingAdapter = new BookingPersistenceCachingAdapter(bookingPersistenceService, bookingCache);
 
-        CreateBookingService createBookingService = new CreateBookingService(bookingPersistenceCachingAdapter, recordCounter, recordHistogram);
-        DeleteBookingService deleteBookingService = new DeleteBookingService(bookingPersistenceCachingAdapter, recordCounter, recordHistogram);
+        CreateBookingService createBookingService = new CreateBookingService(bookingPersistenceCachingAdapter);
+        DeleteBookingService deleteBookingService = new DeleteBookingService(bookingPersistenceCachingAdapter);
 
-        RecordsHandler recordsHandler = new BookingCommandListenerAdapter(createBookingService, deleteBookingService, batchCounter, batchHistogram);
+        RecordsHandler recordsHandler = new BookingCommandListenerAdapter(createBookingService, deleteBookingService, recordCounter, recordHistogram, batchCounter, batchHistogram);
 
         return new ConsumerRunner(consumer, recordsHandler, pollTimeoutMs, shutdownLatch);
     }

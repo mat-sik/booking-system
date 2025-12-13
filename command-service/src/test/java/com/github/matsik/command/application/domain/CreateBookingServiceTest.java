@@ -36,7 +36,7 @@ class CreateBookingServiceTest extends CassandraBookingUseCaseTestBase {
     void setUp() {
         BookingCache bookingCache = new BookingCache(bookingPersistenceService, new HashMap<>());
         BookingPersistenceCachingAdapter bookingPersistenceCachingAdapter = new BookingPersistenceCachingAdapter(bookingPersistenceService, bookingCache);
-        createBookingService = new CreateBookingService(bookingPersistenceCachingAdapter, recordCounter, recordHistogram);
+        createBookingService = new CreateBookingService(bookingPersistenceCachingAdapter);
     }
 
     @ParameterizedTest(name = "{0}")

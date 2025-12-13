@@ -7,8 +7,6 @@ import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -17,22 +15,14 @@ import lombok.RequiredArgsConstructor;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.github.matsik.command.metrics.MetricsRecorder.recordMetrics;
 
 @RequiredArgsConstructor
 public class CreateBookingService implements CreateBookingUseCase {
 
     private final CreateBookingPort createBookingPort;
 
-    private final LongCounter recordCounter;
-    private final DoubleHistogram recordHistogram;
-
-    public Optional<UUID> createBooking(CreateBookingCommand command) {
-        return recordMetrics(recordCounter, recordHistogram, () -> _createBooking(command), "create_booking");
-    }
-
     @WithSpan(kind = SpanKind.CONSUMER)
-    private Optional<UUID> _createBooking(CreateBookingCommand command) {
+    public Optional<UUID> createBooking(CreateBookingCommand command) {
         Span span = Span.current();
         setSpanAttributes(span, command);
 

@@ -23,6 +23,9 @@ public class BookingCommandListenerAdapter implements RecordsHandler {
     private final CreateBookingUseCase createBookingUseCase;
     private final DeleteBookingUseCase deleteBookingUseCase;
 
+    private final LongCounter recordCounter;
+    private final DoubleHistogram recordHistogram;
+
     private final LongCounter batchCounter;
     private final DoubleHistogram batchHistogram;
 
@@ -41,13 +44,20 @@ public class BookingCommandListenerAdapter implements RecordsHandler {
         switch (value) {
             case CreateBookingCommandValue create -> {
                 CreateBookingCommand command = CreateBookingCommand.of(key, create);
-                createBookingUseCase.createBooking(command);
+                createBooking(command);
             }
             case DeleteBookingCommandValue delete -> {
                 DeleteBookingCommand command = DeleteBookingCommand.of(key, delete);
-                deleteBookingUseCase.deleteBooking(command);
+                deleteBooking(command);
             }
         }
     }
 
+    private void createBooking(CreateBookingCommand command) {
+        recordMetrics(recordCounter, recordHistogram, () -> createBookingUseCase.createBooking(command), "create_booking");
+    }
+
+    public void deleteBooking(DeleteBookingCommand command) {
+        recordMetrics(recordCounter, recordHistogram, () -> deleteBookingUseCase.deleteBooking(command), "delete_booking");
+    }
 }
