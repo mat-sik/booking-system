@@ -100,20 +100,20 @@ public class ConsumerManager implements SmartLifecycle {
         topicCreator.ensureBookingTopicExists();
 
         for (int i = 0; i < consumerCount; i++) {
-            Consumer<BookingPartitionKey, CommandValue> consumer = new KafkaConsumer<>(kafkaConsumerProperties);
-
-            BookingCache bookingCache = new BookingCache(bookingPersistenceService, new HashMap<>());
-
-            ConsumerRebalanceListener bookingConsumerRebalanceListener = new BookingConsumerRebalanceListener(bookingCache);
-
-            consumer.subscribe(Collections.singletonList(bookingTopicName), bookingConsumerRebalanceListener);
-
-            ConsumerRunner consumerRunner = consumerRunner(consumer, bookingCache);
-
-            Future<?> runningConsumer = executorService.submit(consumerRunner);
-            runningConsumers.add(runningConsumer);
+            runningConsumers.add(runConsumer());
         }
         log.info("Consumer manager is started");
+    }
+
+    private Future<?> runConsumer() {
+        BookingCache bookingCache = new BookingCache(bookingPersistenceService, new HashMap<>());
+        ConsumerRebalanceListener bookingConsumerRebalanceListener = new BookingConsumerRebalanceListener(bookingCache);
+
+        Consumer<BookingPartitionKey, CommandValue> consumer = new KafkaConsumer<>(kafkaConsumerProperties);
+        consumer.subscribe(Collections.singletonList(bookingTopicName), bookingConsumerRebalanceListener);
+        ConsumerRunner consumerRunner = consumerRunner(consumer, bookingCache);
+
+        return executorService.submit(consumerRunner);
     }
 
     private ConsumerRunner consumerRunner(Consumer<BookingPartitionKey, CommandValue> consumer, BookingCache bookingCache) {
