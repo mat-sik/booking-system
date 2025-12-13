@@ -37,9 +37,16 @@ public class ConsumerManager implements SmartLifecycle {
     private final AtomicBoolean running;
     private final ExecutorService executorService;
 
+    private final int consumerCount;
+    private final CountDownLatch shutdownLatch;
+    private final List<Future<?>> runningConsumers;
+
     private final Properties kafkaConsumerProperties;
 
+    private final String bookingTopicName;
     private final TopicCreator topicCreator;
+
+    private final long pollTimeoutMs;
 
     private final LongCounter batchCounter;
     private final DoubleHistogram batchHistogram;
@@ -48,14 +55,6 @@ public class ConsumerManager implements SmartLifecycle {
     private final DoubleHistogram recordHistogram;
 
     BookingPersistenceService bookingPersistenceService;
-
-    private final int consumerCount;
-    private final CountDownLatch shutdownLatch;
-    private final List<Future<?>> runningConsumers;
-
-    private final String bookingTopicName;
-
-    private final long pollTimeoutMs;
 
     public ConsumerManager(
             Properties kafkaConsumerProperties,
@@ -70,9 +69,16 @@ public class ConsumerManager implements SmartLifecycle {
         this.running = new AtomicBoolean();
         this.executorService = Executors.newVirtualThreadPerTaskExecutor();
 
+        this.consumerCount = kafkaProperties.consumer().concurrentConsumerCount();
+        this.shutdownLatch = new CountDownLatch(consumerCount);
+        this.runningConsumers = new ArrayList<>();
+
         this.kafkaConsumerProperties = kafkaConsumerProperties;
 
+        this.bookingTopicName = kafkaProperties.topics().bookingTopicName();
         this.topicCreator = topicCreator;
+
+        this.pollTimeoutMs = kafkaProperties.consumer().pollTimeoutMs();
 
         this.batchCounter = batchCounter;
         this.batchHistogram = batchHistogram;
@@ -81,14 +87,6 @@ public class ConsumerManager implements SmartLifecycle {
         this.recordHistogram = recordHistogram;
 
         this.bookingPersistenceService = bookingPersistenceService;
-
-        this.consumerCount = kafkaProperties.consumer().concurrentConsumerCount();
-        this.shutdownLatch = new CountDownLatch(consumerCount);
-        this.runningConsumers = new ArrayList<>();
-
-        this.bookingTopicName = kafkaProperties.topics().bookingTopicName();
-
-        this.pollTimeoutMs = kafkaProperties.consumer().pollTimeoutMs();
     }
 
     @Override
