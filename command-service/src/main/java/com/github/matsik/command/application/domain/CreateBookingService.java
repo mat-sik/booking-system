@@ -1,7 +1,8 @@
-package com.github.matsik.command.booking.service;
+package com.github.matsik.command.application.domain;
 
-import com.github.matsik.command.booking.command.CreateBookingCommand;
-import com.github.matsik.command.booking.command.DeleteBookingCommand;
+import com.github.matsik.command.application.port.in.CreateBookingCommand;
+import com.github.matsik.command.application.port.in.CreateBookingUseCase;
+import com.github.matsik.command.application.port.out.CreateBookingPort;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
 import io.opentelemetry.api.common.AttributeKey;
@@ -13,57 +14,18 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 import static com.github.matsik.command.metrics.MetricsRecorder.recordMetrics;
 
 @RequiredArgsConstructor
-public class BookingService {
+public class CreateBookingService implements CreateBookingUseCase {
 
-    private final BookingCommandsPort bookingCommandsPort;
+    private final CreateBookingPort createBookingPort;
 
     private final LongCounter recordCounter;
     private final DoubleHistogram recordHistogram;
-
-    public void deleteBooking(DeleteBookingCommand command) {
-        recordMetrics(recordCounter, recordHistogram, () -> _deleteBooking(command), "delete_booking");
-    }
-
-    @WithSpan(kind = SpanKind.CONSUMER)
-    private void _deleteBooking(DeleteBookingCommand command) {
-        Span span = Span.current();
-        setSpanAttributes(span, command);
-
-        BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
-
-        Optional<UUID> ownerId = bookingCommandsPort.findBookingOwner(bookingPartitionKey, command.bookingId());
-
-        if (ownerId.isEmpty() || !Objects.equals(ownerId.get(), command.userId())) {
-            String ownerIdString = ownerId.isPresent() ? ownerId.get().toString() : "";
-            addSpanEventNotMatchingOwner(span, ownerIdString, command.userId().toString());
-            return;
-        }
-
-        bookingCommandsPort.deleteBooking(bookingPartitionKey, command.userId(), command.bookingId());
-    }
-
-    private void setSpanAttributes(Span span, DeleteBookingCommand command) {
-        BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
-
-        span.setAttribute(AttributeKey.stringKey("delete_booking_command.booking_partition_key.serviceId"), bookingPartitionKey.serviceId().toString());
-        span.setAttribute(AttributeKey.stringKey("delete_booking_command.booking_partition_key.date"), bookingPartitionKey.date().toString());
-        span.setAttribute(AttributeKey.stringKey("delete_booking_command.bookingId"), command.bookingId().toString());
-        span.setAttribute(AttributeKey.stringKey("delete_booking_command.userId"), command.userId().toString());
-    }
-
-    private void addSpanEventNotMatchingOwner(Span span, String ownerId, String commandUserId) {
-        span.addEvent("Not matching owner", Attributes.of(
-                AttributeKey.stringKey("booking.owner.real"), ownerId,
-                AttributeKey.stringKey("booking.owner.provided"), commandUserId
-        ));
-    }
 
     public Optional<UUID> createBooking(CreateBookingCommand command) {
         return recordMetrics(recordCounter, recordHistogram, () -> _createBooking(command), "create_booking");
@@ -77,14 +39,14 @@ public class BookingService {
         BookingPartitionKey bookingPartitionKey = command.bookingPartitionKey();
         TimeRange timeRange = command.timeRange();
 
-        long overlappingBookingCount = bookingCommandsPort.findOverlappingBookingCount(bookingPartitionKey, timeRange);
+        long overlappingBookingCount = createBookingPort.findOverlappingBookingCount(bookingPartitionKey, timeRange);
 
         if (overlappingBookingCount > 0) {
             addSpanEventOverlappingBookingCount(span, overlappingBookingCount);
             return Optional.empty();
         }
 
-        UUID bookingId = bookingCommandsPort.createBooking(bookingPartitionKey, command.userId(), timeRange);
+        UUID bookingId = createBookingPort.createBooking(bookingPartitionKey, command.userId(), timeRange);
 
         return Optional.of(bookingId);
     }
@@ -105,4 +67,5 @@ public class BookingService {
                 AttributeKey.longKey("booking.overlap.count"), overlappingBookingCount
         ));
     }
+
 }

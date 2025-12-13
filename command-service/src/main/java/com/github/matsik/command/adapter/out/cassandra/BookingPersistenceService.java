@@ -1,4 +1,4 @@
-package com.github.matsik.command.booking.repository;
+package com.github.matsik.command.adapter.out.cassandra;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.BatchStatement;

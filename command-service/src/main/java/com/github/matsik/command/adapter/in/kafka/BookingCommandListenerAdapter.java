@@ -1,8 +1,9 @@
-package com.github.matsik.command.booking.listener;
+package com.github.matsik.command.adapter.in.kafka;
 
-import com.github.matsik.command.booking.command.CreateBookingCommand;
-import com.github.matsik.command.booking.command.DeleteBookingCommand;
-import com.github.matsik.command.booking.service.BookingService;
+import com.github.matsik.command.application.port.in.CreateBookingCommand;
+import com.github.matsik.command.application.port.in.CreateBookingUseCase;
+import com.github.matsik.command.application.port.in.DeleteBookingCommand;
+import com.github.matsik.command.application.port.in.DeleteBookingUseCase;
 import com.github.matsik.command.kafka.RecordsHandler;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.kafka.task.CommandValue;
@@ -17,9 +18,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import static com.github.matsik.command.metrics.MetricsRecorder.recordMetrics;
 
 @RequiredArgsConstructor
-public class BookingCommandListener implements RecordsHandler {
+public class BookingCommandListenerAdapter implements RecordsHandler {
 
-    private final BookingService service;
+    private final CreateBookingUseCase createBookingUseCase;
+    private final DeleteBookingUseCase deleteBookingUseCase;
 
     private final LongCounter batchCounter;
     private final DoubleHistogram batchHistogram;
@@ -39,11 +41,11 @@ public class BookingCommandListener implements RecordsHandler {
         switch (value) {
             case CreateBookingCommandValue create -> {
                 CreateBookingCommand command = CreateBookingCommand.of(key, create);
-                service.createBooking(command);
+                createBookingUseCase.createBooking(command);
             }
             case DeleteBookingCommandValue delete -> {
                 DeleteBookingCommand command = DeleteBookingCommand.of(key, delete);
-                service.deleteBooking(command);
+                deleteBookingUseCase.deleteBooking(command);
             }
         }
     }

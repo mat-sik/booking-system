@@ -1,7 +1,7 @@
 package com.github.matsik.command.config.cassandra.mapper.booking;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.github.matsik.command.booking.repository.BookingRepository;
+import com.github.matsik.command.adapter.out.cassandra.BookingRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

@@ -1,6 +1,7 @@
-package com.github.matsik.command.booking.repository;
+package com.github.matsik.command.adapter.out.cassandra;
 
-import com.github.matsik.command.booking.service.BookingCommandsPort;
+import com.github.matsik.command.application.port.out.CreateBookingPort;
+import com.github.matsik.command.application.port.out.DeleteBookingPort;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-public class BookingPersistenceCachingAdapter implements BookingCommandsPort {
+public class BookingPersistenceCachingAdapter implements CreateBookingPort, DeleteBookingPort {
 
     private final BookingPersistenceService bookingPersistenceService;
 

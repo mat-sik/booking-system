@@ -1,18 +1,13 @@
-package com.github.matsik.command.booking.service;
+package com.github.matsik.command.application.port.out;
 
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
 
-import java.util.Optional;
 import java.util.UUID;
 
-public interface BookingCommandsPort {
+public interface CreateBookingPort {
 
     long findOverlappingBookingCount(BookingPartitionKey bookingPartitionKey, TimeRange timeRange);
 
     UUID createBooking(BookingPartitionKey bookingPartitionKey, UUID userId, TimeRange timeRange);
-
-    Optional<UUID> findBookingOwner(BookingPartitionKey bookingPartitionKey, UUID bookingId);
-
-    void deleteBooking(BookingPartitionKey bookingPartitionKey, UUID userId, UUID bookingId);
 }

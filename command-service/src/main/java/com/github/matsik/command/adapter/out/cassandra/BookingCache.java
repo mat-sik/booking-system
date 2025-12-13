@@ -1,4 +1,4 @@
-package com.github.matsik.command.booking.repository;
+package com.github.matsik.command.adapter.out.cassandra;
 
 import com.datastax.oss.driver.shaded.guava.common.base.Objects;
 import com.github.matsik.cassandra.entity.BookingByServiceAndDate;

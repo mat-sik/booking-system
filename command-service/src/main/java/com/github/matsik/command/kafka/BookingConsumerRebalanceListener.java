@@ -1,6 +1,6 @@
 package com.github.matsik.command.kafka;
 
-import com.github.matsik.command.booking.repository.BookingCache;
+import com.github.matsik.command.adapter.out.cassandra.BookingCache;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.common.TopicPartition;

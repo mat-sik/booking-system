@@ -1,4 +1,4 @@
-package com.github.matsik.command.booking.command;
+package com.github.matsik.command.application.port.in;
 
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.kafka.task.DeleteBookingCommandValue;
@@ -8,6 +8,7 @@ import java.util.UUID;
 
 @Builder
 public record DeleteBookingCommand(BookingPartitionKey bookingPartitionKey, UUID bookingId, UUID userId) {
+
     public static DeleteBookingCommand of(BookingPartitionKey key, DeleteBookingCommandValue value) {
         return DeleteBookingCommand.builder()
                 .bookingPartitionKey(key)

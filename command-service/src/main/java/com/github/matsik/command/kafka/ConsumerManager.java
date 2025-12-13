@@ -1,10 +1,11 @@
 package com.github.matsik.command.kafka;
 
-import com.github.matsik.command.booking.listener.BookingCommandListener;
-import com.github.matsik.command.booking.repository.BookingCache;
-import com.github.matsik.command.booking.repository.BookingPersistenceCachingAdapter;
-import com.github.matsik.command.booking.repository.BookingPersistenceService;
-import com.github.matsik.command.booking.service.BookingService;
+import com.github.matsik.command.adapter.in.kafka.BookingCommandListenerAdapter;
+import com.github.matsik.command.adapter.out.cassandra.BookingCache;
+import com.github.matsik.command.adapter.out.cassandra.BookingPersistenceCachingAdapter;
+import com.github.matsik.command.adapter.out.cassandra.BookingPersistenceService;
+import com.github.matsik.command.application.domain.CreateBookingService;
+import com.github.matsik.command.application.domain.DeleteBookingService;
 import com.github.matsik.command.config.kafka.KafkaProperties;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.kafka.task.CommandValue;
@@ -45,7 +46,7 @@ public class ConsumerManager implements SmartLifecycle {
 
     private final LongCounter recordCounter;
     private final DoubleHistogram recordHistogram;
-    
+
     BookingPersistenceService bookingPersistenceService;
 
     private final int consumerCount;
@@ -72,13 +73,13 @@ public class ConsumerManager implements SmartLifecycle {
         this.kafkaConsumerProperties = kafkaConsumerProperties;
 
         this.topicCreator = topicCreator;
-        
+
         this.batchCounter = batchCounter;
         this.batchHistogram = batchHistogram;
-        
+
         this.recordCounter = recordCounter;
         this.recordHistogram = recordHistogram;
-        
+
         this.bookingPersistenceService = bookingPersistenceService;
 
         this.consumerCount = kafkaProperties.consumer().concurrentConsumerCount();
@@ -119,9 +120,12 @@ public class ConsumerManager implements SmartLifecycle {
 
     private ConsumerRunner consumerRunner(Consumer<BookingPartitionKey, CommandValue> consumer, BookingCache bookingCache) {
         BookingPersistenceCachingAdapter bookingPersistenceCachingAdapter = new BookingPersistenceCachingAdapter(bookingPersistenceService, bookingCache);
-        BookingService bookingService = new BookingService(bookingPersistenceCachingAdapter, recordCounter, recordHistogram);
 
-        RecordsHandler recordsHandler = new BookingCommandListener(bookingService, batchCounter, batchHistogram);
+        CreateBookingService createBookingService = new CreateBookingService(bookingPersistenceCachingAdapter, recordCounter, recordHistogram);
+        DeleteBookingService deleteBookingService = new DeleteBookingService(bookingPersistenceCachingAdapter, recordCounter, recordHistogram);
+
+        RecordsHandler recordsHandler = new BookingCommandListenerAdapter(createBookingService, deleteBookingService, batchCounter, batchHistogram);
+
         return new ConsumerRunner(consumer, recordsHandler, pollTimeoutMs, shutdownLatch);
     }
 
