@@ -1,4 +1,4 @@
-package com.github.matsik.command.booking.command;
+package com.github.matsik.command.application.port.in;
 
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
@@ -8,11 +8,8 @@ import lombok.Builder;
 import java.util.UUID;
 
 @Builder
-public record CreateBookingCommand(
-        BookingPartitionKey bookingPartitionKey,
-        UUID userId,
-        TimeRange timeRange
-) {
+public record CreateBookingCommand(BookingPartitionKey bookingPartitionKey, UUID userId, TimeRange timeRange) {
+
     public static CreateBookingCommand of(BookingPartitionKey key, CreateBookingCommandValue value) {
         return CreateBookingCommand.builder()
                 .bookingPartitionKey(key)

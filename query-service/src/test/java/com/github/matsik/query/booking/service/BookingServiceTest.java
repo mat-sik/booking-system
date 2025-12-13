@@ -19,6 +19,7 @@ import com.github.matsik.query.booking.service.exception.UserBookingNotFoundExce
 import com.github.matsik.query.config.cassandra.client.CassandraClientConfiguration;
 import com.github.matsik.query.config.cassandra.client.CassandraClientProperties;
 import com.github.matsik.query.config.cassandra.mapper.booking.BookingMapperConfiguration;
+import com.github.matsik.query.config.otel.OtelConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -54,7 +55,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
         CassandraClientConfiguration.class,
         BookingMapperConfiguration.class,
         AvailableTimeRangesCalculator.class,
-        BookingService.class
+        BookingService.class,
+        OtelConfiguration.class
 })
 @Testcontainers
 class BookingServiceTest {

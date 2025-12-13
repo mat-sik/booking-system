@@ -31,5 +31,4 @@ public class MetricsRecorder {
         return result;
     }
 
-
 }
