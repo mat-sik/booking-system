@@ -1,6 +1,6 @@
-package com.github.matsik.query.booking.service.exception;
+package com.github.matsik.query.booking.adapter.in;
 
-import com.github.matsik.query.booking.query.GetUserBookingQuery;
+import com.github.matsik.query.booking.application.port.in.GetUserBookingQuery;
 
 public class UserBookingNotFoundException extends RuntimeException {
     public UserBookingNotFoundException(GetUserBookingQuery query) {

@@ -5,11 +5,8 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.mapper.annotations.Dao;
 import com.datastax.oss.driver.api.mapper.annotations.Query;
 import com.datastax.oss.driver.api.mapper.annotations.StatementAttributes;
-import com.github.matsik.dto.TimeRange;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Dao
@@ -24,13 +21,7 @@ public interface BookingRepository {
               AND booking_id = :bookingId
             """)
     @StatementAttributes(consistencyLevel = "QUORUM")
-    Row _getUserBookingTimeRange(UUID userId, UUID serviceId, LocalDate date, UUID bookingId);
-
-    default Optional<TimeRange> getUserBookingTimeRange(UUID userId, UUID serviceId, LocalDate date, UUID bookingId) {
-        Row row = _getUserBookingTimeRange(userId, serviceId, date, bookingId);
-        return Optional.ofNullable(row)
-                .map(TimeRange::of);
-    }
+    Row getUserBookingTimeRange(UUID userId, UUID serviceId, LocalDate date, UUID bookingId);
 
     @Query("""
             SELECT start, end
@@ -39,15 +30,7 @@ public interface BookingRepository {
               AND date = :date
             """)
     @StatementAttributes(consistencyLevel = "QUORUM")
-    ResultSet _getBookedTimeRanges(UUID serviceId, LocalDate date);
-
-    default List<TimeRange> getBookedTimeRanges(UUID serviceId, LocalDate date) {
-        return _getBookedTimeRanges(serviceId, date)
-                .map(TimeRange::of)
-                .all()
-                .stream()
-                .toList();
-    }
+    ResultSet getBookedTimeRanges(UUID serviceId, LocalDate date);
 
     @Query("""
             SELECT service_id, date, booking_id, start, end
@@ -56,16 +39,7 @@ public interface BookingRepository {
             LIMIT :size
             """)
     @StatementAttributes(consistencyLevel = "QUORUM")
-    ResultSet _getFirstUserBookings(UUID userId, int size);
-
-    default List<UserBooking> getFirstUserBookings(UUID userId, int limit) {
-        ResultSet resultSet = _getFirstUserBookings(userId, limit);
-        return resultSet
-                .map(UserBooking::of)
-                .all()
-                .stream()
-                .toList();
-    }
+    ResultSet getFirstUserBookings(UUID userId, int size);
 
     @Query("""
             SELECT service_id, date, booking_id, start, end
@@ -77,27 +51,11 @@ public interface BookingRepository {
             LIMIT :size
             """)
     @StatementAttributes(consistencyLevel = "QUORUM")
-    ResultSet _getNextUserBookings(
+    ResultSet getNextUserBookings(
             UUID userId,
             UUID cursorServiceId,
             LocalDate cursorDate,
             UUID cursorBookingId,
             int size
     );
-
-    default List<UserBooking> getNextUserBookings(
-            UUID userId,
-            UUID cursorServiceId,
-            LocalDate cursorDate,
-            UUID cursorBookingId,
-            int limit
-    ) {
-        ResultSet resultSet = _getNextUserBookings(userId, cursorServiceId, cursorDate, cursorBookingId, limit);
-        return resultSet
-                .map(UserBooking::of)
-                .all()
-                .stream()
-                .toList();
-    }
-
 }

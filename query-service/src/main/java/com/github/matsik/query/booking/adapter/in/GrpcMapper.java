@@ -1,18 +1,18 @@
 package com.github.matsik.query.booking.adapter.in;
 
 import com.github.matsik.dto.TimeRange;
+import com.github.matsik.query.booking.application.port.in.GetAvailableTimeRangesQuery;
+import com.github.matsik.query.booking.application.port.in.GetFirstUserBookingsQuery;
+import com.github.matsik.query.booking.application.port.in.GetNextUserBookingsQuery;
+import com.github.matsik.query.booking.application.port.in.GetUserBookingQuery;
+import com.github.matsik.query.booking.application.port.in.GetUserBookingsQuery;
+import com.github.matsik.query.booking.application.domin.UserBooking;
 import com.github.matsik.query.booking.grpc.GetUserBookingTimeRangeRequest;
 import com.github.matsik.query.booking.grpc.GetUserBookingTimeRangeResponse;
 import com.github.matsik.query.booking.grpc.ListAvailableTimeRangesRequest;
 import com.github.matsik.query.booking.grpc.ListAvailableTimeRangesResponse;
 import com.github.matsik.query.booking.grpc.ListUserBookingsRequest;
 import com.github.matsik.query.booking.grpc.ListUserBookingsResponse;
-import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
-import com.github.matsik.query.booking.query.GetFirstUserBookingsQuery;
-import com.github.matsik.query.booking.query.GetNextUserBookingsQuery;
-import com.github.matsik.query.booking.query.GetUserBookingQuery;
-import com.github.matsik.query.booking.query.GetUserBookingsQuery;
-import com.github.matsik.query.booking.adapter.out.UserBooking;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

@@ -1,6 +1,5 @@
 package com.github.matsik.query.booking.adapter.in;
 
-import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import org.springframework.grpc.server.exception.GrpcExceptionHandler;

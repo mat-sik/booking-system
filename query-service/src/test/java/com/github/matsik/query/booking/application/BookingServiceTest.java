@@ -1,4 +1,4 @@
-package com.github.matsik.query.booking.service;
+package com.github.matsik.query.booking.application;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
@@ -9,13 +9,17 @@ import com.github.matsik.cassandra.entity.BookingByUser;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
 import com.github.matsik.query.booking.TestDataGenerator;
-import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
-import com.github.matsik.query.booking.query.GetFirstUserBookingsQuery;
-import com.github.matsik.query.booking.query.GetNextUserBookingsQuery;
-import com.github.matsik.query.booking.query.GetUserBookingQuery;
-import com.github.matsik.query.booking.query.GetUserBookingsQuery;
-import com.github.matsik.query.booking.adapter.out.UserBooking;
-import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
+import com.github.matsik.query.booking.adapter.out.BookingPersistenceAdapter;
+import com.github.matsik.query.booking.application.domin.UserBooking;
+import com.github.matsik.query.booking.application.domin.AvailableTimeRangesCalculator;
+import com.github.matsik.query.booking.application.domin.GetAvailableTimeRangesService;
+import com.github.matsik.query.booking.application.domin.GetUserBookingService;
+import com.github.matsik.query.booking.application.domin.GetUserBookingsService;
+import com.github.matsik.query.booking.application.port.in.GetAvailableTimeRangesQuery;
+import com.github.matsik.query.booking.application.port.in.GetFirstUserBookingsQuery;
+import com.github.matsik.query.booking.application.port.in.GetNextUserBookingsQuery;
+import com.github.matsik.query.booking.application.port.in.GetUserBookingQuery;
+import com.github.matsik.query.booking.application.port.in.GetUserBookingsQuery;
 import com.github.matsik.query.config.cassandra.client.CassandraClientConfiguration;
 import com.github.matsik.query.config.cassandra.client.CassandraClientProperties;
 import com.github.matsik.query.config.cassandra.mapper.booking.BookingMapperConfiguration;
@@ -44,18 +48,22 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = {
         BookingServiceTest.TestCassandraConfig.class,
         CassandraClientConfiguration.class,
         BookingMapperConfiguration.class,
+        BookingPersistenceAdapter.class,
         AvailableTimeRangesCalculator.class,
-        BookingService.class,
+        GetAvailableTimeRangesService.class,
+        GetUserBookingService.class,
+        GetUserBookingsService.class,
         OtelConfiguration.class
 })
 @Testcontainers
@@ -80,7 +88,13 @@ class BookingServiceTest {
     private CqlSession cqlSession;
 
     @Autowired
-    private BookingService service;
+    private GetAvailableTimeRangesService getAvailableTimeRangesService;
+
+    @Autowired
+    private GetUserBookingService getUserBookingService;
+
+    @Autowired
+    private GetUserBookingsService getUserBookingsService;
 
     @BeforeAll
     static void setup() throws IOException {
@@ -104,7 +118,7 @@ class BookingServiceTest {
         preTestState.forEach(this::persistBooking);
 
         // when
-        List<TimeRange> result = service.getAvailableTimeRanges(query);
+        List<TimeRange> result = getAvailableTimeRangesService.getAvailableTimeRanges(query);
 
         // then
         assertEquals(expected, result);
@@ -197,11 +211,13 @@ class BookingServiceTest {
 
         // when
         GetUserBookingQuery query = new GetUserBookingQuery(aBookingPartitionKey(), aUserId(), bookingId);
-        TimeRange result = service.getUserBookingTimeRange(query);
+        Optional<TimeRange> result = getUserBookingService.getUserBookingTimeRange(query);
 
         // then
+        assertTrue(result.isPresent());
+
         TimeRange expected = TimeRange.of(60, 120);
-        assertEquals(expected, result);
+        assertEquals(expected, result.get());
     }
 
     @Test
@@ -216,7 +232,8 @@ class BookingServiceTest {
         UUID bookingId = TestDataGenerator.numberToUUID(3);
         GetUserBookingQuery query = new GetUserBookingQuery(aBookingPartitionKey(), aUserId(), bookingId);
 
-        assertThrows(UserBookingNotFoundException.class, () -> service.getUserBookingTimeRange(query));
+        Optional<TimeRange> result = getUserBookingService.getUserBookingTimeRange(query);
+        assertTrue(result.isEmpty());
     }
 
     @ParameterizedTest(name = "{0}")
@@ -230,7 +247,7 @@ class BookingServiceTest {
         bookings().forEach(this::persistBooking);
 
         // when
-        List<UserBooking> result = service.getUserBookings(query);
+        List<UserBooking> result = getUserBookingsService.getUserBookings(query);
 
         // then
         assertEquals(expected, result);
