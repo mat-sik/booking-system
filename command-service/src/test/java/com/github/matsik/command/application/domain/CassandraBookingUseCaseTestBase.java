@@ -9,6 +9,8 @@ import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 import com.github.matsik.cassandra.entity.BookingByUser;
+import com.github.matsik.command.CassandraAdapterConfig;
+import com.github.matsik.command.CassandraAdapterUtils.Booking;
 import com.github.matsik.command.CassandraContainerTestBase;
 import com.github.matsik.command.adapter.out.cassandra.BookingPersistenceService;
 import com.github.matsik.dto.BookingPartitionKey;
@@ -40,7 +42,7 @@ abstract class CassandraBookingUseCaseTestBase extends CassandraContainerTestBas
         cqlSession.execute("TRUNCATE booking_system.bookings_by_user");
     }
 
-    protected Optional<BookingByServiceAndDate> findBooking(CassandraAdapterUtils.Booking booking) {
+    protected Optional<BookingByServiceAndDate> findBooking(Booking booking) {
         BookingByServiceAndDate bookingByServiceAndDate = booking.bookingByServiceAndDate();
 
         UUID serviceId = bookingByServiceAndDate.serviceId();
@@ -124,7 +126,7 @@ abstract class CassandraBookingUseCaseTestBase extends CassandraContainerTestBas
                 .build();
     }
 
-    protected void persistBooking(CassandraAdapterUtils.Booking booking) {
+    protected void persistBooking(Booking booking) {
         BookingByServiceAndDate bookingByServiceAndDate = booking.bookingByServiceAndDate();
 
         BoundStatement insertBookingServiceAndDate = cqlSession.prepare(
