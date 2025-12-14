@@ -1,13 +1,13 @@
 package com.github.matsik.query.booking.adapter.in;
 
 import com.github.matsik.dto.TimeRange;
+import com.github.matsik.query.booking.application.domin.UserBooking;
 import com.github.matsik.query.booking.application.port.in.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.application.port.in.GetAvailableTimeRangesUseCase;
 import com.github.matsik.query.booking.application.port.in.GetUserBookingQuery;
 import com.github.matsik.query.booking.application.port.in.GetUserBookingUseCase;
 import com.github.matsik.query.booking.application.port.in.GetUserBookingsQuery;
 import com.github.matsik.query.booking.application.port.in.GetUserBookingsUseCase;
-import com.github.matsik.query.booking.application.domin.UserBooking;
 import com.github.matsik.query.booking.grpc.GetUserBookingTimeRangeRequest;
 import com.github.matsik.query.booking.grpc.GetUserBookingTimeRangeResponse;
 import com.github.matsik.query.booking.grpc.ListAvailableTimeRangesRequest;

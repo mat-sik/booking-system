@@ -3,11 +3,11 @@ package com.github.matsik.query.booking.adapter.out;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.github.matsik.dto.TimeRange;
+import com.github.matsik.query.booking.application.domin.UserBooking;
 import com.github.matsik.query.booking.application.port.out.GetBookedTimeRangesPort;
 import com.github.matsik.query.booking.application.port.out.GetFirstUserBookingsPort;
 import com.github.matsik.query.booking.application.port.out.GetNextUserBookingsPort;
 import com.github.matsik.query.booking.application.port.out.GetUserBookingTimeRangePort;
-import com.github.matsik.query.booking.application.domin.UserBooking;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

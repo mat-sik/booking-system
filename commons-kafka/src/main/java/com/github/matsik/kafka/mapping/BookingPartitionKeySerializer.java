@@ -21,7 +21,7 @@ public class BookingPartitionKeySerializer implements Serializer<BookingPartitio
         long serviceIdMostSignificantBits = serviceId.getMostSignificantBits();
         long serviceIdLeastSignificantBits = serviceId.getLeastSignificantBits();
 
-        LocalDate date =  key.date();
+        LocalDate date = key.date();
         int dateBytes = (int) date.toEpochDay(); // the range should be sufficient for bookings
 
         ByteBuffer buffer = ByteBuffer.allocate(PARTITION_KEY_SIZE);
