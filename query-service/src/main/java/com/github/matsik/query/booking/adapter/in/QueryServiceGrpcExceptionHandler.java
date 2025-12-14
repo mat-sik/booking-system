@@ -1,4 +1,4 @@
-package com.github.matsik.query.booking.grpc;
+package com.github.matsik.query.booking.adapter.in;
 
 import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
 import io.grpc.Status;

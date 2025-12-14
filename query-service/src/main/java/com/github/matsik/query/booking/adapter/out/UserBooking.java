@@ -1,4 +1,4 @@
-package com.github.matsik.query.booking.repository.projection;
+package com.github.matsik.query.booking.adapter.out;
 
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.github.matsik.dto.TimeRange;

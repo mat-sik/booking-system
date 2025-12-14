@@ -1,10 +1,17 @@
-package com.github.matsik.query.booking.grpc;
+package com.github.matsik.query.booking.adapter.in;
 
 import com.github.matsik.dto.TimeRange;
+import com.github.matsik.query.booking.grpc.GetUserBookingTimeRangeRequest;
+import com.github.matsik.query.booking.grpc.GetUserBookingTimeRangeResponse;
+import com.github.matsik.query.booking.grpc.ListAvailableTimeRangesRequest;
+import com.github.matsik.query.booking.grpc.ListAvailableTimeRangesResponse;
+import com.github.matsik.query.booking.grpc.ListUserBookingsRequest;
+import com.github.matsik.query.booking.grpc.ListUserBookingsResponse;
+import com.github.matsik.query.booking.grpc.QueryServiceGrpc;
 import com.github.matsik.query.booking.query.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.query.GetUserBookingQuery;
 import com.github.matsik.query.booking.query.GetUserBookingsQuery;
-import com.github.matsik.query.booking.repository.projection.UserBooking;
+import com.github.matsik.query.booking.adapter.out.UserBooking;
 import com.github.matsik.query.booking.service.BookingService;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.metrics.DoubleHistogram;

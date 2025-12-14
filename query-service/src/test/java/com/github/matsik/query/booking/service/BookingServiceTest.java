@@ -14,7 +14,7 @@ import com.github.matsik.query.booking.query.GetFirstUserBookingsQuery;
 import com.github.matsik.query.booking.query.GetNextUserBookingsQuery;
 import com.github.matsik.query.booking.query.GetUserBookingQuery;
 import com.github.matsik.query.booking.query.GetUserBookingsQuery;
-import com.github.matsik.query.booking.repository.projection.UserBooking;
+import com.github.matsik.query.booking.adapter.out.UserBooking;
 import com.github.matsik.query.booking.service.exception.UserBookingNotFoundException;
 import com.github.matsik.query.config.cassandra.client.CassandraClientConfiguration;
 import com.github.matsik.query.config.cassandra.client.CassandraClientProperties;
