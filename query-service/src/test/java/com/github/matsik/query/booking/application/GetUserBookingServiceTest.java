@@ -1,11 +1,14 @@
 package com.github.matsik.query.booking.application;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.github.matsik.dto.TimeRange;
+import com.github.matsik.query.booking.CassandraAdapterConfig;
 import com.github.matsik.query.booking.TestDataGenerator;
 import com.github.matsik.query.booking.application.domin.GetUserBookingService;
 import com.github.matsik.query.booking.application.port.in.GetUserBookingQuery;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -17,10 +20,19 @@ import static com.github.matsik.query.booking.CassandraAdapterUtils.booking;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SpringBootTest(classes = {
+        CassandraAdapterConfig.class,
+        GetUserBookingService.class,
+})
 class GetUserBookingServiceTest extends CassandraBookingUseCaseTestBase {
 
     @Autowired
     private GetUserBookingService getUserBookingService;
+
+    @Autowired
+    public GetUserBookingServiceTest(CqlSession cqlSession) {
+        super(cqlSession);
+    }
 
     @Test
     void shouldReturnUserBookingTimeRange() {

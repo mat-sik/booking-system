@@ -1,6 +1,8 @@
 package com.github.matsik.query.booking.application;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.github.matsik.dto.BookingPartitionKey;
+import com.github.matsik.query.booking.CassandraAdapterConfig;
 import com.github.matsik.query.booking.CassandraAdapterUtils.Booking;
 import com.github.matsik.query.booking.TestDataGenerator;
 import com.github.matsik.query.booking.application.domin.GetUserBookingsService;
@@ -12,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,10 +27,19 @@ import static com.github.matsik.query.booking.CassandraAdapterUtils.booking;
 import static com.github.matsik.query.booking.CassandraAdapterUtils.userBooking;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SpringBootTest(classes = {
+        CassandraAdapterConfig.class,
+        GetUserBookingsService.class,
+})
 class GetUserBookingsServiceTest extends CassandraBookingUseCaseTestBase {
 
     @Autowired
     private GetUserBookingsService getUserBookingsService;
+
+    @Autowired
+    public GetUserBookingsServiceTest(CqlSession cqlSession) {
+        super(cqlSession);
+    }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideGetUserBookingsTestCases")

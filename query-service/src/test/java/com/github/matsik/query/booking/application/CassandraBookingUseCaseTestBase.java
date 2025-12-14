@@ -6,18 +6,15 @@ import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 import com.github.matsik.cassandra.entity.BookingByUser;
-import com.github.matsik.query.booking.CassandraAdapterConfig;
 import com.github.matsik.query.booking.CassandraAdapterUtils;
 import com.github.matsik.query.booking.CassandraContainerTestBase;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(classes = CassandraAdapterConfig.class)
+@RequiredArgsConstructor
 abstract class CassandraBookingUseCaseTestBase extends CassandraContainerTestBase {
 
-    @Autowired
-    private CqlSession cqlSession;
+    private final CqlSession cqlSession;
 
     @AfterEach
     protected void afterEach() {

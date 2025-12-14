@@ -1,14 +1,18 @@
 package com.github.matsik.query.booking.application;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
+import com.github.matsik.query.booking.CassandraAdapterConfig;
 import com.github.matsik.query.booking.CassandraAdapterUtils.Booking;
+import com.github.matsik.query.booking.application.domin.AvailableTimeRangesCalculator;
 import com.github.matsik.query.booking.application.domin.GetAvailableTimeRangesService;
 import com.github.matsik.query.booking.application.port.in.GetAvailableTimeRangesQuery;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +22,20 @@ import static com.github.matsik.query.booking.CassandraAdapterUtils.aBookingPart
 import static com.github.matsik.query.booking.CassandraAdapterUtils.booking;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SpringBootTest(classes = {
+        CassandraAdapterConfig.class,
+        AvailableTimeRangesCalculator.class,
+        GetAvailableTimeRangesService.class,
+})
 class GetAvailableTimeRangesServiceTest extends CassandraBookingUseCaseTestBase {
 
     @Autowired
     private GetAvailableTimeRangesService getAvailableTimeRangesService;
+
+    @Autowired
+    public GetAvailableTimeRangesServiceTest(CqlSession cqlSession) {
+        super(cqlSession);
+    }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("provideGetAvailableTimeRangesTestCases")
