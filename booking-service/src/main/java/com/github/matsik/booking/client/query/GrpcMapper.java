@@ -2,8 +2,8 @@ package com.github.matsik.booking.client.query;
 
 import com.github.matsik.booking.controller.response.TimeRangeResponse;
 import com.github.matsik.booking.controller.response.UserBookingResponse;
-import com.github.matsik.query.booking.grpc.TimeRange;
-import com.github.matsik.query.booking.grpc.UserBooking;
+import com.github.matsik.query.adapter.in.TimeRange;
+import com.github.matsik.query.adapter.in.UserBooking;
 import org.springframework.stereotype.Component;
 
 import static com.github.matsik.query.grpc.GrpcMapper.localDate;

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package com.github.matsik.query.booking;
 
-option java_package = "com.github.matsik.query.booking.grpc";
+option java_package = "com.github.matsik.query.adapter.in";
 option java_multiple_files = true;
 
 import "google/type/date.proto";

@@ -1,6 +1,6 @@
 package com.github.matsik.booking.config.grpc;
 
-import com.github.matsik.query.booking.grpc.QueryServiceGrpc;
+import com.github.matsik.query.adapter.in.QueryServiceGrpc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.grpc.client.GrpcChannelFactory;
