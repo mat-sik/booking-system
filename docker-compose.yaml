@@ -82,6 +82,7 @@ services:
       - cassandra-data:/var/lib/cassandra
 
   kafka:
+    restart: on-failure
     image: apache/kafka:4.1.0
     networks:
       - net
