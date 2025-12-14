@@ -27,13 +27,13 @@ import java.util.UUID;
 abstract class CassandraBookingUseCaseTestBase extends CassandraContainerTestBase {
 
     @Autowired
-    protected CqlSession cqlSession;
+    private CqlSession cqlSession;
 
     @Autowired
     protected BookingPersistenceService bookingPersistenceService;
 
     @AfterEach
-    void tearDown() {
+    protected void tearDown() {
         clearBookingsTable();
     }
 
