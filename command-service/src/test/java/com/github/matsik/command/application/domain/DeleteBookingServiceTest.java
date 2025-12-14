@@ -17,14 +17,14 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static com.github.matsik.command.application.domain.CassandraAdapterUtils.Booking;
-import static com.github.matsik.command.application.domain.CassandraAdapterUtils.conflictingBooking;
-import static com.github.matsik.command.application.domain.CassandraAdapterUtils.conflictingPartitionKey;
-import static com.github.matsik.command.application.domain.CassandraAdapterUtils.nonConflictingOnDatePartitionKey;
-import static com.github.matsik.command.application.domain.CassandraAdapterUtils.nonConflictingOnServicePartitionKey;
-import static com.github.matsik.command.application.domain.CassandraAdapterUtils.nonExistingBookingId;
-import static com.github.matsik.command.application.domain.CassandraAdapterUtils.nonExistingUserId;
-import static com.github.matsik.command.application.domain.CassandraAdapterUtils.userId;
+import static com.github.matsik.command.CassandraAdapterUtils.Booking;
+import static com.github.matsik.command.CassandraAdapterUtils.conflictingBooking;
+import static com.github.matsik.command.CassandraAdapterUtils.conflictingPartitionKey;
+import static com.github.matsik.command.CassandraAdapterUtils.nonConflictingOnDatePartitionKey;
+import static com.github.matsik.command.CassandraAdapterUtils.nonConflictingOnServicePartitionKey;
+import static com.github.matsik.command.CassandraAdapterUtils.nonExistingBookingId;
+import static com.github.matsik.command.CassandraAdapterUtils.nonExistingUserId;
+import static com.github.matsik.command.CassandraAdapterUtils.userId;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DeleteBookingServiceTest extends CassandraBookingUseCaseTestBase {

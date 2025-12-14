@@ -1,4 +1,4 @@
-package com.github.matsik.command.application.domain;
+package com.github.matsik.command;
 
 import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 import com.github.matsik.cassandra.entity.BookingByUser;
@@ -7,9 +7,9 @@ import com.github.matsik.dto.BookingPartitionKey;
 import java.time.LocalDate;
 import java.util.UUID;
 
-class CassandraAdapterUtils {
+public class CassandraAdapterUtils {
 
-    static Booking newBooking(UUID serviceId, UUID bookingId, LocalDate date, int start, int end) {
+    public static Booking newBooking(UUID serviceId, UUID bookingId, LocalDate date, int start, int end) {
         BookingByServiceAndDate bookingByServiceAndDate = BookingByServiceAndDate.builder()
                 .serviceId(serviceId)
                 .date(date)
@@ -34,7 +34,7 @@ class CassandraAdapterUtils {
         );
     }
 
-    static Booking conflictingBooking(int start, int end) {
+    public static Booking conflictingBooking(int start, int end) {
         BookingPartitionKey key = conflictingPartitionKey();
         return newBooking(
                 key.serviceId(),
@@ -45,7 +45,7 @@ class CassandraAdapterUtils {
         );
     }
 
-    static Booking nonConflictingBooking(int start, int end) {
+    public static Booking nonConflictingBooking(int start, int end) {
         BookingPartitionKey key = nonConflictingPartitionKey();
         return newBooking(
                 key.serviceId(),
@@ -56,43 +56,43 @@ class CassandraAdapterUtils {
         );
     }
 
-    record Booking(BookingByServiceAndDate bookingByServiceAndDate, BookingByUser bookingByUser) {
+    public record Booking(BookingByServiceAndDate bookingByServiceAndDate, BookingByUser bookingByUser) {
     }
 
-    static BookingPartitionKey nonConflictingOnServicePartitionKey() {
+    public static BookingPartitionKey nonConflictingOnServicePartitionKey() {
         return BookingPartitionKey.of(numberToUUID(2), numberToLocalDate(1));
     }
 
-    static BookingPartitionKey nonConflictingOnDatePartitionKey() {
+    public static BookingPartitionKey nonConflictingOnDatePartitionKey() {
         return BookingPartitionKey.of(numberToUUID(1), numberToLocalDate(2));
     }
 
-    static BookingPartitionKey nonConflictingPartitionKey() {
+    public static BookingPartitionKey nonConflictingPartitionKey() {
         return BookingPartitionKey.of(numberToUUID(3), numberToLocalDate(3));
     }
 
-    static BookingPartitionKey conflictingPartitionKey() {
+    public static BookingPartitionKey conflictingPartitionKey() {
         return BookingPartitionKey.of(numberToUUID(1), numberToLocalDate(1));
     }
 
-    static UUID nonExistingBookingId() {
+    public static UUID nonExistingBookingId() {
         return numberToUUID(10);
     }
 
-    static UUID nonExistingUserId() {
+    public static UUID nonExistingUserId() {
         return numberToUUID(2);
     }
 
-    static UUID userId() {
+    public static UUID userId() {
         return numberToUUID(1);
     }
 
-    static UUID numberToUUID(long number) {
+    public static UUID numberToUUID(long number) {
         String uuidString = String.format("%08d-0000-0000-0000-000000000000", number);
         return UUID.fromString(uuidString);
     }
 
-    static LocalDate numberToLocalDate(int number) {
+    public static LocalDate numberToLocalDate(int number) {
         return LocalDate.of(2025, 9, number);
     }
 }

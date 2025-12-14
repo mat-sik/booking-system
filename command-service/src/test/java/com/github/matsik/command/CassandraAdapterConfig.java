@@ -1,4 +1,4 @@
-package com.github.matsik.command.application.domain;
+package com.github.matsik.command;
 
 
 import com.github.matsik.command.adapter.out.cassandra.BookingPersistenceService;

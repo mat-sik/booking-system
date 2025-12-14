@@ -1,4 +1,4 @@
-package com.github.matsik.query.booking.service;
+package com.github.matsik.query.booking.application.domin;
 
 import com.github.matsik.dto.MinuteOfDay;
 import com.github.matsik.dto.TimeRange;

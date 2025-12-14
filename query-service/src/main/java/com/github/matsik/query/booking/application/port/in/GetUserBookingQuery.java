@@ -1,4 +1,4 @@
-package com.github.matsik.query.booking.query;
+package com.github.matsik.query.booking.application.port.in;
 
 import com.github.matsik.dto.BookingPartitionKey;
 
