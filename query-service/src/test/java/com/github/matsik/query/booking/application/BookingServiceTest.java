@@ -8,22 +8,18 @@ import com.github.matsik.cassandra.entity.BookingByServiceAndDate;
 import com.github.matsik.cassandra.entity.BookingByUser;
 import com.github.matsik.dto.BookingPartitionKey;
 import com.github.matsik.dto.TimeRange;
+import com.github.matsik.query.booking.CassandraAdapterConfig;
+import com.github.matsik.query.booking.CassandraContainerTestBase;
 import com.github.matsik.query.booking.TestDataGenerator;
-import com.github.matsik.query.booking.adapter.out.BookingPersistenceAdapter;
-import com.github.matsik.query.booking.application.domin.UserBooking;
-import com.github.matsik.query.booking.application.domin.AvailableTimeRangesCalculator;
 import com.github.matsik.query.booking.application.domin.GetAvailableTimeRangesService;
 import com.github.matsik.query.booking.application.domin.GetUserBookingService;
 import com.github.matsik.query.booking.application.domin.GetUserBookingsService;
+import com.github.matsik.query.booking.application.domin.UserBooking;
 import com.github.matsik.query.booking.application.port.in.GetAvailableTimeRangesQuery;
 import com.github.matsik.query.booking.application.port.in.GetFirstUserBookingsQuery;
 import com.github.matsik.query.booking.application.port.in.GetNextUserBookingsQuery;
 import com.github.matsik.query.booking.application.port.in.GetUserBookingQuery;
 import com.github.matsik.query.booking.application.port.in.GetUserBookingsQuery;
-import com.github.matsik.query.config.cassandra.client.CassandraClientConfiguration;
-import com.github.matsik.query.config.cassandra.client.CassandraClientProperties;
-import com.github.matsik.query.config.cassandra.mapper.booking.BookingMapperConfiguration;
-import com.github.matsik.query.config.otel.OtelConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -31,22 +27,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.cassandra.CassandraContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -55,34 +41,9 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(classes = {
-        BookingServiceTest.TestCassandraConfig.class,
-        CassandraClientConfiguration.class,
-        BookingMapperConfiguration.class,
-        BookingPersistenceAdapter.class,
-        AvailableTimeRangesCalculator.class,
-        GetAvailableTimeRangesService.class,
-        GetUserBookingService.class,
-        GetUserBookingsService.class,
-        OtelConfiguration.class
-})
+@SpringBootTest(classes = CassandraAdapterConfig.class)
 @Testcontainers
-class BookingServiceTest {
-
-    @Container
-    private static final CassandraContainer CASSANDRA_CONTAINER = new CassandraContainer("cassandra:5.0.5");
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("cassandra.contactPoints", () -> String.format("%s:%d", CASSANDRA_CONTAINER.getHost(), CASSANDRA_CONTAINER.getFirstMappedPort()));
-        registry.add("cassandra.keyspaceName", () -> "booking_system");
-        registry.add("cassandra.localDatacenter", CASSANDRA_CONTAINER::getLocalDatacenter);
-    }
-
-    @Configuration
-    @EnableConfigurationProperties(CassandraClientProperties.class)
-    public static class TestCassandraConfig {
-    }
+class BookingServiceTest extends CassandraContainerTestBase {
 
     @Autowired
     private CqlSession cqlSession;
@@ -425,30 +386,6 @@ class BookingServiceTest {
 
     private static UUID bUserId() {
         return TestDataGenerator.numberToUUID(2);
-    }
-
-    private static void execMigration() throws IOException {
-        try (CqlSession session = CqlSession.builder()
-                .addContactPoint(new InetSocketAddress(
-                        CASSANDRA_CONTAINER.getHost(),
-                        CASSANDRA_CONTAINER.getFirstMappedPort()
-                ))
-                .withLocalDatacenter(CASSANDRA_CONTAINER.getLocalDatacenter())
-                .build()
-        ) {
-            execMigration(session, "schema.cql");
-        }
-    }
-
-    private static void execMigration(CqlSession session, String fileName) throws IOException {
-        String migrationScriptCql = new String(resourceBytes(fileName), StandardCharsets.UTF_8);
-        String[] statements = migrationScriptCql.split(";");
-        Arrays.stream(statements).forEach(session::execute);
-    }
-
-    private static byte[] resourceBytes(String fileName) throws IOException {
-        ClassPathResource resource = new ClassPathResource(fileName);
-        return resource.getInputStream().readAllBytes();
     }
 
 }
