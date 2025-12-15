@@ -1,0 +1,124 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: command-service
+spec:
+  selector:
+    app: command-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: command-service-configmap
+data:
+  kafka-client-id: "command-consumer"
+  kafka-group-id: "command-consumers"
+  otel-protocol: "grpc"
+  otel-service-name: "command-service"
+  otel-traces-exporter: "otlp"
+  otel-metrics-exporter: "otlp"
+  otel-logs-exporter: "otlp"
+  otel-capture-mdc: "*"
+  otel-capture-kvp: "true"
+  otel-capture-logger-context: "true"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: command-service
+spec:
+  selector:
+    matchLabels:
+      app: command-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: command-service
+    spec:
+      containers:
+        - name: command-service
+          image: command-service:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS
+              valueFrom:
+                configMapKeyRef:
+                  name: cassandra-configmap
+                  key: contact-points
+            - name: BOOKING_SYSTEM_CASSANDRA_KEYSPACE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: cassandra-configmap
+                  key: keyspace-name
+            - name: BOOKING_SYSTEM_DATACENTER
+              valueFrom:
+                configMapKeyRef:
+                  name: cassandra-configmap
+                  key: datacenter
+            - name: BOOKING_SYSTEM_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-configmap
+                  key: bootstrap-servers
+            - name: BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: command-service-configmap
+                  key: kafka-client-id
+            - name: BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_GROUP_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: command-service-configmap
+                  key: kafka-group-id
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: otel-collector-configmap
+                  key: endpoint
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              valueFrom:
+                configMapKeyRef:
+                  name: command-service-configmap
+                  key: otel-protocol
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: command-service-configmap
+                  key: otel-service-name
+            - name: OTEL_TRACES_EXPORTER
+              valueFrom:
+                configMapKeyRef:
+                  name: command-service-configmap
+                  key: otel-traces-exporter
+            - name: OTEL_METRICS_EXPORTER
+              valueFrom:
+                configMapKeyRef:
+                  name: command-service-configmap
+                  key: otel-metrics-exporter
+            - name: OTEL_LOGS_EXPORTER
+              valueFrom:
+                configMapKeyRef:
+                  name: command-service-configmap
+                  key: otel-logs-exporter
+            - name: OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_MDC_ATTRIBUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: command-service-configmap
+                  key: otel-capture-mdc
+            - name: OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_KEY_VALUE_PAIR_ATTRIBUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: command-service-configmap
+                  key: otel-capture-kvp
+            - name: OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_LOGGER_CONTEXT_ATTRIBUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: command-service-configmap
+                  key: otel-capture-logger-context
+          ports:
+            - containerPort: 8080
