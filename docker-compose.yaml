@@ -25,6 +25,8 @@ services:
     image: query-service:latest
     networks:
       - net
+    ports:
+      - "50051:50051"
     environment:
       BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS: cassandra:9042
       BOOKING_SYSTEM_CASSANDRA_KEYSPACE_NAME: booking_system
@@ -44,8 +46,6 @@ services:
     image: command-service:latest
     networks:
       - net
-    ports:
-      - "50051:50051"
     environment:
       BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS: cassandra:9042
       BOOKING_SYSTEM_CASSANDRA_KEYSPACE_NAME: booking_system
