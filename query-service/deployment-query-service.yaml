@@ -54,7 +54,7 @@ spec:
                 configMapKeyRef:
                   name: cassandra-configmap
                   key: keyspace-name
-            - name: BOOKING_SYSTEM_DATACENTER
+            - name: BOOKING_SYSTEM_CASSANDRA_DATACENTER
               valueFrom:
                 configMapKeyRef:
                   name: cassandra-configmap
