@@ -71,7 +71,7 @@ services:
     ports:
       - "9042:9042"
     environment:
-      CASSANDRA_SEEDS: "cassandra"
+      CASSANDRA_SEEDS: cassandra
       CASSANDRA_CLUSTER_NAME: booking-system
       CASSANDRA_DC: DC1
       CASSANDRA_RACK: RACK1
