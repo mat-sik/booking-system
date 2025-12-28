@@ -570,3 +570,14 @@ discovered. To enable this, you need to set the following environment variables 
 export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 export DOCKER_HOST="unix://${HOME}/.colima/docker.sock"
 ```
+
+### ConfigMap for config files to be mounted in pods
+
+```shell
+kubectl create configmap mountfiles-configmap \
+  --from-file=otel-collector.yaml=otel-collector.yaml \
+  --from-file=prometheus.yaml=prometheus.yaml \
+  --from-file=loki.yaml=loki.yaml \
+  --from-file=tempo.yaml=tempo.yaml \
+  --from-file=grafana-datasources.yaml=grafana-datasources.yaml
+```
