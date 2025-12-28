@@ -1,0 +1,17 @@
+cassandra:
+  image:
+    tag: 5.0.5
+
+  jvm:
+    maxHeapSize: 2G
+    newHeapSize: 2G
+    extraOpts: -XX:MaxDirectMemorySize=1G
+
+  cluster:
+    name: booking-system
+    datacenter: DC1
+    rack: RACK1
+    endpointSnitch: GossipingPropertyFileSnitch
+
+  persistence:
+    storageClass: local-storage

@@ -1,0 +1,7 @@
+apiVersion: v2
+name: booking-system
+version: 1.0.0
+dependencies:
+  - name: cassandra
+    version: "12.3.11"
+    repository: https://charts.bitnami.com/bitnami

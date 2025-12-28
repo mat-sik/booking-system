@@ -581,3 +581,13 @@ kubectl create configmap mountfiles-configmap \
   --from-file=tempo.yaml=tempo.yaml \
   --from-file=grafana-datasources.yaml=grafana-datasources.yaml
 ```
+
+### Helm
+
+```shell
+helm dependency build ./helm
+```
+
+```shell
+helm template booking-system ./helm > generated-manifests.yaml
+```
