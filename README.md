@@ -574,12 +574,47 @@ export DOCKER_HOST="unix://${HOME}/.colima/docker.sock"
 ### ConfigMap for config files to be mounted in pods
 
 ```shell
-kubectl create configmap mountfiles-configmap \
+kubectl create namespace booking-system
+```
+
+```shell
+kubectl create configmap mountfiles-configmap -n booking-system \
   --from-file=otel-collector.yaml=otel-collector.yaml \
   --from-file=prometheus.yaml=prometheus.yaml \
   --from-file=loki.yaml=loki.yaml \
   --from-file=tempo.yaml=tempo.yaml \
   --from-file=grafana-datasources.yaml=grafana-datasources.yaml
+```
+
+### Create directories for PVs
+
+```bash
+minikube ssh
+
+sudo rm -rf /mnt/data &&
+
+sudo mkdir -p /mnt/data/cassandra &&
+sudo chown 999:999 /mnt/data/cassandra &&
+
+sudo mkdir -p /mnt/data/prometheus &&
+sudo chown 65534:65534 /mnt/data/prometheus &&
+
+sudo mkdir -p /mnt/data/minio &&
+
+sudo mkdir -p /mnt/data/tempo &&
+sudo chown 10001:10001 /mnt/data/tempo &&
+
+sudo mkdir -p /mnt/data/mimir &&
+
+sudo mkdir -p /mnt/data/loki &&
+sudo chown 10001:10001 /mnt/data/loki &&
+
+sudo mkdir -p /mnt/data/alloy &&
+sudo chown 473:473 /mnt/data/alloy &&
+
+sudo chmod 700 /mnt/data/* &&
+
+exit
 ```
 
 ### Helm
@@ -589,5 +624,9 @@ helm dependency build ./helm
 ```
 
 ```shell
-helm template booking-system ./helm > generated-manifests.yaml
+helm install booking-system ./helm -n booking-system
+```
+
+```shell
+helm template booking-system ./helm -n booking-system > generated-manifests.yaml
 ```
