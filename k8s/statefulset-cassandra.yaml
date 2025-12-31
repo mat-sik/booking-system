@@ -24,6 +24,9 @@ spec:
     - name: intra
       port: 7000
       targetPort: intra
+    - name: tls
+      port: 7001
+      targetPort: tls
     - name: jmx
       port: 7199
       targetPort: jmx
@@ -60,6 +63,13 @@ spec:
       containers:
         - name: cassandra
           image: cassandra:5.0.5
+          resources:
+            requests:
+              memory: 2Gi
+              cpu: 1
+            limits:
+              memory: 3Gi
+              cpu: 2
           env:
             - name: CASSANDRA_CLUSTER_NAME
               value: booking-system
@@ -76,11 +86,15 @@ spec:
               value: "256"
             - name: CASSANDRA_ENDPOINT_SNITCH
               value: GossipingPropertyFileSnitch
-            - name: JVM_OPTS
-              value: "-Xms2G -Xmx2G -XX:MaxDirectMemorySize=1G"
+            - name: MAX_HEAP_SIZE
+              value: 2G
+            - name: HEAP_NEWSIZE
+              value: 1G
           ports:
             - name: intra
               containerPort: 7000
+            - name: tls
+              containerPort: 7001
             - name: jmx
               containerPort: 7199
             - name: cql

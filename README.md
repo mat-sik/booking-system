@@ -593,8 +593,8 @@ minikube ssh
 
 sudo rm -rf /mnt/data &&
 
-sudo mkdir -p /mnt/data/cassandra &&
-sudo chown 999:999 /mnt/data/cassandra &&
+sudo mkdir -p /mnt/data/cassandra-0 &&
+sudo chown 999:999 /mnt/data/cassandra-0 &&
 
 sudo mkdir -p /mnt/data/prometheus &&
 sudo chown 65534:65534 /mnt/data/prometheus &&

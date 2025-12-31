@@ -1,4 +1,4 @@
 localPVs:
-  - name: cassandra
+  - name: cassandra-0
     size: 1Gi
     node: minikube
