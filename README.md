@@ -645,6 +645,23 @@ helm template booking-system ./helm -n booking-system > generated-manifests.yaml
 
 ### Cassandra
 
+To increase cluster size create dirs for cassandra nodes data and increase replica amount in statefulset.
+Create pv using values.yaml.
+
+You should also change
+
+from
+```
+- name: CASSANDRA_SEEDS
+  value: cassandra-0.cassandra-headless.booking-system.svc.cluster.local
+```
+
+to
+```
+- name: CASSANDRA_SEEDS
+  value: cassandra-0.cassandra-headless.booking-system.svc.cluster.local,cassandra-1.cassandra-headless.booking-system.svc.cluster.local
+```
+
 ```shell
 kubectl get pods -n booking-system -o wide -w
 ```
