@@ -2,3 +2,27 @@ localPVs:
   - name: cassandra-0
     size: 1Gi
     node: minikube
+
+  - name: broker-0
+    size: 1Gi
+    node: minikube
+
+  - name: broker-1
+    size: 1Gi
+    node: minikube
+
+  - name: broker-2
+    size: 1Gi
+    node: minikube
+
+  - name: controller-0
+    size: 1Gi
+    node: minikube
+
+  - name: controller-1
+    size: 1Gi
+    node: minikube
+
+  - name: controller-2
+    size: 1Gi
+    node: minikube

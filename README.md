@@ -596,6 +596,18 @@ sudo rm -rf /mnt/data &&
 sudo mkdir -p /mnt/data/cassandra-0 &&
 sudo chown 999:999 /mnt/data/cassandra-0 &&
 
+sudo mkdir -p /mnt/data/broker-0 &&
+
+sudo mkdir -p /mnt/data/broker-1 &&
+
+sudo mkdir -p /mnt/data/broker-2 &&
+
+sudo mkdir -p /mnt/data/controller-0 &&
+
+sudo mkdir -p /mnt/data/controller-1 &&
+
+sudo mkdir -p /mnt/data/controller-2 &&
+
 sudo mkdir -p /mnt/data/prometheus &&
 sudo chown 65534:65534 /mnt/data/prometheus &&
 
@@ -629,4 +641,56 @@ helm install booking-system ./helm -n booking-system
 
 ```shell
 helm template booking-system ./helm -n booking-system > generated-manifests.yaml
+```
+
+### Cassandra
+
+```shell
+kubectl get pods -n booking-system -o wide -w
+```
+
+```shell
+kubectl exec -it cassandra-2 -n booking-system -- nodetool status
+```
+
+```shell
+kubectl exec -it cassandra-2 -n booking-system -- nodetool info
+```
+
+### Kafka
+
+This won't show the node_id in brokers because it is set in command block
+```shell
+kubectl exec -n booking-system kafka-broker-0 -- env
+```
+
+```shell
+kubectl exec -n booking-system kafka-broker-0 -- cat /proc/1/environ | tr '\0' '\n' | grep NODE
+```
+
+```shell
+kubectl get svc -n booking-system
+```
+
+```shell
+kubectl get endpointslice -n booking-system
+```
+
+Check metadata quorum status
+```shell
+kubectl exec -n booking-system kafka-broker-0 -- /opt/kafka/bin/kafka-metadata-quorum.sh \
+--bootstrap-server localhost:9092 \
+describe --status
+```
+
+Get cluster ID
+```shell
+kubectl exec -n booking-system kafka-broker-0 -- /opt/kafka/bin/kafka-cluster.sh \
+cluster-id --bootstrap-server localhost:9092
+```
+
+# Check broker API versions (lists all brokers)
+```shell
+kubectl exec -n booking-system kafka-broker-0 -- /opt/kafka/bin/kafka-broker-api-versions.sh \
+--bootstrap-server localhost:9092
 ```
