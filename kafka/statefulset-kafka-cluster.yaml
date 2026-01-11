@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: kafka
-          image: apache/kafka:3.8.0
+          image: apache/kafka:4.1.1
           env:
             - name: POD_INDEX
               valueFrom:
@@ -128,7 +128,7 @@ spec:
     spec:
       containers:
         - name: kafka
-          image: apache/kafka:3.8.0
+          image: apache/kafka:4.1.1
           command:
             - /bin/bash
             - -c

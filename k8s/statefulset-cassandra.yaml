@@ -62,7 +62,7 @@ spec:
     spec:
       containers:
         - name: cassandra
-          image: cassandra:5.0.5
+          image: cassandra:5.0.6
           resources:
             requests:
               memory: 2Gi

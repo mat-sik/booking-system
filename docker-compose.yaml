@@ -65,7 +65,7 @@ services:
 
   cassandra:
     restart: on-failure
-    image: cassandra:5.0.5
+    image: cassandra:5.0.6
     networks:
       - net
     ports:
@@ -83,7 +83,7 @@ services:
 
   kafka:
     restart: on-failure
-    image: apache/kafka:4.1.0
+    image: apache/kafka:4.1.1
     networks:
       - net
     ports:
