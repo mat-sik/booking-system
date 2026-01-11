@@ -108,6 +108,9 @@ spec:
       spec:
         accessModes: [ "ReadWriteOnce" ]
         storageClassName: local-storage
+        selector:
+          matchLabels:
+            app: cassandra
         resources:
           requests:
             storage: 1Gi

@@ -596,33 +596,27 @@ sudo rm -rf /mnt/data &&
 sudo mkdir -p /mnt/data/cassandra-0 &&
 sudo chown 999:999 /mnt/data/cassandra-0 &&
 
-sudo mkdir -p /mnt/data/broker-0 &&
+sudo mkdir -p /mnt/data/prometheus-0 &&
+sudo chown 65534:65534 /mnt/data/prometheus-0 &&
 
-sudo mkdir -p /mnt/data/broker-1 &&
+sudo mkdir -p /mnt/data/tempo-0 &&
+sudo chown 10001:10001 /mnt/data/tempo-0 &&
 
-sudo mkdir -p /mnt/data/broker-2 &&
+sudo mkdir -p /mnt/data/loki-0 &&
+sudo chown 10001:10001 /mnt/data/loki-0 &&
 
-sudo mkdir -p /mnt/data/controller-0 &&
+sudo mkdir -p /mnt/data/alloy-0 &&
+sudo chown 473:473 /mnt/data/alloy-0 &&
 
-sudo mkdir -p /mnt/data/controller-1 &&
+sudo mkdir -p /mnt/data/pv-0 &&
 
-sudo mkdir -p /mnt/data/controller-2 &&
+sudo mkdir -p /mnt/data/pv-1 &&
 
-sudo mkdir -p /mnt/data/prometheus &&
-sudo chown 65534:65534 /mnt/data/prometheus &&
+sudo mkdir -p /mnt/data/pv-2 &&
 
-sudo mkdir -p /mnt/data/minio &&
+sudo mkdir -p /mnt/data/pv-3 &&
 
-sudo mkdir -p /mnt/data/tempo &&
-sudo chown 10001:10001 /mnt/data/tempo &&
-
-sudo mkdir -p /mnt/data/mimir &&
-
-sudo mkdir -p /mnt/data/loki &&
-sudo chown 10001:10001 /mnt/data/loki &&
-
-sudo mkdir -p /mnt/data/alloy &&
-sudo chown 473:473 /mnt/data/alloy &&
+sudo mkdir -p /mnt/data/pv-4 &&
 
 sudo chmod 700 /mnt/data/* &&
 

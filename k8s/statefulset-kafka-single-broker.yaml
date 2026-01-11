@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  namespace: booking-system
+spec:
+  type: ClusterIP
+  selector:
+    app: kafka-broker-controller
+  ports:
+    - name: client
+      port: 9092
+      targetPort: client
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-configmap
+  namespace: booking-system
+data:
+  bootstrap-servers: kafka:9092
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka-broker-controller
+  namespace: booking-system
+spec:
+  serviceName: kafka-broker-controller
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-broker-controller
+  template:
+    metadata:
+      labels:
+        app: kafka-broker-controller
+    spec:
+      containers:
+        - name: kafka
+          image: apache/kafka:3.8.0
+          ports:
+            - name: client
+              containerPort: 9092
+          env:
+            - name: KAFKA_PROCESS_ROLES
+              value: broker,controller
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: CLIENT
+            - name: KAFKA_CONTROLLER_LISTENER_NAMES
+              value: CONTROLLER
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: CLIENT:PLAINTEXT,CONTROLLER:PLAINTEXT
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: KAFKA_LISTENERS
+              value: CLIENT://$(POD_NAME).kafka-broker-controller.booking-system.svc.cluster.local:9092,CONTROLLER://localhost:9093
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: client://$(POD_NAME).kafka-broker-controller.booking-system.svc.cluster.local:9092
+            - name: POD_INDEX
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['apps.kubernetes.io/pod-index']
+            - name: KAFKA_NODE_ID
+              value: $(POD_INDEX)
+            - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+              value: $(KAFKA_NODE_ID)@localhost:9093
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: '1'
+            - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: '1'
+            - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+              value: '1'
+          volumeMounts:
+            - name: broker
+              mountPath: /var/lib/kafka/data
+            - name: broker
+              mountPath: /etc/kafka/secrets
+              subPath: secrets
+            - name: broker
+              mountPath: /mnt/shared/config
+              subPath: config
+  volumeClaimTemplates:
+    - metadata:
+        name: broker
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: local-storage
+        selector:
+          matchLabels:
+            app: any
+        resources:
+          requests:
+            storage: 1Gi

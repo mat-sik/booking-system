@@ -1,28 +1,45 @@
 localPVs:
   - name: cassandra-0
+    app: cassandra
     size: 1Gi
     node: minikube
 
-  - name: broker-0
+  - name: prometheus-0
+    app: prometheus
     size: 1Gi
     node: minikube
 
-  - name: broker-1
+  - name: tempo-0
+    app: tempo
     size: 1Gi
     node: minikube
 
-  - name: broker-2
+  - name: loki-0
+    app: loki
     size: 1Gi
     node: minikube
 
-  - name: controller-0
+  - name: alloy-0
+    app: alloy
     size: 1Gi
     node: minikube
 
-  - name: controller-1
+  - name: pv-0
     size: 1Gi
     node: minikube
 
-  - name: controller-2
+  - name: pv-1
+    size: 1Gi
+    node: minikube
+
+  - name: pv-2
+    size: 1Gi
+    node: minikube
+
+  - name: pv-3
+    size: 1Gi
+    node: minikube
+
+  - name: pv-4
     size: 1Gi
     node: minikube
