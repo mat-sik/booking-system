@@ -135,7 +135,7 @@ services:
 
   loki:
     restart: on-failure
-    image: grafana/loki:3.5.5
+    image: grafana/loki:3.6.3
     ports:
       - "3100:3100"
     networks:

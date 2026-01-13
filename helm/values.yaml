@@ -10,7 +10,7 @@ opentelemetry-collector:
         tls:
           insecure: true
       otlphttp:
-        endpoint: http://loki:3100/otlp
+        endpoint: http://booking-system-loki:3100/otlp
       prometheus:
         endpoint: ${env:MY_POD_IP}:9090
     service:
@@ -80,6 +80,56 @@ prometheus:
     enabled: false
   kube-state-metrics:
     enabled: false
+
+loki:
+  deploymentMode: SingleBinary
+  loki:
+    image:
+      repository: grafana/loki
+      tag: 3.6.3
+    commonConfig:
+      replication_factor: 1
+    schemaConfig:
+      configs:
+        - from: 2024-04-01
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            period: 24h
+    storage:
+      type: filesystem
+  singleBinary:
+    replicas: 1
+    persistence:
+      enabled: true
+      storageClass: local-storage
+      size: 1Gi
+      selector:
+        matchLabels:
+          app: loki
+  backend:
+    replicas: 0
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+  ingester:
+    replicas: 0
+  querier:
+    replicas: 0
+  queryFrontend:
+    replicas: 0
+  queryScheduler:
+    replicas: 0
+  distributor:
+    replicas: 0
+  compactor:
+    replicas: 0
+  indexGateway:
+    replicas: 0
+  bloomGateway:
+    replicas: 0
 
 localPVs:
   - name: cassandra-0
