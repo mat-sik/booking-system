@@ -577,15 +577,6 @@ export DOCKER_HOST="unix://${HOME}/.colima/docker.sock"
 kubectl create namespace booking-system
 ```
 
-```shell
-kubectl create configmap mountfiles-configmap -n booking-system \
-  --from-file=otel-collector.yaml=otel-collector.yaml \
-  --from-file=prometheus.yaml=prometheus.yaml \
-  --from-file=loki.yaml=loki.yaml \
-  --from-file=tempo.yaml=tempo.yaml \
-  --from-file=grafana-datasources.yaml=grafana-datasources.yaml
-```
-
 ### Create directories for PVs
 
 ```bash
@@ -700,7 +691,7 @@ kubectl exec -n booking-system kafka-broker-0 -- /opt/kafka/bin/kafka-cluster.sh
 cluster-id --bootstrap-server localhost:9092
 ```
 
-# Check broker API versions (lists all brokers)
+Check broker API versions (lists all brokers)
 ```shell
 kubectl exec -n booking-system kafka-broker-0 -- /opt/kafka/bin/kafka-broker-api-versions.sh \
 --bootstrap-server localhost:9092

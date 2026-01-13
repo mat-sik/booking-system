@@ -107,7 +107,7 @@ services:
 
   prometheus:
     restart: on-failure
-    image: prom/prometheus:v3.4.1
+    image: prom/prometheus:v3.9.1
     networks:
       - net
     ports:
@@ -123,7 +123,7 @@ services:
 
   otel-collector:
     restart: on-failure
-    image: otel/opentelemetry-collector-contrib:0.134.1
+    image: otel/opentelemetry-collector-contrib:0.143.1
     networks:
       - net
     ports:

@@ -1,3 +1,11 @@
 apiVersion: v2
 name: booking-system
 version: 1.0.0
+
+dependencies:
+  - name: opentelemetry-collector
+    version: 0.143.0
+    repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  - name: prometheus
+    version: 28.3.0
+    repository: https://prometheus-community.github.io/helm-charts
