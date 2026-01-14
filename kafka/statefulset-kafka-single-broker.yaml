@@ -58,7 +58,7 @@ spec:
             - name: KAFKA_LISTENERS
               value: CLIENT://$(POD_NAME).kafka-broker-controller.booking-system.svc.cluster.local:9092,CONTROLLER://localhost:9093
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: client://$(POD_NAME).kafka-broker-controller.booking-system.svc.cluster.local:9092
+              value: CLIENT://kafka.booking-system.svc.cluster.local:9092
             - name: POD_INDEX
               valueFrom:
                 fieldRef:
