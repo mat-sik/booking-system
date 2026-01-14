@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
         - name: query-service
-          image: query-service:latest
+          image: booking-system-query-service:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS

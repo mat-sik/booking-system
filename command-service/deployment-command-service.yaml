@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: command-service
-          image: command-service:latest
+          image: booking-system-command-service:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS

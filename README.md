@@ -522,19 +522,19 @@ Execute the following commands from the root directory of the repository to buil
 #### Query Service
 
 ```shell
-docker build -f ./query-service/Dockerfile . -t query-service
+docker build -f ./query-service/Dockerfile . -t booking-system-query-service
 ```
 
 #### Booking Service
 
 ```shell
-docker build -f ./booking-service/Dockerfile . -t booking-service
+docker build -f ./booking-service/Dockerfile . -t booking-system-booking-service
 ```
 
 #### Command Service
 
 ```shell
-docker build -f ./command-service/Dockerfile . -t command-service
+docker build -f ./command-service/Dockerfile . -t booking-system-command-service
 ```
 
 Once the common modules are installed and available, you can use standard Docker Compose commands to manage the
@@ -692,4 +692,24 @@ Check broker API versions (lists all brokers)
 ```shell
 kubectl exec -n booking-system kafka-broker-0 -- /opt/kafka/bin/kafka-broker-api-versions.sh \
 --bootstrap-server localhost:9092
+```
+
+# Grafana accessible on localhost
+
+```bash
+minikube kubectl -- port-forward service/grafana 3000:80
+```
+
+# Booking service accessible on localhost
+
+```bash
+minikube kubectl -- port-forward service/booking-service 8080:8080
+```
+
+# Load images
+
+```bash
+for img in query-service command-service booking-service; do
+  minikube image load booking-system-$img
+done
 ```

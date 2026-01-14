@@ -1,7 +1,7 @@
 services:
   booking-service:
     restart: on-failure
-    image: booking-service:latest
+    image: booking-system-booking-service:latest
     networks:
       - net
     ports:
@@ -22,7 +22,7 @@ services:
 
   query-service:
     restart: on-failure
-    image: query-service:latest
+    image: booking-system-query-service:latest
     networks:
       - net
     ports:
@@ -43,7 +43,7 @@ services:
 
   command-service:
     restart: on-failure
-    image: command-service:latest
+    image: booking-system-command-service:latest
     networks:
       - net
     environment:

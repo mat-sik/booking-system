@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
         - name: booking-service
-          image: booking-service:latest
+          image: booking-system-booking-service:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: BOOKING_SYSTEM_KAFKA_BOOTSTRAP_SERVERS
