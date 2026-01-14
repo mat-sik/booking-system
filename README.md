@@ -706,10 +706,32 @@ minikube kubectl -- port-forward service/grafana 3000:80
 minikube kubectl -- port-forward service/booking-service 8080:8080
 ```
 
+# cassandra accessible on localhost
+
+```bash
+minikube kubectl -- port-forward service/cassandra 9042:9042
+```
+
 # Load images
 
 ```bash
 for img in query-service command-service booking-service; do
   minikube image load booking-system-$img
 done
+```
+
+# Load test
+
+Go into load-tests dir and do
+
+```bash
+source venv/bin/activate
+```
+
+```bash
+pip install -r requirements.txt
+```
+
+```bash
+locust -f locustfile.py --host=http://localhost:8080
 ```
