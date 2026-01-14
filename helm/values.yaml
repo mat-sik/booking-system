@@ -86,6 +86,7 @@ loki:
   loki:
     image:
       tag: 3.6.3
+    auth_enabled: false
     commonConfig:
       replication_factor: 1
     schemaConfig:
@@ -98,6 +99,8 @@ loki:
             period: 24h
     storage:
       type: filesystem
+  test:
+    enabled: false
   singleBinary:
     replicas: 1
     persistence:
@@ -129,6 +132,41 @@ loki:
     replicas: 0
   bloomGateway:
     replicas: 0
+  chunksCache:
+    enabled: false
+  gateway:
+    enabled: false
+  resultsCache:
+    enabled: false
+  lokiCanary:
+    enabled: false
+
+grafana:
+  image:
+    tag: 12.3.1
+  adminPassword: admin
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Loki
+          type: loki
+          access: proxy
+          url: http://booking-system-loki:3100
+          isDefault: false
+
+        - name: Prometheus
+          type: prometheus
+          access: proxy
+          url: http://booking-system-prometheus-server:9090
+          isDefault: false
+
+        - name: Tempo
+          type: tempo
+          access: proxy
+          url: http://booking-system-tempo:3200
+          isDefault: true
+          uid: tempo
 
 tempo:
   tempo:
