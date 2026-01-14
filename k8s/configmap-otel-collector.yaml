@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-configmap
+data:
+  endpoint: booking-system-opentelemetry-collector:4317
