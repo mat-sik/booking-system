@@ -596,9 +596,6 @@ sudo chown 10001:10001 /mnt/data/tempo-0 &&
 sudo mkdir -p /mnt/data/loki-0 &&
 sudo chown 10001:10001 /mnt/data/loki-0 &&
 
-sudo mkdir -p /mnt/data/alloy-0 &&
-sudo chown 473:473 /mnt/data/alloy-0 &&
-
 sudo mkdir -p /mnt/data/pv-0 &&
 
 sudo mkdir -p /mnt/data/pv-1 &&

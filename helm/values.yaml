@@ -6,7 +6,7 @@ opentelemetry-collector:
   config:
     exporters:
       otlp:
-        endpoint: tempo:4317
+        endpoint: booking-system-tempo:4317
         tls:
           insecure: true
       otlphttp:
@@ -85,7 +85,6 @@ loki:
   deploymentMode: SingleBinary
   loki:
     image:
-      repository: grafana/loki
       tag: 3.6.3
     commonConfig:
       replication_factor: 1
@@ -130,6 +129,20 @@ loki:
     replicas: 0
   bloomGateway:
     replicas: 0
+
+tempo:
+  tempo:
+    tag: 2.9.0
+    metricsGenerator:
+      enabled: true
+      storage:
+        path: var/tempo/generator/metrics
+      traces_storage:
+        path: /var/tempo/generator/traces
+  persistence:
+    enabled: true
+    size: 1G
+    storageClassName: local-storage
 
 localPVs:
   - name: cassandra-0

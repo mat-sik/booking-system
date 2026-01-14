@@ -149,7 +149,7 @@ services:
 
   tempo:
     restart: on-failure
-    image: grafana/tempo:2.8.2
+    image: grafana/tempo:2.9.0
     ports:
       - "3200:3200"
     networks:
