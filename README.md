@@ -697,7 +697,7 @@ kubectl exec -n booking-system kafka-broker-0 -- /opt/kafka/bin/kafka-broker-api
 # Grafana accessible on localhost
 
 ```bash
-minikube kubectl -- port-forward service/grafana 3000:80
+minikube kubectl -- port-forward service/booking-system-grafana 3000:80
 ```
 
 # Booking service accessible on localhost
