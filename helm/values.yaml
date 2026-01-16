@@ -24,6 +24,11 @@ opentelemetry-collector:
         logs:
           exporters:
             - otlphttp
+  ports:
+    metrics:
+      enabled: true
+      containerPort: 9090
+      servicePort: 9090
 
 prometheus:
   server:
@@ -141,6 +146,14 @@ loki:
   lokiCanary:
     enabled: false
 
+tempo:
+  tempo:
+    tag: 2.9.0
+  persistence:
+    enabled: true
+    size: 2G
+    storageClassName: local-storage
+
 grafana:
   image:
     tag: 12.3.1
@@ -168,20 +181,6 @@ grafana:
           isDefault: true
           uid: tempo
 
-tempo:
-  tempo:
-    tag: 2.9.0
-    metricsGenerator:
-      enabled: true
-      storage:
-        path: var/tempo/generator/metrics
-      traces_storage:
-        path: /var/tempo/generator/traces
-  persistence:
-    enabled: true
-    size: 1G
-    storageClassName: local-storage
-
 localPVs:
   - name: cassandra-0
     app: cassandra
@@ -195,16 +194,11 @@ localPVs:
 
   - name: tempo-0
     app: tempo
-    size: 1Gi
+    size: 2Gi
     node: minikube
 
   - name: loki-0
     app: loki
-    size: 1Gi
-    node: minikube
-
-  - name: alloy-0
-    app: alloy
     size: 1Gi
     node: minikube
 
