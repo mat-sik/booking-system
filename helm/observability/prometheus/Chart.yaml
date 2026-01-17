@@ -1,0 +1,8 @@
+apiVersion: v2
+name: booking-system-observability-prometheus
+version: 1.0.0
+
+dependencies:
+  - name: prometheus
+    version: 28.3.0
+    repository: https://prometheus-community.github.io/helm-charts

@@ -1,0 +1,31 @@
+opentelemetry-collector:
+  mode: deployment
+  image:
+    repository: otel/opentelemetry-collector-contrib
+    tag: 0.143.1
+  config:
+    exporters:
+      otlp:
+        endpoint: booking-system-observability-tempo:4317
+        tls:
+          insecure: true
+      otlphttp:
+        endpoint: http://booking-system-observability-loki:3100/otlp
+      prometheus:
+        endpoint: ${env:MY_POD_IP}:9090
+    service:
+      pipelines:
+        traces:
+          exporters:
+            - otlp
+        metrics:
+          exporters:
+            - prometheus
+        logs:
+          exporters:
+            - otlphttp
+  ports:
+    metrics:
+      enabled: true
+      containerPort: 9090
+      servicePort: 9090

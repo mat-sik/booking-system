@@ -577,6 +577,18 @@ export DOCKER_HOST="unix://${HOME}/.colima/docker.sock"
 kubectl create namespace booking-system
 ```
 
+```shell
+kubectl config set-context minikube --namespace=booking-system
+```
+
+### Load images
+
+```bash
+for img in query-service command-service booking-service; do
+  minikube image load booking-system-$img
+done
+```
+
 ### Create directories for PVs
 
 ```bash
@@ -614,21 +626,48 @@ exit
 ### Helm
 
 ```shell
-helm dependency build ./helm
+helm dependency build ./helm/infra
+helm dependency build ./helm/observability/grafana
+helm dependency build ./helm/observability/loki
+helm dependency build ./helm/observability/opentelemetry-collector
+helm dependency build ./helm/observability/prometheus
+helm dependency build ./helm/observability/tempo
 ```
 
 ```shell
-helm install booking-system ./helm -n booking-system
+helm install booking-system-infra ./helm/infra -n booking-system
+helm install booking-system-observability-grafana ./helm/observability/grafana -n booking-system
+helm install booking-system-observability-loki ./helm/observability/loki -n booking-system
+helm install booking-system-observability-opentelemetry-collector ./helm/observability/opentelemetry-collector -n booking-system
+helm install booking-system-observability-prometheus ./helm/observability/prometheus -n booking-system
+helm install booking-system-observability-tempo ./helm/observability/tempo -n booking-system
 ```
 
 ```shell
-helm template booking-system ./helm -n booking-system > generated-manifests.yaml
+kubectl apply -f ./k8s -n booking-system
+```
+
+```shell
+helm uninstall booking-system-infra -n booking-system
+helm uninstall booking-system-observability-grafana -n booking-system
+helm uninstall booking-system-observability-loki -n booking-system
+helm uninstall booking-system-observability-opentelemetry-collector -n booking-system
+helm uninstall booking-system-observability-prometheus -n booking-system
+helm uninstall booking-system-observability-tempo -n booking-system
+```
+
+```shell
+kubectl delete -f ./k8s -n booking-system
+kubectl delete pvc broker-kafka-broker-controller-0 -n booking-system
+kubectl delete pvc cassandra-cassandra-0 -n booking-system
+kubectl delete pvc storage-booking-system-observability-tempo-0 -n booking-system
 ```
 
 ### Cassandra
 
-To increase cluster size create dirs for cassandra nodes data and increase replica amount in statefulset.
-Create pv using values.yaml.
+To increase cluster size make sure there are enough pv for cassandra nodes and increase replica amount in statefulset.
+
+Create pv using values.yaml and make sure there are associated folder in /mnt/data on minikube.
 
 You should also change
 
@@ -649,22 +688,22 @@ kubectl get pods -n booking-system -o wide -w
 ```
 
 ```shell
-kubectl exec -it cassandra-2 -n booking-system -- nodetool status
+kubectl exec cassandra-0 -n booking-system -- nodetool status
 ```
 
 ```shell
-kubectl exec -it cassandra-2 -n booking-system -- nodetool info
+kubectl exec cassandra-0 -n booking-system -- nodetool info
 ```
 
 ### Kafka
 
 This won't show the node_id in brokers because it is set in command block
 ```shell
-kubectl exec -n booking-system kafka-broker-0 -- env
+kubectl exec -n booking-system kafka-broker-controller-0 -- env
 ```
 
 ```shell
-kubectl exec -n booking-system kafka-broker-0 -- cat /proc/1/environ | tr '\0' '\n' | grep NODE
+kubectl exec -n booking-system kafka-broker-controller-0 -- cat /proc/1/environ | tr '\0' '\n' | grep NODE
 ```
 
 ```shell
@@ -677,27 +716,27 @@ kubectl get endpointslice -n booking-system
 
 Check metadata quorum status
 ```shell
-kubectl exec -n booking-system kafka-broker-0 -- /opt/kafka/bin/kafka-metadata-quorum.sh \
---bootstrap-server localhost:9092 \
+kubectl exec -n booking-system kafka-broker-controller-0 -- /opt/kafka/bin/kafka-metadata-quorum.sh \
+--bootstrap-server kafka-broker-controller-0.kafka-broker-controller.booking-system.svc.cluster.local:9092 \
 describe --status
 ```
 
 Get cluster ID
 ```shell
-kubectl exec -n booking-system kafka-broker-0 -- /opt/kafka/bin/kafka-cluster.sh \
-cluster-id --bootstrap-server localhost:9092
+kubectl exec -n booking-system kafka-broker-controller-0 -- /opt/kafka/bin/kafka-cluster.sh \
+cluster-id --bootstrap-server kafka-broker-controller-0.kafka-broker-controller.booking-system.svc.cluster.local:9092
 ```
 
 Check broker API versions (lists all brokers)
 ```shell
-kubectl exec -n booking-system kafka-broker-0 -- /opt/kafka/bin/kafka-broker-api-versions.sh \
---bootstrap-server localhost:9092
+kubectl exec -n booking-system kafka-broker-controller-0 -- /opt/kafka/bin/kafka-broker-api-versions.sh \
+--bootstrap-server kafka-broker-controller-0.kafka-broker-controller.booking-system.svc.cluster.local:9092
 ```
 
 # Grafana accessible on localhost
 
 ```bash
-minikube kubectl -- port-forward service/booking-system-grafana 3000:80
+minikube kubectl -- port-forward service/booking-system-observability-grafana 3000:80
 ```
 
 # Booking service accessible on localhost
@@ -710,14 +749,6 @@ minikube kubectl -- port-forward service/booking-service 8080:8080
 
 ```bash
 minikube kubectl -- port-forward service/cassandra 9042:9042
-```
-
-# Load images
-
-```bash
-for img in query-service command-service booking-service; do
-  minikube image load booking-system-$img
-done
 ```
 
 # Load test

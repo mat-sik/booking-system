@@ -1,0 +1,26 @@
+grafana:
+  image:
+    tag: 12.3.1
+  adminPassword: admin
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Loki
+          type: loki
+          access: proxy
+          url: http://booking-system-observability-loki:3100
+          isDefault: false
+
+        - name: Prometheus
+          type: prometheus
+          access: proxy
+          url: http://booking-system-observability-prometheus-server:9090
+          isDefault: false
+
+        - name: Tempo
+          type: tempo
+          access: proxy
+          url: http://booking-system-observability-tempo:3200
+          isDefault: true
+          uid: tempo

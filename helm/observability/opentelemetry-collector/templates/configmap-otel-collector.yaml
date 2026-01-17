@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: otel-collector-configmap
 data:
-  endpoint: http://booking-system-opentelemetry-collector:4317
+  endpoint: http://booking-system-observability-opentelemetry-collector:4317

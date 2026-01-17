@@ -1,0 +1,55 @@
+prometheus:
+  server:
+    image:
+      repository: prom/prometheus
+      tag: v3.9.1
+    service:
+      servicePort: 9090
+    persistentVolume:
+      size: 1G
+      storageClass: local-storage
+      selector:
+        matchLabels:
+          app: prometheus
+    extraArgs:
+      web.enable-remote-write-receiver: null
+      enable-feature: exemplar-storage,native-histograms
+    global:
+      scrape_interval: 1s
+      scrape_timeout: 1s
+  scrapeConfigs:
+    otel-collector:
+      static_configs:
+        - targets:
+            - booking-system-observability-opentelemetry-collector:9090
+    prometheus:
+      enabled: false
+    kubernetes-api-servers:
+      enabled: false
+    kubernetes-nodes:
+      enabled: false
+    kubernetes-nodes-cadvisor:
+      enabled: false
+    kubernetes-service-endpoints:
+      enabled: false
+    kubernetes-service-endpoints-slow:
+      enabled: false
+    prometheus-pushgateway:
+      enabled: false
+    kubernetes-services:
+      enabled: false
+    kubernetes-pods:
+      enabled: false
+    kubernetes-pods-slow:
+      enabled: false
+  configmapReload:
+    prometheus:
+      enabled: false
+  alertmanager:
+    enabled: false
+  prometheus-node-exporter:
+    enabled: false
+  prometheus-pushgateway:
+    enabled: false
+  kube-state-metrics:
+    enabled: false
