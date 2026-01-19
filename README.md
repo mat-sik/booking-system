@@ -571,61 +571,82 @@ export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 export DOCKER_HOST="unix://${HOME}/.colima/docker.sock"
 ```
 
-### ConfigMap for config files to be mounted in pods
+# Kubernetes Deployment
 
-```shell
+## Prerequisites
+
+- Minikube installed and running
+- kubectl configured
+- Helm 3.x installed
+- Docker images built for: `query-service`, `command-service`, `booking-service`
+
+## Setup
+
+### 1. Create and Configure Namespace
+
+Create the booking-system namespace:
+```bash
 kubectl create namespace booking-system
 ```
 
-```shell
+Set it as the default namespace for your context:
+```bash
 kubectl config set-context minikube --namespace=booking-system
 ```
 
-### Load images
+### 2. Load Docker Images into Minikube
 
+Load your built images into Minikube's Docker environment:
 ```bash
 for img in query-service command-service booking-service; do
   minikube image load booking-system-$img
 done
 ```
 
-### Create directories for PVs
+### 3. Prepare Persistent Volume Directories
+
+Create the required directories on Minikube for persistent volumes with proper ownership:
 
 ```bash
 minikube ssh
 
 sudo rm -rf /mnt/data &&
 
+# Cassandra data
 sudo mkdir -p /mnt/data/cassandra-0 &&
 sudo chown 999:999 /mnt/data/cassandra-0 &&
 
+# Prometheus data
 sudo mkdir -p /mnt/data/prometheus-0 &&
 sudo chown 65534:65534 /mnt/data/prometheus-0 &&
 
+# Tempo data
 sudo mkdir -p /mnt/data/tempo-0 &&
 sudo chown 10001:10001 /mnt/data/tempo-0 &&
 
+# Loki data
 sudo mkdir -p /mnt/data/loki-0 &&
 sudo chown 10001:10001 /mnt/data/loki-0 &&
 
+# General purpose persistent volumes
 sudo mkdir -p /mnt/data/pv-0 &&
-
 sudo mkdir -p /mnt/data/pv-1 &&
-
 sudo mkdir -p /mnt/data/pv-2 &&
-
 sudo mkdir -p /mnt/data/pv-3 &&
-
 sudo mkdir -p /mnt/data/pv-4 &&
 
+# Set proper permissions
 sudo chmod 700 /mnt/data/* &&
 
 exit
 ```
 
-### Helm
+## Deployment
 
-```shell
+### Build Helm Dependencies
+
+Build dependencies for all Helm charts:
+```bash
 helm dependency build ./helm/infra
 helm dependency build ./helm/observability/grafana
 helm dependency build ./helm/observability/loki
@@ -634,8 +655,15 @@ helm dependency build ./helm/observability/prometheus
 helm dependency build ./helm/observability/tempo
 ```
 
-```shell
+### Install Infrastructure and Observability Stack
+
+Install the infrastructure components:
+```bash
 helm install booking-system-infra ./helm/infra -n booking-system
+```
+
+Install the observability stack:
+```bash
 helm install booking-system-observability-grafana ./helm/observability/grafana -n booking-system
 helm install booking-system-observability-loki ./helm/observability/loki -n booking-system
 helm install booking-system-observability-opentelemetry-collector ./helm/observability/opentelemetry-collector -n booking-system
@@ -643,11 +671,18 @@ helm install booking-system-observability-prometheus ./helm/observability/promet
 helm install booking-system-observability-tempo ./helm/observability/tempo -n booking-system
 ```
 
-```shell
+### Deploy Application Services
+
+Apply Kubernetes manifests for application services:
+```bash
 kubectl apply -f ./k8s -n booking-system
 ```
 
-```shell
+## Uninstallation
+
+### Remove Helm Releases
+
+```bash
 helm uninstall booking-system-infra -n booking-system
 helm uninstall booking-system-observability-grafana -n booking-system
 helm uninstall booking-system-observability-loki -n booking-system
@@ -656,113 +691,130 @@ helm uninstall booking-system-observability-prometheus -n booking-system
 helm uninstall booking-system-observability-tempo -n booking-system
 ```
 
-```shell
+### Clean Up Resources
+
+Delete application resources and persistent volume claims:
+```bash
 kubectl delete -f ./k8s -n booking-system
 kubectl delete pvc broker-kafka-broker-controller-0 -n booking-system
 kubectl delete pvc cassandra-cassandra-0 -n booking-system
 kubectl delete pvc storage-booking-system-observability-tempo-0 -n booking-system
 ```
 
+## Port Forwarding for Local Access
+
+### Grafana Dashboard
+Access Grafana at http://localhost:3000 (login: admin / password: admin):
+```bash
+kubectl port-forward service/booking-system-observability-grafana 3000:80 -n booking-system
+```
+
+### Booking Service API
+Access the booking service at http://localhost:8080:
+```bash
+kubectl port-forward service/booking-service 8080:8080 -n booking-system
+```
+
+### Cassandra Database
+Access Cassandra at localhost:9042:
+```bash
+kubectl port-forward service/cassandra 9042:9042 -n booking-system
+```
+
+## Component Management
+
 ### Cassandra
 
-To increase cluster size make sure there are enough pv for cassandra nodes and increase replica amount in statefulset.
+#### Cluster Monitoring
 
-Create pv using values.yaml and make sure there are associated folder in /mnt/data on minikube.
-
-You should also change
-
-from
-```
-- name: CASSANDRA_SEEDS
-  value: cassandra-0.cassandra-headless.booking-system.svc.cluster.local
-```
-
-to
-```
-- name: CASSANDRA_SEEDS
-  value: cassandra-0.cassandra-headless.booking-system.svc.cluster.local,cassandra-1.cassandra-headless.booking-system.svc.cluster.local
-```
-
-```shell
+Check pod status:
+```bash
 kubectl get pods -n booking-system -o wide -w
 ```
 
-```shell
+View cluster node status:
+```bash
 kubectl exec cassandra-0 -n booking-system -- nodetool status
 ```
 
-```shell
+View detailed node information:
+```bash
 kubectl exec cassandra-0 -n booking-system -- nodetool info
 ```
 
+#### Scaling the Cluster
+
+To increase the Cassandra cluster size:
+
+1. **Create additional persistent volumes** - Ensure you have PV definitions in `values.yaml` and corresponding directories on Minikube (e.g., `/mnt/data/cassandra-1`, `/mnt/data/cassandra-2`)
+
+2. **Update the StatefulSet** - Increase the replica count in your Cassandra StatefulSet
+
+3. **Update seed nodes** - Modify the `CASSANDRA_SEEDS` environment variable:
+   ```yaml
+   - name: CASSANDRA_SEEDS
+     value: cassandra-0.cassandra-headless.booking-system.svc.cluster.local,cassandra-1.cassandra-headless.booking-system.svc.cluster.local
+   ```
+
 ### Kafka
 
-This won't show the node_id in brokers because it is set in command block
-```shell
+#### Cluster Diagnostics
+
+View environment variables (note: `node_id` is set in the command block):
+```bash
 kubectl exec -n booking-system kafka-broker-controller-0 -- env
 ```
 
-```shell
+View `node_id` from the process environment:
+```bash
 kubectl exec -n booking-system kafka-broker-controller-0 -- cat /proc/1/environ | tr '\0' '\n' | grep NODE
 ```
 
-```shell
+Check metadata quorum status:
+```bash
+kubectl exec -n booking-system kafka-broker-controller-0 -- /opt/kafka/bin/kafka-metadata-quorum.sh \
+  --bootstrap-server kafka-broker-controller-0.kafka-broker-controller.booking-system.svc.cluster.local:9092 \
+  describe --status
+```
+
+Get the cluster ID:
+```bash
+kubectl exec -n booking-system kafka-broker-controller-0 -- /opt/kafka/bin/kafka-cluster.sh \
+  cluster-id --bootstrap-server kafka-broker-controller-0.kafka-broker-controller.booking-system.svc.cluster.local:9092
+```
+
+List all brokers and their API versions:
+```bash
+kubectl exec -n booking-system kafka-broker-controller-0 -- /opt/kafka/bin/kafka-broker-api-versions.sh \
+  --bootstrap-server kafka-broker-controller-0.kafka-broker-controller.booking-system.svc.cluster.local:9092
+```
+
+## Network Inspection
+
+View all services:
+```bash
 kubectl get svc -n booking-system
 ```
 
-```shell
+View endpoint slices:
+```bash
 kubectl get endpointslice -n booking-system
 ```
 
-Check metadata quorum status
-```shell
-kubectl exec -n booking-system kafka-broker-controller-0 -- /opt/kafka/bin/kafka-metadata-quorum.sh \
---bootstrap-server kafka-broker-controller-0.kafka-broker-controller.booking-system.svc.cluster.local:9092 \
-describe --status
-```
+## Load Testing
 
-Get cluster ID
-```shell
-kubectl exec -n booking-system kafka-broker-controller-0 -- /opt/kafka/bin/kafka-cluster.sh \
-cluster-id --bootstrap-server kafka-broker-controller-0.kafka-broker-controller.booking-system.svc.cluster.local:9092
-```
-
-Check broker API versions (lists all brokers)
-```shell
-kubectl exec -n booking-system kafka-broker-controller-0 -- /opt/kafka/bin/kafka-broker-api-versions.sh \
---bootstrap-server kafka-broker-controller-0.kafka-broker-controller.booking-system.svc.cluster.local:9092
-```
-
-# Grafana accessible on localhost
+Navigate to the load tests directory and set up the environment:
 
 ```bash
-minikube kubectl -- port-forward service/booking-system-observability-grafana 3000:80
-```
-
-# Booking service accessible on localhost
-
-```bash
-minikube kubectl -- port-forward service/booking-service 8080:8080
-```
-
-# cassandra accessible on localhost
-
-```bash
-minikube kubectl -- port-forward service/cassandra 9042:9042
-```
-
-# Load test
-
-Go into load-tests dir and do
-
-```bash
+cd load-tests
 source venv/bin/activate
-```
-
-```bash
 pip install -r requirements.txt
 ```
 
+Run Locust load tests (ensure booking service is accessible on localhost:8080):
 ```bash
+cd load-tests
 locust -f locustfile.py --host=http://localhost:8080
 ```
+
+Access the Locust web interface at http://localhost:8089
