@@ -1,0 +1,20 @@
+tempo:
+  tempo:
+    tag: 2.9.0
+    metricsGenerator:
+      enabled: true
+      remoteWriteUrl: http://booking-system-observability-prometheus-server:9090/api/v1/write
+      storage:
+        path: /var/tempo/metrics
+      traces_storage:
+        path: /var/tempo/wal
+    overrides:
+      defaults:
+        metrics_generator:
+          processors:
+            - local-blocks
+
+  persistence:
+    enabled: true
+    size: 2G
+    storageClassName: local-storage

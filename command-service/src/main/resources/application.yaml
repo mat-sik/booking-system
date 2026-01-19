@@ -8,7 +8,7 @@ spring:
 cassandra:
   contact-points: ${BOOKING_SYSTEM_CASSANDRA_CONTACT_POINTS}
   keyspace-name: ${BOOKING_SYSTEM_CASSANDRA_KEYSPACE_NAME}
-  local-datacenter: ${BOOKING_SYSTEM_DATACENTER}
+  local-datacenter: ${BOOKING_SYSTEM_CASSANDRA_DATACENTER}
 
 kafka:
   client:

@@ -38,3 +38,6 @@ build/
 
 load-tests/__pycache__
 load-tests/venv
+
+helm/**/charts/
+generated-manifests.yaml
