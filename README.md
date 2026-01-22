@@ -41,7 +41,7 @@ The system implements **CQRS** (Command Query Responsibility Segregation) to sep
 Processes booking commands (create/delete) from Kafka topic partitions. Each partition acts as an append-only log ensuring chronological ordering and preventing race conditions.
 
 **Key Features:**
-- In-memory cache synchronized with Cassandra for fast validation
+- In-memory cache for each kafka consumer synchronized with Cassandra table partition for fast booking availability validation
 - Partition-based concurrency control
 - Horizontally scalable with configurable consumer threads
 
