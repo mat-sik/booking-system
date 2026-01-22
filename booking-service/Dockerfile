@@ -1,5 +1,7 @@
 FROM amazoncorretto:25 AS build-stage
 
+RUN yum install -y tar gzip && yum clean all
+
 WORKDIR /app
 
 COPY mvnw .
