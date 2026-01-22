@@ -127,12 +127,8 @@ The API supports CORS for seamless integration with Swagger UI.
 ### Request Types
 
 **Command Requests** - Modify state (create/delete bookings)
-- `POST /bookings` - Create a new booking
-- `DELETE /bookings/{id}` - Cancel a booking
 
 **Query Requests** - Retrieve state (read-only operations)
-- `GET /bookings` - List user's bookings
-- `GET /bookings/available` - Check available time slots
 
 ## Deployment
 
