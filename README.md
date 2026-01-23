@@ -357,11 +357,9 @@ kubectl port-forward service/booking-system-observability-grafana 3000:80 -n boo
 ### Custom Instrumentation
 
 Each microservice includes custom spans and metrics for deep observability into:
-- Booking request processing times
-- Cache hit/miss rates
-- Partition processing latency
-- Kafka consumer lag
-- Cassandra query performance
+- Command and Query request processing times and requests per second
+- Custom trace spans for business logic and critical event recording like conflicting booking or booking deleting by
+not owning user.
 
 ## Operations
 
@@ -407,20 +405,6 @@ kubectl get svc -n booking-system
 kubectl get endpointslice -n booking-system
 ```
 
-## Troubleshooting
-
-**Issue: Pods not starting**
-- Check PV permissions match the container user IDs
-- Verify images are loaded into Minikube: `minikube image ls`
-
-**Issue: Kafka connection errors**
-- Confirm bootstrap servers are reachable
-- Check DNS resolution: `kubectl exec <pod> -- nslookup kafka-broker-controller`
-
-**Issue: Booking conflicts despite partitioning**
-- Verify partition key generation logic
-- Check Kafka consumer group coordination
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -429,9 +413,7 @@ You are free to use, modify, and distribute this software for personal or commer
 
 ## Contact
 
-For questions, suggestions, or issues, feel free to reach out:
+For questions, suggestions, or issues, feel free to reach out to me:
 
 - **Email**: mateusz0.sikorski@outlook.com
 - **LinkedIn**: [Mateusz Sikorski](https://www.linkedin.com/in/mateusz-sikorski-0x01/)
-
-We appreciate your feedback and contributions!
