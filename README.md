@@ -131,16 +131,18 @@ git clone <repository-url>
 cd booking-system
 ```
 
-2. Start all services:
+2. [Build images](#Building-Images)
+
+3. Start all services:
 ```bash
 docker compose up -d
 ```
 
-3. Access the services:
+4. Access the services:
    - **Booking API**: http://localhost:8080
    - **Grafana Dashboard**: http://localhost:3000 (admin/admin)
 
-4. Try the API using [Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/mat-sik/booking-system/refs/heads/main/booking-service/api-docs.yaml)
+5. Try the API using [Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/mat-sik/booking-system/refs/heads/main/booking-service/api-docs.yaml)
 
 ### Option 2: Kubernetes with Minikube
 
@@ -168,14 +170,21 @@ The API supports CORS for seamless integration with Swagger UI.
 
 Build individual service images from the repository root:
 
+##### Query Service
+
 ```bash
-# Query Service
 docker build -f ./query-service/Dockerfile . -t booking-system-query-service
+```
 
-# Command Service
+##### Command Service
+
+```bash
 docker build -f ./command-service/Dockerfile . -t booking-system-command-service
+```
 
-# Booking Service
+##### Booking Service
+
+```bash
 docker build -f ./booking-service/Dockerfile . -t booking-system-booking-service
 ```
 
@@ -222,28 +231,22 @@ minikube ssh
 
 sudo rm -rf /mnt/data &&
 
-# Cassandra data
 sudo mkdir -p /mnt/data/cassandra-0 &&
 sudo chown 999:999 /mnt/data/cassandra-0 &&
 
-# Prometheus data
 sudo mkdir -p /mnt/data/prometheus-0 &&
 sudo chown 65534:65534 /mnt/data/prometheus-0 &&
 
-# Tempo data
 sudo mkdir -p /mnt/data/tempo-0 &&
 sudo chown 10001:10001 /mnt/data/tempo-0 &&
 
-# Loki data
 sudo mkdir -p /mnt/data/loki-0 &&
 sudo chown 10001:10001 /mnt/data/loki-0 &&
 
-# General purpose volumes
 for i in {0..4}; do
   sudo mkdir -p /mnt/data/pv-$i
 done &&
 
-# Set permissions
 sudo chmod 700 /mnt/data/* &&
 
 exit
@@ -262,11 +265,15 @@ helm dependency build ./helm/observability/tempo
 
 #### Step 5: Install Infrastructure
 
-```bash
-# Install infrastructure components
-helm install booking-system-infra ./helm/infra -n booking-system
+##### Install infrastructure components
 
-# Install observability stack
+```bash
+helm install booking-system-infra ./helm/infra -n booking-system
+```
+
+##### Install observability stack
+
+```bash
 helm install booking-system-observability-grafana ./helm/observability/grafana -n booking-system
 helm install booking-system-observability-loki ./helm/observability/loki -n booking-system
 helm install booking-system-observability-opentelemetry-collector ./helm/observability/opentelemetry-collector -n booking-system
@@ -282,29 +289,38 @@ kubectl apply -f ./k8s -n booking-system
 
 #### Port Forwarding for Local Access
 
+##### Grafana (http://localhost:3000 - admin/admin)
+
 ```bash
-# Grafana (http://localhost:3000 - admin/admin)
 kubectl port-forward service/booking-system-observability-grafana 3000:80 -n booking-system
+```
 
-# Booking API (http://localhost:8080)
+##### Booking API (http://localhost:8080)
+```bash
 kubectl port-forward service/booking-service 8080:8080 -n booking-system
+```
 
-# Cassandra (localhost:9042)
+##### Cassandra (localhost:9042)
+```bash
 kubectl port-forward service/cassandra 9042:9042 -n booking-system
 ```
 
 #### Uninstalling
 
+##### Remove Helm releases
+
 ```bash
-# Remove Helm releases
 helm uninstall booking-system-infra -n booking-system
 helm uninstall booking-system-observability-grafana -n booking-system
 helm uninstall booking-system-observability-loki -n booking-system
 helm uninstall booking-system-observability-opentelemetry-collector -n booking-system
 helm uninstall booking-system-observability-prometheus -n booking-system
 helm uninstall booking-system-observability-tempo -n booking-system
+```
 
-# Clean up resources
+##### Clean up resources
+
+```bash
 kubectl delete -f ./k8s -n booking-system
 kubectl delete pvc broker-kafka-broker-controller-0 -n booking-system
 kubectl delete pvc cassandra-cassandra-0 -n booking-system
@@ -427,11 +443,15 @@ kubectl exec -n booking-system kafka-broker-controller-0 -- /opt/kafka/bin/kafka
 
 ### Network Inspection
 
-```bash
-# View all services
-kubectl get svc -n booking-system
+##### View all services
 
-# View endpoint slices
+```bash
+kubectl get svc -n booking-system
+```
+
+##### View endpoint slices
+
+```bash
 kubectl get endpointslice -n booking-system
 ```
 
