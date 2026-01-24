@@ -389,6 +389,24 @@ This separation ensures maintainability and testability.
 - **Prometheus** - Metrics collection
 - **Grafana** - Unified visualization dashboard
 
+### Example Metrics
+
+![Metrics panel](./diagrams/metrics.png)
+
+### Example Logs
+
+![Logs panel](./diagrams/logs.png)
+
+### Example traces
+
+#### Failed create booking because of overlap
+
+![Trace panel](./diagrams/trace-booking-not-owner.png)
+
+#### Failed delete booking because it was not performed by the owner
+
+![Trace Drilldown panel](./diagrams/trace-booking-overlap.png)
+
 ### Accessing Grafana
 
 1. Port forward the service (if using Kubernetes):
