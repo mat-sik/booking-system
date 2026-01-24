@@ -34,8 +34,12 @@ spec:
                 configMapKeyRef:
                   name: kafka-configmap
                   key: bootstrap-servers
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: BOOKING_SYSTEM_KAFKA_BOOKING_SERVICE_CLIENT_ID
-              value: command-producer
+              value: $(POD_NAME)
             - name: BOOKING_SYSTEM_QUERY_SERVICE_ADDRESS
               valueFrom:
                 configMapKeyRef:
@@ -49,7 +53,7 @@ spec:
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: grpc
             - name: OTEL_SERVICE_NAME
-              value: booking-service
+              value: $(POD_NAME)
             - name: OTEL_TRACES_EXPORTER
               value: otlp
             - name: OTEL_METRICS_EXPORTER

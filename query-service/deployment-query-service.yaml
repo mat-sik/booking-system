@@ -58,8 +58,12 @@ spec:
                   key: endpoint
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: grpc
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: OTEL_SERVICE_NAME
-              value: query-service
+              value: $(POD_NAME)
             - name: OTEL_TRACES_EXPORTER
               value: otlp
             - name: OTEL_METRICS_EXPORTER
