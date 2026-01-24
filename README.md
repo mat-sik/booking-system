@@ -7,6 +7,8 @@ A highly scalable, event-driven booking system built with microservices architec
 - [Overview](#overview)
 - [Key Features](#key-features)
 - [Architecture](#architecture)
+  - [Partition-Based Booking System](#partition-based-booking-system)
+  - [Microservices](#microservices)
 - [Monitoring & Observability](#monitoring--observability)
 - [Load Testing](#load-testing)
 - [API Documentation](#api-documentation)
@@ -15,6 +17,8 @@ A highly scalable, event-driven booking system built with microservices architec
    - [Docker Compose](#docker-compose)
    - [Kubernetes](#kubernetes)
 - [Development](#development)
+- [License](#license)
+- [Contact](#contact)
 
 ## Overview
 
