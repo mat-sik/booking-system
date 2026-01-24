@@ -16,11 +16,11 @@ kafka:
     bootstrap-servers: ${BOOKING_SYSTEM_KAFKA_BOOTSTRAP_SERVERS}
   consumer:
     group-id: ${BOOKING_SYSTEM_KAFKA_COMMAND_SERVICE_GROUP_ID}
-    concurrent-consumer-count: 3
-    max-poll-interval-ms: 300_000
-    max-poll-records: 500
-    poll-timeout-ms: 5000
+    concurrent-consumer-count: ${BOOKING_SYSTEM_KAFKA_CONSUMER_CONCURRENT_COUNT:3}
+    max-poll-interval-ms: ${BOOKING_SYSTEM_KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS:300000}
+    max-poll-records: ${BOOKING_SYSTEM_KAFKA_CONSUMER_MAX_POLL_RECORDS:500}
+    poll-timeout-ms: ${BOOKING_SYSTEM_KAFKA_CONSUMER_POLL_TIMEOUT_MS:5000}
   topics:
-    booking-topic-name: bookings
-    partitions: 3
-    replication-factor: 1
+    booking-topic-name: ${BOOKING_SYSTEM_KAFKA_BOOKING_TOPIC_NAME:bookings}
+    partitions: ${BOOKING_SYSTEM_KAFKA_TOPIC_PARTITIONS:3}
+    replication-factor: ${BOOKING_SYSTEM_KAFKA_TOPIC_REPLICATION_FACTOR:1}
