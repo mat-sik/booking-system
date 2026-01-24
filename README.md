@@ -33,7 +33,30 @@ This booking system allows users to reserve services for specific time slots (e.
 
 The system implements **CQRS** (Command Query Responsibility Segregation) to separate write operations from read operations, enabling optimal scaling of each concern independently.
 
-![Application Architecture](./diagrams/bookings.drawio.png)
+![Application Architecture](./diagrams/bookings.drawio.svg)
+
+Commands with the same [Partition Key](#Topic-Partitioning-Strategy) are routed to the same booking partition.
+
+Then they are consumed by the same Single threaded Kafka Consumer. The consumer has an In-memory cache that stores as 
+key - partition key and as value an in sync copy of cassandra table partition for the key. 
+
+The Cached table partition is used for quick booking overlap validation. With this design we guarantee that only one 
+thread at a time writes to the Cassandra table partition, this guarantees consistency. 
+
+When Kafka partition rebalance occurs, all caches are wiped and populated after it is finished.
+
+A situation in which we have a busy partition - where there is a disproportional amount of requests with the same
+partition key to requests with other partition keys hitting the same partition. The other requests may be slowed down
+by a busy service and day. This situtation occurs when many people try to do booking for the same service and day. Then
+bookings for other services and days that happen to hit the same partition will be slowed down. The chances of such
+event decrease with the amount of partitions.
+
+One might argue that single thread processing a partition would be too slow, but this problem is also resolved by
+increasing the number of topic partitions. The other factor mitigating this is Kafka batch processing and the in-memory
+cache per consumer thread.
+
+Also there aren't that many time-ranges per day, and we only care about quick processing of the time-ranges that are
+available. Rejecting occupied time-ranges requests is quick, because, Cassandra doesnt need to be queried in such situation.
 
 ### Microservices
 
@@ -64,7 +87,7 @@ REST API gateway providing the external interface to the system.
 ### Topic Partitioning Strategy
 
 Partition keys combine date (ISO-8601) and service UUID, ensuring:
-- All bookings for a service on a given date route to the same partition
+- All booking commands for a service on a given date route to the same partition
 - Chronological ordering is maintained
 - First-come-first-served fairness
 - Independent processing of different services/dates
