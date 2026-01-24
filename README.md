@@ -35,28 +35,35 @@ The system implements **CQRS** (Command Query Responsibility Segregation) to sep
 
 ![Application Architecture](./diagrams/bookings.drawio.svg)
 
-Commands with the same [Partition Key](#Topic-Partitioning-Strategy) are routed to the same booking partition.
+### Partition-Based Booking System
 
-Then they are consumed by the same Single threaded Kafka Consumer. The consumer has an In-memory cache that stores as 
-key - partition key and as value an in sync copy of cassandra table partition for the key. 
+Commands sharing the same [Partition Key](#topic-partitioning-strategy) are routed to the same booking partition and 
+consumed by a single-threaded Kafka consumer. 
 
-The Cached table partition is used for quick booking overlap validation. With this design we guarantee that only one 
-thread at a time writes to the Cassandra table partition, this guarantees consistency. 
+Each consumer maintains an in-memory cache that maps partition keys to synchronized copies of their corresponding 
+Cassandra table partitions. This cached data enables fast booking overlap validation while guaranteeing consistency —
+only one thread can write to a given Cassandra partition at any time.
 
-When Kafka partition rebalance occurs, all caches are wiped and populated after it is finished.
+When Kafka partition rebalancing occurs, all caches are cleared and repopulated once rebalancing completes.
 
-A situation in which we have a busy partition - where there is a disproportional amount of requests with the same
-partition key to requests with other partition keys hitting the same partition. The other requests may be slowed down
-by a busy service and day. This situtation occurs when many people try to do booking for the same service and day. Then
-bookings for other services and days that happen to hit the same partition will be slowed down. The chances of such
-event decrease with the amount of partitions.
+#### Handling Hot Partitions
 
-One might argue that single thread processing a partition would be too slow, but this problem is also resolved by
-increasing the number of topic partitions. The other factor mitigating this is Kafka batch processing and the in-memory
-cache per consumer thread.
+A "hot partition" scenario can arise when one partition key receives a disproportionate volume of requests compared to 
+others within the same partition. For example, when many users simultaneously attempt to book the same service on the 
+same day, bookings for other services and days that happen to share the same partition may experience slowdowns. The 
+likelihood of this occurring decreases as the number of partitions increases.
 
-Also there aren't that many time-ranges per day, and we only care about quick processing of the time-ranges that are
-available. Rejecting occupied time-ranges requests is quick, because, Cassandra doesnt need to be queried in such situation.
+#### Performance Considerations
+
+While single-threaded partition processing might seem like a bottleneck, this concern is mitigated by:
+
+1. **Horizontal scaling** – Increasing the number of topic partitions distributes load more evenly
+2. **Kafka batch processing** – Consumers process messages in batches, improving throughput
+3. **In-memory caching** – Each consumer thread maintains a local cache, eliminating repeated database queries
+
+Additionally, the system benefits from the limited number of time ranges per day. Rejections for already-occupied time 
+slots are processed quickly since they require only cache lookups—no Cassandra queries are needed. Performance 
+optimization focuses primarily on available time ranges that require database writes.
 
 ### Microservices
 
