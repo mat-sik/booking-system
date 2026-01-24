@@ -5,16 +5,16 @@ A highly scalable, event-driven booking system built with microservices architec
 ## Table of Contents
 
 - [Overview](#overview)
-- [Architecture](#architecture)
 - [Key Features](#key-features)
-- [Quick Start](#quick-start)
+- [Architecture](#architecture)
+- [Monitoring & Observability](#monitoring--observability)
+- [Load Testing](#load-testing)
 - [API Documentation](#api-documentation)
+- [Quick Start](#quick-start)
 - [Deployment](#deployment)
    - [Docker Compose](#docker-compose)
    - [Kubernetes](#kubernetes)
-- [Load Testing](#load-testing)
 - [Development](#development)
-- [Monitoring & Observability](#monitoring--observability)
 
 ## Overview
 
@@ -28,6 +28,15 @@ This booking system allows users to reserve services for specific time slots (e.
 - **gRPC** - Inter-service communication
 - **Docker & Kubernetes** - Container orchestration
 - **Observability Stack** - OpenTelemetry, Grafana, Prometheus, Tempo, Loki
+
+## Key Features
+
+✅ **No Double Bookings** - Guaranteed through Kafka partition ordering  
+✅ **High Scalability** - Independent scaling of command/query services  
+✅ **Full Observability** - Traces, logs, and metrics via OpenTelemetry  
+✅ **Production Ready** - Kubernetes deployment with Helm charts  
+✅ **Integration Tested** - Comprehensive tests using Testcontainers  
+✅ **Load Tested** - Locust-based performance testing mimicking real users
 
 ## Architecture
 
@@ -107,14 +116,91 @@ Partition keys combine date (ISO-8601) and service UUID, ensuring:
 - **Horizontal Scalability** - Add partitions and nodes as needed
 - **High Availability** - Multi-node Cassandra cluster with replication
 
-## Key Features
+## Monitoring & Observability
 
-✅ **No Double Bookings** - Guaranteed through Kafka partition ordering  
-✅ **High Scalability** - Independent scaling of command/query services  
-✅ **Full Observability** - Traces, logs, and metrics via OpenTelemetry  
-✅ **Production Ready** - Kubernetes deployment with Helm charts  
-✅ **Integration Tested** - Comprehensive tests using Testcontainers  
-✅ **Load Tested** - Locust-based performance testing mimicking real users
+### Stack Components
+
+- **OpenTelemetry Collector** - Receives and processes telemetry data
+- **Tempo** - Distributed tracing backend
+- **Loki** - Log aggregation
+- **Prometheus** - Metrics collection
+- **Grafana** - Unified visualization dashboard
+
+### Example Metrics
+
+![Metrics panel](./diagrams/metrics.png)
+
+### Example Logs
+
+![Logs panel](./diagrams/logs.png)
+
+### Example traces
+
+#### Failed create booking because of overlap
+
+![Trace panel](./diagrams/trace-booking-not-owner.png)
+
+#### Failed delete booking because it was not performed by the owner
+
+![Trace Drilldown panel](./diagrams/trace-booking-overlap.png)
+
+### Accessing Grafana
+
+1. Port forward the service (if using Kubernetes):
+```bash
+kubectl port-forward service/booking-system-observability-grafana 3000:80 -n booking-system
+```
+
+2. Open http://localhost:3000
+3. Login with `admin` / `admin`
+4. Explore pre-configured dashboards for traces, logs, and metrics
+
+### Custom Instrumentation
+
+Each microservice includes custom spans and metrics for deep observability into:
+- Command and Query request processing times and requests per second
+- Custom trace spans for business logic and critical event recording like conflicting booking or booking deleting by
+  not owning user.
+
+## Load Testing
+
+The system includes realistic load tests built with Locust that simulate actual user behavior.
+
+### Running Load Tests
+
+1. Navigate to the load tests directory:
+```bash
+cd load-tests
+```
+
+2. Set up the Python environment:
+```bash
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+3. Start Locust (ensure booking service is accessible):
+```bash
+locust -f locustfile.py --host=http://localhost:8080
+```
+
+4. Open the Locust web interface: http://localhost:8089
+
+5. Configure your test parameters and start swarming!
+
+## API Documentation
+
+Explore the full REST API documentation:
+- **[Interactive Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/mat-sik/booking-system/refs/heads/main/booking-service/api-docs.yaml)** - Test endpoints directly
+- **[Raw OpenAPI Spec](booking-service/api-docs.yaml)** - YAML specification
+
+The API supports CORS for seamless integration with Swagger UI.
+
+### Request Types
+
+**Command Requests** - Modify state (create/delete bookings)
+
+**Query Requests** - Retrieve state (read-only operations)
 
 ## Quick Start
 
@@ -147,20 +233,6 @@ docker compose up -d
 ### Option 2: Kubernetes with Minikube
 
 See the [Kubernetes Deployment](#kubernetes) section for detailed instructions.
-
-## API Documentation
-
-Explore the full REST API documentation:
-- **[Interactive Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/mat-sik/booking-system/refs/heads/main/booking-service/api-docs.yaml)** - Test endpoints directly
-- **[Raw OpenAPI Spec](booking-service/api-docs.yaml)** - YAML specification
-
-The API supports CORS for seamless integration with Swagger UI.
-
-### Request Types
-
-**Command Requests** - Modify state (create/delete bookings)
-
-**Query Requests** - Retrieve state (read-only operations)
 
 ## Deployment
 
@@ -327,32 +399,6 @@ kubectl delete pvc cassandra-cassandra-0 -n booking-system
 kubectl delete pvc storage-booking-system-observability-tempo-0 -n booking-system
 ```
 
-## Load Testing
-
-The system includes realistic load tests built with Locust that simulate actual user behavior.
-
-### Running Load Tests
-
-1. Navigate to the load tests directory:
-```bash
-cd load-tests
-```
-
-2. Set up the Python environment:
-```bash
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-3. Start Locust (ensure booking service is accessible):
-```bash
-locust -f locustfile.py --host=http://localhost:8080
-```
-
-4. Open the Locust web interface: http://localhost:8089
-
-5. Configure your test parameters and start swarming!
-
 ## Development
 
 ### Helper Modules
@@ -378,52 +424,6 @@ Command and Query microservices follow **Hexagonal Architecture** principles.
 - **Adapter Layer** - External dependencies (Kafka, Cassandra, gRPC)
 
 This separation ensures maintainability and testability.
-
-## Monitoring & Observability
-
-### Stack Components
-
-- **OpenTelemetry Collector** - Receives and processes telemetry data
-- **Tempo** - Distributed tracing backend
-- **Loki** - Log aggregation
-- **Prometheus** - Metrics collection
-- **Grafana** - Unified visualization dashboard
-
-### Example Metrics
-
-![Metrics panel](./diagrams/metrics.png)
-
-### Example Logs
-
-![Logs panel](./diagrams/logs.png)
-
-### Example traces
-
-#### Failed create booking because of overlap
-
-![Trace panel](./diagrams/trace-booking-not-owner.png)
-
-#### Failed delete booking because it was not performed by the owner
-
-![Trace Drilldown panel](./diagrams/trace-booking-overlap.png)
-
-### Accessing Grafana
-
-1. Port forward the service (if using Kubernetes):
-```bash
-kubectl port-forward service/booking-system-observability-grafana 3000:80 -n booking-system
-```
-
-2. Open http://localhost:3000
-3. Login with `admin` / `admin`
-4. Explore pre-configured dashboards for traces, logs, and metrics
-
-### Custom Instrumentation
-
-Each microservice includes custom spans and metrics for deep observability into:
-- Command and Query request processing times and requests per second
-- Custom trace spans for business logic and critical event recording like conflicting booking or booking deleting by
-not owning user.
 
 ## Operations
 
