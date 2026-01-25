@@ -1,6 +1,7 @@
 # Booking System
 
-A highly scalable, event-driven booking system built with microservices architecture, enabling users to reserve services for specific dates and times with guaranteed consistency and no double-bookings.
+A highly scalable, event-driven booking system built with microservices architecture, enabling users to reserve services 
+for specific dates and times with guaranteed consistency and no double-bookings.
 
 ## Table of Contents
 
@@ -22,7 +23,9 @@ A highly scalable, event-driven booking system built with microservices architec
 
 ## Overview
 
-This booking system allows users to reserve services for specific time slots (e.g., booking a massage service on October 10, 2024 from 13:00 for 1 hour). The system guarantees no concurrent bookings for the same service and time through careful partitioning and event-driven architecture.
+This booking system allows users to reserve services for specific time slots (e.g., booking a haircut service on October 
+10, 2024 from 13:00 for 1 hour). The system guarantees no concurrent bookings for the same service and time through 
+careful partitioning and event-driven architecture.
 
 ### Built With
 
@@ -44,7 +47,8 @@ This booking system allows users to reserve services for specific time slots (e.
 
 ## Architecture
 
-The system implements **CQRS** (Command Query Responsibility Segregation) to separate write operations from read operations, enabling optimal scaling of each concern independently.
+The system implements **CQRS** (Command Query Responsibility Segregation) to separate write operations from read 
+operations, enabling optimal scaling of each concern independently.
 
 ![Application Architecture](./diagrams/bookings.drawio.svg)
 
@@ -81,7 +85,8 @@ optimization focuses primarily on available time ranges that require database wr
 ### Microservices
 
 #### Command Service
-Processes booking commands (create/delete) from Kafka topic partitions. Each partition acts as an append-only log ensuring chronological ordering and preventing race conditions.
+Processes booking commands (create/delete) from Kafka topic partitions. Each partition acts as an append-only log 
+ensuring chronological ordering and preventing race conditions.
 
 **Key Features:**
 - In-memory cache for each kafka consumer synchronized with Cassandra table partition for fast booking availability validation
