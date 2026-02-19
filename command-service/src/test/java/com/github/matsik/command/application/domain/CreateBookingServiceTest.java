@@ -77,7 +77,7 @@ class CreateBookingServiceTest extends CassandraBookingUseCaseTestBase {
     private static Stream<Arguments> provideCreateBookingTestCases() {
         return Stream.of(
                 Arguments.of(
-                        "Should create a booking in the available time range",
+                        "Should create a booking in the available time range between 10 and 20",
                         true,
                         List.of(
                                 conflictingBooking(0, 10),
@@ -87,10 +87,36 @@ class CreateBookingServiceTest extends CassandraBookingUseCaseTestBase {
                         createBookingCommand(conflictingPartitionKey(), 10, 20)
                 ),
                 Arguments.of(
+                        "Should create a booking in the available time range after 30",
+                        true,
+                        List.of(
+                                conflictingBooking(0, 10),
+                                conflictingBooking(20, 30),
+                                nonConflictingBooking(0, 40)
+                        ),
+                        createBookingCommand(conflictingPartitionKey(), 30, 40)
+                ),
+                Arguments.of(
                         "Should fail to create a booking in the occupied time range",
                         false,
                         List.of(
                                 conflictingBooking(0, 30)
+                        ),
+                        createBookingCommand(conflictingPartitionKey(), 10, 20)
+                ),
+                Arguments.of(
+                        "Should fail to create a booking in the right side of occupied time range",
+                        false,
+                        List.of(
+                                conflictingBooking(0, 15)
+                        ),
+                        createBookingCommand(conflictingPartitionKey(), 10, 20)
+                ),
+                Arguments.of(
+                        "Should fail to create a booking in the left side of occupied time range",
+                        false,
+                        List.of(
+                                conflictingBooking(15, 20)
                         ),
                         createBookingCommand(conflictingPartitionKey(), 10, 20)
                 ),

@@ -33,7 +33,8 @@ public class BookingCache {
     }
 
     private boolean isOverlap(Booking booking, TimeRange timeRange) {
-        return booking.start < timeRange.start().minuteOfDay() && booking.end > timeRange.end().minuteOfDay();
+        TimeRange bookingTimeRange = TimeRange.of(booking.start(), booking.end());
+        return bookingTimeRange.isOverlap(timeRange);
     }
 
     Optional<UUID> findBookingOwner(BookingPartitionKey bookingPartitionKey, UUID bookingId) {
