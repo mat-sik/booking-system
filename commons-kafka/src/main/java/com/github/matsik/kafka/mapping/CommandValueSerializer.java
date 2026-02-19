@@ -1,9 +1,9 @@
 package com.github.matsik.kafka.mapping;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.matsik.kafka.task.CommandValue;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
+import tools.jackson.databind.ObjectMapper;
 
 public class CommandValueSerializer implements Serializer<CommandValue> {
 

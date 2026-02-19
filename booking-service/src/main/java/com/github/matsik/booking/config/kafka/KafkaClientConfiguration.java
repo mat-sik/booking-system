@@ -1,8 +1,6 @@
 package com.github.matsik.booking.config.kafka;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.matsik.dto.BookingPartitionKey;
-import com.github.matsik.kafka.mapping.BookingPartitionKeySerializer;
 import com.github.matsik.kafka.task.CommandValue;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -14,7 +12,6 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.Map;
 
@@ -41,20 +38,15 @@ public class KafkaClientConfiguration {
 
     @Bean
     public ProducerFactory<BookingPartitionKey, CommandValue> producerFactory(
-            KafkaClientProperties kafkaClientProperties,
-            ObjectMapper objectMapper
+            KafkaClientProperties kafkaClientProperties
     ) {
         Map<String, Object> props = Map.of(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClientProperties.bootstrapServers()
+                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClientProperties.bootstrapServers(),
+                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "com.github.matsik.kafka.mapping.BookingPartitionKeySerializer",
+                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "com.github.matsik.kafka.mapping.CommandValueSerializer"
         );
 
-        JsonSerializer<CommandValue> jsonSerializer = new JsonSerializer<>(objectMapper);
-
-        return new DefaultKafkaProducerFactory<>(
-                props,
-                new BookingPartitionKeySerializer(),
-                jsonSerializer
-        );
+        return new DefaultKafkaProducerFactory<>(props);
     }
 
     @Bean
